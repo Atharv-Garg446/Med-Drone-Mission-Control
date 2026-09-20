@@ -1,0 +1,61 @@
+{
+    "name": "Sample Scenario — Your City Here",
+    "scenario_description": "Replace this with your own disaster scenario. This example shows the JSON format for defining a new deployment anywhere in the world.",
+
+    "depot": {
+        "name": "Central Hospital (Your Depot)",
+        "lat": 28.6139,
+        "lon": 77.2090
+    },
+
+    "drone": {
+        "capacity_kg": 10.0,
+        "max_range_km": 40.0,
+        "cruise_speed_kmh": 45.0
+    },
+
+    "deliveries": [
+        {
+            "name": "Relief Camp Alpha",
+            "lat": 28.6300,
+            "lon": 77.2200,
+            "demand_kg": 3.5,
+            "urgency": "critical",
+            "window_minutes": 20,
+            "cold_chain_limit_minutes": 30
+        },
+        {
+            "name": "Flood Shelter Bravo",
+            "lat": 28.5900,
+            "lon": 77.1900,
+            "demand_kg": 5.0,
+            "urgency": "urgent",
+            "window_minutes": 40
+        },
+        {
+            "name": "Medical Post Charlie",
+            "lat": 28.6400,
+            "lon": 77.1800,
+            "demand_kg": 2.0,
+            "urgency": "routine"
+        },
+        {
+            "name": "Emergency Clinic Delta",
+            "lat": 28.5800,
+            "lon": 77.2300,
+            "demand_kg": 7.0,
+            "urgency": "critical",
+            "window_minutes": 15,
+            "cold_chain_limit_minutes": 45
+        }
+    ],
+
+    "no_fly_zones": [
+        [
+            [28.608, 77.200],
+            [28.608, 77.208],
+            [28.612, 77.208],
+            [28.612, 77.200]
+        ]
+    ]
+}

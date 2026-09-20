@@ -1,0 +1,14 @@
+# Core -- required for the from-scratch VRP solver, no-fly A* router,
+# waypoint export, and time-window checks to run at all.
+# (none required beyond the Python standard library!)
+
+# Optional -- each is used by exactly one component, and every component
+# degrades gracefully (with a printed explanation) if its dependency is
+# missing. Install all of them to see the full pipeline run:
+osmnx>=1.9          # real road-network reference distances (distance_matrix.py)
+ortools>=9.9         # benchmark CVRP solver (vrp_ortools.py)
+folium>=0.15         # animated map + interactive simulation (visualize_simulation.py, build_interactive_sim.py)
+ultralytics>=8.2      # pretrained YOLOv8 landing-zone safety check (yolo_safety.py)
+Pillow>=10.0          # generates the sample landing-zone placeholder images
+matplotlib>=3.8       # static plots (plots.py, experiments.py)
+streamlit>=1.30       # interactive dashboard (dashboard.py)
