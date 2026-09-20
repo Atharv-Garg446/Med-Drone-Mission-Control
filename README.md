@@ -164,15 +164,6 @@ Coverage includes: Haversine geometry, A* pathfinding (including edge cases like
 
 ---
 
-## What I'd Improve Next
-
-- **3D terrain + wind**: A* is currently 2D — adding elevation maps and wind data would make routing more realistic
-- **Multi-depot**: Extend the CVRP to support multiple launch sites across a city
-- **Non-linear battery**: Heavier payloads drain batteries faster — model this instead of using a flat range limit
-- **Incremental replanning**: Re-solve only affected routes instead of the full problem (right now the full re-solve is fast enough, but it won't scale past ~30 stops)
-
----
-
 ## License
 
 MIT
