@@ -49,11 +49,11 @@ When a straight-line path crosses a no-fly zone, **A\* pathfinding** finds the s
 The fleet simulator runs missions forward in time and randomly injects disruptions — pop-up flight restrictions, new emergency patients, drone failures. When something changes mid-flight:
 
 - Active airborne drones replan from their **live GPS positions and remaining cargo/range budgets**
-- Routes get re-solved in under **200ms** for the bundled scenarios (8–15 stops, 3–6 drones)
+- Full CVRP re-solves complete in **~200 ms** for small instances (8 stops) up to **~0.6–1.3 s** for larger instances (15 stops)
 - If a drone can't make it back to depot, it enters emergency hold
 - New emergency cargo physically originates at the depot — idle drones get dispatched immediately, or deliveries queue until a drone returns
 
-The full re-solve approach works because with 8-15 stops and 3-6 drones, the solver is fast enough that patching would add complexity without meaningful speed benefit.
+The full re-solve approach works because at representative cluster sizes (8–15 stops), sub-second to low-second solver turnaround is fast enough for dispatch without requiring complex partial-graph repair heuristics.
 
 ---
 
@@ -142,7 +142,20 @@ To test:
 2. Open [QGroundControl](https://docs.qgroundcontrol.com/master/en/qgc-user-guide/getting_started/download_and_install.html) → Plan → File → Load
 3. Connect to an ArduPilot SITL instance to watch the drone fly the mission
 
-The exported missions include A* detour waypoints, so the drone actually flies around no-fly zones — not through them.
+The exported missions include A* detour waypoints and dwell/hover hold times at delivery destinations. Note that QGC WPL 110 represents navigation and mission sequencing only; it does not actuate hardware payload drops or servo releases.
+
+---
+
+## Scope & Limitations
+
+This project is an algorithmic testbed and simulation prototype. Field deployment requires recognizing several operational boundaries:
+
+- **Flight Range Budget**: Uses a distance-and-reserve model (Haversine distance with reserve fraction) rather than detailed electrochemical battery physics, state-of-charge discharge curves, dynamic wind vectors, or payload-weight-dependent power consumption.
+- **Airspace Constraints**: No-fly zones and pop-up TFRs are modeled as static simulation polygon geometry on a local coordinate grid, not live regulatory UTM/U-Space feeds or dynamic NOTAM databases.
+- **Optimization Baseline**: The Google OR-Tools baseline serves as a standard VRP benchmark and does not replicate every custom constraint in the from-scratch solver (such as cumulative cold-chain exposure tracking).
+- **Landing Site Vision**: Pretrained YOLOv8 provides visual obstruction screening of aerial imagery; it is an exploratory screening layer, not certified avionics sensor fusion or certified landing-site safety.
+- **Flight Controller Waypoint Export**: Generates standard QGC WPL 110 mission files for autopilot navigation with site hover/dwell hold times. It does not actuate physical payload drops or release hardware.
+- **Simulation Environment**: Fleet simulation results reflect discrete-event modeling and scenario parameters rather than physical flight test telemetry.
 
 ---
 

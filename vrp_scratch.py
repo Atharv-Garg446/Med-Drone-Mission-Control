@@ -123,6 +123,57 @@ def is_route_feasible(route: List[int], locations: List[Location], matrix: List[
 # Stage 1: Construction Heuristics
 # ---------------------------------------------------------------------------
 
+def _diagnose_unreachable_customer(
+    stranded: int,
+    locations: List[Location],
+    matrix: List[List[float]],
+    drone: DroneConfig,
+    depot_index: int = 0,
+    depart_minutes: float = 0.0,
+) -> str:
+    """Diagnose the precise root cause when a customer cannot be served even alone."""
+    loc = locations[stranded]
+    eff_range = drone.max_range_km * (1.0 - drone.reserve_fraction)
+    dist_out = matrix[depot_index][stranded]
+    dist_back = matrix[stranded][depot_index]
+
+    if loc.demand_kg > drone.capacity_kg:
+        return (
+            f"Location '{loc.name}' can never be delivered to: its demand ({loc.demand_kg}kg) "
+            f"exceeds drone payload capacity ({drone.capacity_kg}kg)."
+        )
+    if dist_out == float('inf') or dist_back == float('inf'):
+        return (
+            f"Location '{loc.name}' can never be delivered to: unreachable under current "
+            f"airspace and no-fly zone constraints."
+        )
+    if (dist_out + dist_back) > eff_range:
+        return (
+            f"Location '{loc.name}' can never be delivered to: a round trip to it ({dist_out + dist_back:.1f}km) "
+            f"exceeds maximum flight range budget ({eff_range:.1f}km)."
+        )
+
+    flight_time_min = (dist_out / drone.cruise_speed_kmh) * 60.0
+    arrival_time = depart_minutes + flight_time_min
+    deadline = (loc.request_time_min or 0.0) + loc.window_minutes if loc.window_minutes is not None else float('inf')
+    if arrival_time > deadline:
+        return (
+            f"Location '{loc.name}' can never be delivered to: delivery deadline expired or cannot "
+            f"be met (earliest arrival T+{arrival_time:.0f}m > deadline T+{deadline:.0f}m)."
+        )
+
+    if loc.cold_chain_limit_minutes is not None and flight_time_min > loc.cold_chain_limit_minutes:
+        return (
+            f"Location '{loc.name}' can never be delivered to: flight time ({flight_time_min:.1f}m) "
+            f"exceeds cold-chain exposure limit ({loc.cold_chain_limit_minutes:.1f}m)."
+        )
+
+    return (
+        f"Location '{loc.name}' can never be delivered to: fails feasibility constraints "
+        f"(capacity, range, deadline, cold-chain, or airspace) even alone."
+    )
+
+
 def nearest_neighbor_construction(
     locations: List[Location],
     matrix: List[List[float]],
@@ -147,58 +198,53 @@ def nearest_neighbor_construction(
     unvisited = set(range(n)) - {depot_index}
     routes: List[List[int]] = []
 
+    effective_range = drone.max_range_km * (1.0 - drone.reserve_fraction)
+
     while unvisited:
-        # --- start a brand-new trip from the depot ---------------------
-        current = depot_index
         route = [depot_index]
         remaining_capacity = drone.capacity_kg
-        remaining_range = drone.max_range_km
+        remaining_range = effective_range
+        current = depot_index
 
-        while True:
-            # Find the nearest customer we can legally add to THIS trip.
+        while unvisited:
             best_candidate = None
             best_distance = float("inf")
 
-            for candidate in unvisited:
-                leg_distance = matrix[current][candidate]
-                test_route = route + [candidate, depot_index]
-                if not is_route_feasible(test_route, locations, matrix, drone, depart_minutes=depart_minutes):
+            for c in unvisited:
+                demand = locations[c].demand_kg
+                if demand > remaining_capacity:
                     continue
 
-                # Among everything still feasible, keep the closest one --
-                # this greedy "always pick what's nearest right now" rule is
-                # the "nearest neighbor" in this function's name.
-                if leg_distance < best_distance:
-                    best_distance = leg_distance
-                    best_candidate = candidate
+                dist_to_c = matrix[current][c]
+                dist_c_to_depot = matrix[c][depot_index]
+
+                if dist_to_c + dist_c_to_depot > remaining_range:
+                    continue
+
+                tentative_route = route + [c, depot_index]
+                if not is_route_feasible(tentative_route, locations, matrix, drone, depart_minutes=depart_minutes):
+                    continue
+
+                if dist_to_c < best_distance:
+                    best_distance = dist_to_c
+                    best_candidate = c
 
             if best_candidate is None:
-                # Nothing left is feasible on this trip (out of capacity,
-                # out of range, or out of customers) -- head home and, if
-                # customers remain, a new trip will start for them above.
                 break
 
-            # Commit to visiting best_candidate next.
             route.append(best_candidate)
             remaining_capacity -= locations[best_candidate].demand_kg
             remaining_range -= best_distance
             current = best_candidate
             unvisited.remove(best_candidate)
 
-        route.append(depot_index)  # fly home to close the loop
+        route.append(depot_index)
         routes.append(route)
 
-        # Safety valve: if a single customer's demand exceeds the drone's
-        # total capacity, or it's simply unreachable within max_range_km
-        # even as the ONLY stop on a trip, no route will ever pick it up
-        # and this would loop forever. Fail loudly instead of hanging.
         if unvisited and len(route) == 2:
             stranded = next(iter(unvisited))
-            raise ValueError(
-                f"Location '{locations[stranded].name}' can never be delivered to: "
-                f"its demand ({locations[stranded].demand_kg}kg) exceeds drone "
-                f"capacity, or a round trip to it exceeds max_range_km even alone."
-            )
+            msg = _diagnose_unreachable_customer(stranded, locations, matrix, drone, depot_index, depart_minutes)
+            raise ValueError(msg)
 
     return routes
 
@@ -235,11 +281,13 @@ def urgency_nearest_neighbor_construction(
     unvisited = set(range(n)) - {depot_index}
     routes: List[List[int]] = []
 
+    effective_range = drone.max_range_km * (1.0 - drone.reserve_fraction)
+
     while unvisited:
         current = depot_index
         route = [depot_index]
         remaining_capacity = drone.capacity_kg
-        remaining_range = drone.max_range_km
+        remaining_range = effective_range
 
         while True:
             best_candidate = None
@@ -279,11 +327,8 @@ def urgency_nearest_neighbor_construction(
 
         if unvisited and len(route) == 2:
             stranded = next(iter(unvisited))
-            raise ValueError(
-                f"Location '{locations[stranded].name}' can never be delivered to: "
-                f"its demand ({locations[stranded].demand_kg}kg) exceeds drone "
-                f"capacity, or a round trip to it exceeds max_range_km even alone."
-            )
+            msg = _diagnose_unreachable_customer(stranded, locations, matrix, drone, depot_index, depart_minutes)
+            raise ValueError(msg)
 
     return routes
 
@@ -333,10 +378,8 @@ def clarke_wright_construction(
         if is_route_feasible(base_route, locations, matrix, drone, depart_minutes=depart_minutes):
             routes.append(base_route)
         else:
-            raise ValueError(
-                f"Location '{locations[c].name}' can never be delivered to: "
-                f"fails capacity, range, time windows, or unreachable constraints."
-            )
+            msg = _diagnose_unreachable_customer(c, locations, matrix, drone, depot_index, depart_minutes)
+            raise ValueError(msg)
 
     # Step 2: compute savings for all customer pairs.
     # savings(i, j) = d(depot, i) + d(depot, j) - d(i, j)

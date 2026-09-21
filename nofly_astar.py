@@ -65,21 +65,20 @@ def _build_grid(start: Point, end: Point, zones: List[Polygon],
     Returns (grid_points: 2D list[row][col] of (lat,lon), blocked: 2D list
     of bool, shape (rows, cols)).
     """
-    inflated_zones = [_inflate_polygon(z, buffer_km) for z in zones]
+    margin_m = buffer_km * 1000.0
+    cell_diag_m = math.sqrt(cell_size_km**2 + cell_size_km**2) * 1000.0 / 2.0
+    block_margin_m = margin_m + cell_diag_m
 
-    # Bounding box over start, end, and every (inflated) no-fly zone,
-    # so the grid has enough room to route around the obstacle.
-    lats = [start[0], end[0]]
-    lons = [start[1], end[1]]
-    for zone in inflated_zones:
-        for lat, lon in zone:
-            lats.append(lat)
-            lons.append(lon)
-    min_lat, min_lon, max_lat, max_lon = min(lats), min(lons), max(lats), max(lons)
+    # Bounding box over start, end, and every no-fly zone,
+    # padded so the grid has enough room to route around obstacles.
+    lats = [start[0], end[0]] + [p[0] for z in zones for p in z]
+    lons = [start[1], end[1]] + [p[1] for z in zones for p in z]
+    min_lat, max_lat = min(lats), max(lats)
+    min_lon, max_lon = min(lons), max(lons)
 
-    # Small extra margin so the path isn't forced to hug the bbox edge.
-    pad_lat = cell_size_km * 3 / 111.0
-    pad_lon = cell_size_km * 3 / (111.0 * max(math.cos(math.radians((min_lat + max_lat) / 2)), 0.1))
+    pad_km = (margin_m / 1000.0) + cell_size_km * 3
+    pad_lat = pad_km / 111.0
+    pad_lon = pad_km / (111.0 * max(math.cos(math.radians((min_lat + max_lat) / 2)), 0.1))
     min_lat -= pad_lat; max_lat += pad_lat
     min_lon -= pad_lon; max_lon += pad_lon
 
@@ -101,7 +100,7 @@ def _build_grid(start: Point, end: Point, zones: List[Polygon],
     grid_points = [[(min_lat + r * lat_step, min_lon + c * lon_step)
                     for c in range(cols)] for r in range(rows)]
 
-    blocked = [[any(point_in_polygon(grid_points[r][c], z) for z in inflated_zones)
+    blocked = [[any(point_near_polygon(grid_points[r][c], z, block_margin_m) for z in zones)
                 for c in range(cols)] for r in range(rows)]
 
     return grid_points, blocked, rows, cols
@@ -135,7 +134,9 @@ def astar_around_obstacles(start: Point, end: Point, zones: List[Polygon],
     with `start` and ends with `end` exactly (the grid path is spliced onto
     the real endpoints so we don't lose precision snapping to grid cells).
     """
-    grid_points, blocked, rows, cols = _build_grid(start, end, zones, cell_size_km, buffer_km)
+    margin_m = buffer_km * 1000.0
+    eff_cell_size_km = min(cell_size_km, 0.08) if buffer_km <= 0.1 else cell_size_km
+    grid_points, blocked, rows, cols = _build_grid(start, end, zones, eff_cell_size_km, buffer_km)
 
     start_rc = _nearest_free_cell(grid_points, blocked, rows, cols, start)
     end_rc = _nearest_free_cell(grid_points, blocked, rows, cols, end)
@@ -198,12 +199,10 @@ def astar_around_obstacles(start: Point, end: Point, zones: List[Polygon],
 
     waypoints = [start] + [grid_points[r][c] for (r, c) in path_cells[1:-1]] + [end]
 
-    margin_m = buffer_km * 1000.0
-
     # Path Smoothing (Bidirectional String Pulling)
     # The raw A* grid path contains staircase artifacts from discrete grid cells.
     # We evaluate both forward and backward line-of-sight string-pulling passes
-    # to eliminate doglegs and overshoot, choosing whichever minimizes flight distance.
+    # to eliminate doglegs while strictly enforcing the safety buffer margin.
     if len(waypoints) > 2:
         # Forward pass: greedily find furthest visible waypoint from current
         fwd = [waypoints[0]]
@@ -211,7 +210,7 @@ def astar_around_obstacles(start: Point, end: Point, zones: List[Polygon],
         while curr < len(waypoints) - 1:
             furthest_visible = curr + 1
             for i in range(curr + 2, len(waypoints)):
-                if not path_intersects_any_zone(waypoints[curr], waypoints[i], zones, margin_m=0.0):
+                if not path_intersects_any_zone(waypoints[curr], waypoints[i], zones, margin_m=margin_m):
                     furthest_visible = i
             fwd.append(waypoints[furthest_visible])
             curr = furthest_visible
@@ -222,7 +221,7 @@ def astar_around_obstacles(start: Point, end: Point, zones: List[Polygon],
         while curr > 0:
             earliest_visible = curr - 1
             for i in range(0, curr - 1):
-                if not path_intersects_any_zone(waypoints[i], waypoints[curr], zones, margin_m=0.0):
+                if not path_intersects_any_zone(waypoints[i], waypoints[curr], zones, margin_m=margin_m):
                     earliest_visible = i
                     break
             bwd.append(waypoints[earliest_visible])
@@ -240,28 +239,25 @@ def astar_around_obstacles(start: Point, end: Point, zones: List[Polygon],
                 f"{margin_m:.0f}m safety buffer of restricted zone."
             )
 
-    # Verification check: ensure the computed detour does not clip restricted airspace
+    # Verification check: ensure the computed detour strictly honors the safety buffer
     for i in range(len(waypoints) - 1):
         for zone in zones:
-            if segment_intersects_polygon(waypoints[i], waypoints[i + 1], zone):
+            if segment_intersects_polygon(waypoints[i], waypoints[i + 1], zone, margin_m=max(0.0, margin_m - 0.5)):
                 # If the drone start position is physically inside a pop-up zone, the first
-                # segment escapes the zone towards the nearest free cell. Only subsequent
-                # segments or clipping other zones is strictly forbidden.
+                # segment escapes the zone towards the nearest free cell.
                 if i == 0 and point_near_polygon(start, zone, margin_m) and not point_near_polygon(end, zone, margin_m) and len(waypoints) > 2:
                     continue
                 raise RuntimeError(
-                    "No-fly zone A*: the computed detour still clips a restricted "
-                    "zone. This usually means the zone is far larger than the local "
-                    "search grid (both endpoints snapped to the same escape cell). "
-                    "Increase the grid's implicit search radius or cell_size_km."
+                    f"No-fly zone A*: the computed detour breaches the {margin_m:.0f}m safety buffer. "
+                    "Rejecting path as infeasible."
                 )
-
 
     total_km = 0.0
     for i in range(len(waypoints) - 1):
         total_km += haversine_km(waypoints[i], waypoints[i + 1])
 
     return waypoints, total_km
+
 
 
 def route_avoiding_zones(p1: Point, p2: Point, zones: List[Polygon],

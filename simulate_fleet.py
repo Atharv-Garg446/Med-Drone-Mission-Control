@@ -776,6 +776,11 @@ class FleetSimulator:
                       f"{loc.demand_kg:.1f}kg {loc.urgency}, {loc.window_minutes}min window{deadline_str}")
             self.event_history.append({"tick": self.tick, "type": "emergency", "lat": loc.lat, "lon": loc.lon, "name": loc.name})
 
+            if loc.demand_kg > self.drone_config.capacity_kg:
+                self.unserviceable_ids.add(loc.id)
+                self._log(f"❌ Stop {loc.name} unserviceable: demand ({loc.demand_kg:.1f}kg) exceeds drone capacity ({self.drone_config.capacity_kg:.1f}kg)")
+                return
+
             # Rebuild distance matrix immediately to include the emergency location
             all_locs = list(self.locations) + list(self.emergency_locations)
             self.matrix, self.detours = build_flight_distance_matrix(
@@ -820,23 +825,83 @@ class FleetSimulator:
             if d.status in ("flying", "queued", "delivering"):
                 assigned.update(d.remaining_stops)
         
-        # Collect all unassigned deliveries
+        # Collect all unassigned deliveries not yet delivered or marked unserviceable
         remaining = []
         for loc_id in self.all_delivery_ids:
-            if loc_id not in self.delivered_ids and loc_id not in assigned:
+            if loc_id not in self.delivered_ids and loc_id not in assigned and loc_id not in self.unserviceable_ids:
                 loc = self._get_location(loc_id)
                 if loc:
                     remaining.append(loc)
 
         if not remaining:
             self._log(f"  🔄 Replan skipped — no unassigned deliveries")
-            # We still need to update detours for active drones in case of TFR
             all_locs = list(self.locations) + list(self.emergency_locations)
             self.matrix, self.detours = build_flight_distance_matrix(
                 all_locs, self.no_fly_zones, drone_config=self.drone_config
             )
             return
 
+        depot = self.locations[0]
+        depot_coord = (depot.lat, depot.lon)
+        eff_range = self.drone_config.max_range_km * (1.0 - self.drone_config.reserve_fraction)
+        buffer_km = self.drone_config.safety_margin_m / 1000.0
+        depart_min = self.tick / 60.0
+
+        feasible_remaining = []
+        for loc in remaining:
+            loc_coord = (loc.lat, loc.lon)
+            loc_name = loc.name.split(",")[0]
+
+            # 1. Genuinely over-capacity demand check
+            if loc.demand_kg > self.drone_config.capacity_kg:
+                self.unserviceable_ids.add(loc.id)
+                self._log(f"❌ Stop {loc_name} unserviceable: demand ({loc.demand_kg:.1f}kg) exceeds drone capacity ({self.drone_config.capacity_kg:.1f}kg)")
+                continue
+
+            # 2. Airspace reachability check under current no-fly zones / TFRs
+            pts_out, dist_out, _ = route_avoiding_zones(depot_coord, loc_coord, self.no_fly_zones, buffer_km=buffer_km)
+            pts_back, dist_back, _ = route_avoiding_zones(loc_coord, depot_coord, self.no_fly_zones, buffer_km=buffer_km)
+
+            if pts_out is None or pts_back is None or math.isinf(dist_out) or math.isinf(dist_back):
+                self.unserviceable_ids.add(loc.id)
+                self._log(f"❌ Stop {loc_name} unserviceable: unreachable under current airspace / NFZ constraints")
+                continue
+
+            # 3. Flight range budget check for depot sortie
+            round_trip_dist = dist_out + dist_back
+            if round_trip_dist > eff_range:
+                self.unserviceable_ids.add(loc.id)
+                self._log(f"❌ Stop {loc_name} unserviceable: round trip ({round_trip_dist:.1f}km) exceeds max flight range budget ({eff_range:.1f}km)")
+                continue
+
+            # 4. Delivery deadline check at departure time
+            flight_time_min = (dist_out / self.drone_config.cruise_speed_kmh) * 60.0
+            earliest_arrival = depart_min + flight_time_min
+            deadline = (loc.request_time_min or 0.0) + loc.window_minutes if loc.window_minutes is not None else float('inf')
+            if earliest_arrival > deadline + 1e-9:
+                self.unserviceable_ids.add(loc.id)
+                self.time_window_misses += 1
+                self._log(f"❌ Stop {loc_name} unserviceable: deadline expired or unreachable on time (earliest arrival T+{earliest_arrival:.0f}m > deadline T+{deadline:.0f}m)")
+                continue
+
+            # 5. Cold-chain exposure limit check
+            if loc.cold_chain_limit_minutes is not None and flight_time_min > loc.cold_chain_limit_minutes + 1e-9:
+                self.unserviceable_ids.add(loc.id)
+                self.cold_chain_violations += 1
+                self._log(f"❌ Stop {loc_name} unserviceable: minimum flight time ({flight_time_min:.1f}m) exceeds cold-chain exposure limit ({loc.cold_chain_limit_minutes:.1f}m)")
+                continue
+
+            feasible_remaining.append(loc)
+
+        if not feasible_remaining:
+            self._log(f"  🔄 Replan skipped — no feasible unassigned deliveries remaining")
+            all_locs = list(self.locations) + list(self.emergency_locations)
+            self.matrix, self.detours = build_flight_distance_matrix(
+                all_locs, self.no_fly_zones, drone_config=self.drone_config
+            )
+            return
+
+        remaining = feasible_remaining
         self._log(f"  🔄 REPLANNING ({reason}): {len(remaining)} unassigned stops...")
 
         result = replan_from_remaining(

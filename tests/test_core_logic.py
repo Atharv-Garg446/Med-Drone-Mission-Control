@@ -1254,3 +1254,161 @@ class TestScenarioValidation(unittest.TestCase):
             validate_scenario(bad_city)
 
 
+class TestNFZSafetyMarginEnforcement(unittest.TestCase):
+    """Verify that the configured 50m NFZ safety margin is strictly enforced."""
+
+    def test_jaipur_routes_strictly_respect_50m_safety_margin(self):
+        from config import JAIPUR_DISASTER
+        from distance_matrix import build_flight_distance_matrix
+        matrix, detours = build_flight_distance_matrix(
+            JAIPUR_DISASTER.all_locations, JAIPUR_DISASTER.no_fly_zones, drone_config=JAIPUR_DISASTER.drone
+        )
+        self.assertGreater(len(detours), 0)
+        for (u, v), waypoints in detours.items():
+            for i in range(len(waypoints) - 1):
+                p1, p2 = waypoints[i], waypoints[i + 1]
+                for zone in JAIPUR_DISASTER.no_fly_zones:
+                    self.assertFalse(
+                        segment_intersects_polygon(p1, p2, zone, margin_m=50.0),
+                        f"Detour leg ({u}, {v}) segment {i} violates 50m safety margin"
+                    )
+
+    def test_chennai_routes_strictly_respect_50m_safety_margin(self):
+        from config import CHENNAI_FLOOD
+        from distance_matrix import build_flight_distance_matrix
+        matrix, detours = build_flight_distance_matrix(
+            CHENNAI_FLOOD.all_locations, CHENNAI_FLOOD.no_fly_zones, drone_config=CHENNAI_FLOOD.drone
+        )
+        self.assertGreater(len(detours), 0)
+        for (u, v), waypoints in detours.items():
+            for i in range(len(waypoints) - 1):
+                p1, p2 = waypoints[i], waypoints[i + 1]
+                for zone in CHENNAI_FLOOD.no_fly_zones:
+                    self.assertFalse(
+                        segment_intersects_polygon(p1, p2, zone, margin_m=50.0),
+                        f"Detour leg ({u}, {v}) segment {i} violates 50m safety margin"
+                    )
+
+    def test_path_in_safety_buffer_is_rejected_as_infeasible(self):
+        zone = [(26.0, 75.0), (26.0, 75.02), (26.02, 75.02), (26.02, 75.0)]
+        p_start = (25.98, 75.01)
+        p_dest_inside_margin = (25.9998, 75.01)
+        waypoints, dist, _ = route_avoiding_zones(p_start, p_dest_inside_margin, [zone], buffer_km=0.05)
+        self.assertIsNone(waypoints)
+        self.assertEqual(dist, float('inf'))
+
+
+class TestInfeasibilityRootCauseDiagnosis(unittest.TestCase):
+    """Test that solver and diagnostic helpers distinguish precise root causes of infeasibility."""
+
+    def setUp(self):
+        self.drone = DroneConfig(capacity_kg=10.0, max_range_km=40.0, cruise_speed_kmh=45.0)
+        self.depot = Location(0, "SMS Hospital (Depot)", 26.9127, 75.8010, demand_kg=0.0)
+
+    def test_diagnose_over_capacity(self):
+        from vrp_scratch import _diagnose_unreachable_customer
+        loc = Location(1, "Overweight Hospital", 26.85, 75.81, demand_kg=15.0)
+        matrix = [[0.0, 5.0], [5.0, 0.0]]
+        msg = _diagnose_unreachable_customer(1, [self.depot, loc], matrix, self.drone)
+        self.assertIn("exceeds drone payload capacity", msg)
+        self.assertIn("15.0kg", msg)
+
+    def test_diagnose_unreachable_airspace(self):
+        from vrp_scratch import _diagnose_unreachable_customer
+        loc = Location(1, "Blocked Hospital", 26.85, 75.81, demand_kg=5.0)
+        matrix = [[0.0, float('inf')], [float('inf'), 0.0]]
+        msg = _diagnose_unreachable_customer(1, [self.depot, loc], matrix, self.drone)
+        self.assertIn("unreachable under current airspace", msg)
+
+    def test_diagnose_over_flight_range(self):
+        from vrp_scratch import _diagnose_unreachable_customer
+        loc = Location(1, "Remote Camp", 26.50, 75.81, demand_kg=5.0)
+        matrix = [[0.0, 25.0], [25.0, 0.0]]
+        msg = _diagnose_unreachable_customer(1, [self.depot, loc], matrix, self.drone)
+        self.assertIn("exceeds maximum flight range budget", msg)
+
+    def test_diagnose_expired_deadline(self):
+        from vrp_scratch import _diagnose_unreachable_customer
+        loc = Location(1, "Late Clinic", 26.85, 75.81, demand_kg=5.0, window_minutes=10, request_time_min=0.0)
+        matrix = [[0.0, 10.0], [10.0, 0.0]]
+        msg = _diagnose_unreachable_customer(1, [self.depot, loc], matrix, self.drone, depart_minutes=0.0)
+        self.assertIn("delivery deadline expired or cannot be met", msg)
+
+    def test_diagnose_cold_chain_violation(self):
+        from vrp_scratch import _diagnose_unreachable_customer
+        loc = Location(1, "Cold Clinic", 26.85, 75.81, demand_kg=5.0, cold_chain_limit_minutes=10)
+        matrix = [[0.0, 10.0], [10.0, 0.0]]
+        msg = _diagnose_unreachable_customer(1, [self.depot, loc], matrix, self.drone)
+        self.assertIn("exceeds cold-chain exposure limit", msg)
+
+
+class TestSeededSimulationsInfeasibilityHandling(unittest.TestCase):
+    """Regression test: verify that previously crashing seeded simulations complete cleanly."""
+
+    def test_crashing_seeds_complete_without_exception(self):
+        from config import CITY_CONFIGS
+        from simulate_fleet import FleetSimulator, generate_random_events
+        import random
+
+        failing_cases = [
+            ("chennai_flood", [1, 2, 7]),
+            ("jaipur_disaster", [1, 7]),
+            ("jaipur_hospital", [7]),
+        ]
+
+        for city_key, seeds in failing_cases:
+            city = CITY_CONFIGS[city_key]
+            for s in seeds:
+                rng = random.Random(s)
+                events = generate_random_events(city, 3, 3600, rng)
+                sim = FleetSimulator(city=city, events=events, speed_multiplier=1000.0, live_print=False, seed=s)
+                rep = sim.run(max_ticks=3600)
+                self.assertGreaterEqual(
+                    rep.deliveries_completed + rep.unserviceable_deliveries,
+                    rep.deliveries_planned,
+                    f"Scenario {city_key} seed {s} lost deliveries without accounting for them"
+                )
+
+
+class TestWaypointExportDwellSemantics(unittest.TestCase):
+    """Verify waypoint export encodes dwell/hover hold time and enforces navigation scope."""
+
+    def test_wpl_delivery_waypoints_have_dwell_hold_time(self):
+        depot = Location(0, "Depot", 26.91, 75.80, demand_kg=0.0)
+        stop = Location(1, "Stop A", 26.92, 75.81, demand_kg=2.0)
+        locations = [depot, stop]
+        matrix = [[0.0, 2.0], [2.0, 0.0]]
+        drone = DroneConfig(capacity_kg=10.0, max_range_km=100.0, dwell_min=3.0)
+        route = [0, 1, 0]
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "test_dwell.waypoints")
+            export_route_to_wpl(route, locations, path, matrix=matrix, drone=drone)
+            with open(path) as f:
+                lines = f.read().splitlines()
+
+            delivery_fields = lines[3].split("\t")
+            self.assertEqual(delivery_fields[3], "16")  # CMD_NAV_WAYPOINT
+            self.assertEqual(float(delivery_fields[4]), 180.0)  # Param 1 = 3.0 min * 60s
+
+    def test_wpl_detour_waypoints_have_zero_hold_time(self):
+        depot = Location(0, "Depot", 26.91, 75.80, demand_kg=0.0)
+        stop = Location(1, "Stop A", 26.92, 75.81, demand_kg=2.0)
+        locations = [depot, stop]
+        matrix = [[0.0, 2.0], [2.0, 0.0]]
+        drone = DroneConfig(capacity_kg=10.0, max_range_km=100.0, dwell_min=2.0)
+        detours = {(0, 1): [(26.91, 75.80), (26.915, 75.805), (26.92, 75.81)]}
+        route = [0, 1, 0]
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "test_detour_dwell.waypoints")
+            export_route_to_wpl(route, locations, path, matrix=matrix, drone=drone, detours=detours)
+            with open(path) as f:
+                lines = f.read().splitlines()
+
+            detour_fields = lines[3].split("\t")
+            self.assertEqual(detour_fields[3], "16")
+            self.assertEqual(float(detour_fields[4]), 0.0)
+
+
+

@@ -27,6 +27,15 @@ FILE FORMAT (tab-separated columns, one waypoint per line):
                waypoint, 0 = pause and wait (we always use 1)
 
 Reference: https://mavlink.io/en/file_formats/#mission_plain_text_file
+
+LIMITATION & SCOPE:
+This export produces standard MAVLink flight navigation waypoints (takeoff,
+transit detours, delivery site hover/dwell, and landing). For delivery stops,
+PARAM1 encodes the vehicle dwell/hover hold time in seconds (dwell_min * 60.0).
+It does NOT encode hardware-specific payload drop or servo release commands
+(such as MAV_CMD_DO_SET_SERVO or MAV_CMD_PAYLOAD_PREPARE_DEPLOY). Generating
+a .waypoints file produces flight controller navigation guidance, not proof
+of autonomous physical payload release.
 """
 
 import math
@@ -109,8 +118,9 @@ def export_route_to_wpl(
         # return, which is handled by NAV_LAND below)
         if i < len(route) - 2:
             loc = locations[v]
+            hold_sec = (drone.dwell_min * 60.0) if (drone and drone.dwell_min is not None) else 0.0
             lines.append(wpl_line(seq, 0, FRAME_GLOBAL_RELATIVE_ALT, CMD_NAV_WAYPOINT,
-                                   0, 0, 0, 0, loc.lat, loc.lon, cruise_altitude_m))
+                                   hold_sec, 0, 0, 0, loc.lat, loc.lon, cruise_altitude_m))
             seq += 1
 
     # final row: land back at the depot
