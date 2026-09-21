@@ -24,7 +24,7 @@ HOW THE GRID WORKS
 
 import heapq
 import math
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 
 from geo_utils import haversine_km, point_in_polygon, polygon_bounds, path_intersects_any_zone, segment_intersects_polygon, point_near_polygon
 
@@ -58,6 +58,14 @@ def _inflate_polygon(polygon: Polygon, buffer_km: float) -> Polygon:
     return inflated
 
 
+_GRID_CACHE: Dict[Tuple, Tuple[List[List[Point]], List[List[bool]], int, int]] = {}
+
+
+def clear_grid_cache():
+    """Clear the cached A* obstacle grids."""
+    _GRID_CACHE.clear()
+
+
 def _build_grid(start: Point, end: Point, zones: List[Polygon],
                  cell_size_km: float, buffer_km: float):
     """Build the grid of (lat, lon) cell centers plus a blocked[] lookup.
@@ -66,8 +74,6 @@ def _build_grid(start: Point, end: Point, zones: List[Polygon],
     of bool, shape (rows, cols)).
     """
     margin_m = buffer_km * 1000.0
-    cell_diag_m = math.sqrt(cell_size_km**2 + cell_size_km**2) * 1000.0 / 2.0
-    block_margin_m = margin_m + cell_diag_m
 
     # Bounding box over start, end, and every no-fly zone,
     # padded so the grid has enough room to route around obstacles.
@@ -76,14 +82,16 @@ def _build_grid(start: Point, end: Point, zones: List[Polygon],
     min_lat, max_lat = min(lats), max(lats)
     min_lon, max_lon = min(lons), max(lons)
 
-    pad_km = (margin_m / 1000.0) + cell_size_km * 3
+    pad_km = (margin_m / 1000.0) + max(cell_size_km * 4, 1.0)
+    mid_lat = (min_lat + max_lat) / 2.0
+    cos_mid = max(math.cos(math.radians(mid_lat)), 0.1)
     pad_lat = pad_km / 111.0
-    pad_lon = pad_km / (111.0 * max(math.cos(math.radians((min_lat + max_lat) / 2)), 0.1))
+    pad_lon = pad_km / (111.0 * cos_mid)
     min_lat -= pad_lat; max_lat += pad_lat
     min_lon -= pad_lon; max_lon += pad_lon
 
     lat_step = cell_size_km / 111.0
-    lon_step = cell_size_km / (111.0 * max(math.cos(math.radians((min_lat + max_lat) / 2)), 0.1))
+    lon_step = cell_size_km / (111.0 * cos_mid)
 
     rows = max(3, int((max_lat - min_lat) / lat_step) + 1)
     cols = max(3, int((max_lon - min_lon) / lon_step) + 1)
@@ -97,31 +105,95 @@ def _build_grid(start: Point, end: Point, zones: List[Polygon],
         lon_step *= cols / MAX_CELLS
         cols = MAX_CELLS
 
+    # CRITICAL: Account for the actual resulting grid step after MAX_CELLS coarsening!
+    actual_cell_lat_km = lat_step * 111.0
+    actual_cell_lon_km = lon_step * 111.0 * cos_mid
+    actual_cell_diag_m = math.hypot(actual_cell_lat_km, actual_cell_lon_km) * 1000.0 / 2.0
+    block_margin_m = margin_m + actual_cell_diag_m
+
+    cache_key = (
+        round(min_lat, 6), round(max_lat, 6),
+        round(min_lon, 6), round(max_lon, 6),
+        rows, cols, round(block_margin_m, 2),
+        tuple(tuple(p) for z in zones for p in z)
+    )
+    if cache_key in _GRID_CACHE:
+        return _GRID_CACHE[cache_key]
+
+    pad_box_km = block_margin_m / 1000.0
+    pad_box_lat = pad_box_km / 111.0
+    pad_box_lon = pad_box_km / (111.0 * cos_mid)
+    zone_boxes = []
+    for z in zones:
+        z_lats = [p[0] for p in z]
+        z_lons = [p[1] for p in z]
+        zone_boxes.append((
+            min(z_lats) - pad_box_lat, max(z_lats) + pad_box_lat,
+            min(z_lons) - pad_box_lon, max(z_lons) + pad_box_lon,
+            z
+        ))
+
     grid_points = [[(min_lat + r * lat_step, min_lon + c * lon_step)
                     for c in range(cols)] for r in range(rows)]
 
-    blocked = [[any(point_near_polygon(grid_points[r][c], z, block_margin_m) for z in zones)
-                for c in range(cols)] for r in range(rows)]
+    def _is_cell_blocked(pt: Point) -> bool:
+        lat, lon = pt
+        for min_lt, max_lt, min_ln, max_ln, z in zone_boxes:
+            if min_lt <= lat <= max_lt and min_ln <= lon <= max_ln:
+                if point_near_polygon(pt, z, block_margin_m):
+                    return True
+        return False
 
-    return grid_points, blocked, rows, cols
+    blocked = [[_is_cell_blocked(grid_points[r][c]) for c in range(cols)] for r in range(rows)]
+    res = (grid_points, blocked, rows, cols)
+    _GRID_CACHE[cache_key] = res
+    return res
 
 
 def _nearest_free_cell(grid_points, blocked, rows, cols, target: Point) -> Tuple[int, int]:
     """Snap an arbitrary lat/lon to the nearest grid cell that ISN'T blocked."""
+    min_lat, min_lon = grid_points[0][0]
+    lat_step = (grid_points[1][0][0] - min_lat) if rows > 1 else 0.001
+    lon_step = (grid_points[0][1][1] - min_lon) if cols > 1 else 0.001
+
+    tr = max(0, min(rows - 1, int(round((target[0] - min_lat) / lat_step))))
+    tc = max(0, min(cols - 1, int(round((target[1] - min_lon) / lon_step))))
+
+    if not blocked[tr][tc]:
+        return (tr, tc)
+
+    # Search outward in rings around (tr, tc)
     best = None
     best_dist = float("inf")
-    for r in range(rows):
-        for c in range(cols):
-            if blocked[r][c]:
-                continue
-            d = haversine_km(grid_points[r][c], target)
-            if d < best_dist:
-                best_dist = d
-                best = (r, c)
-    if best is None:
-        raise RuntimeError("No-fly zone A*: entire local grid is blocked -- "
-                            "increase grid size or shrink the buffer_km margin.")
-    return best
+    max_radius = max(rows, cols)
+
+    for radius in range(1, max_radius):
+        found = False
+        for dr in (-radius, radius):
+            r = tr + dr
+            if 0 <= r < rows:
+                for c in range(max(0, tc - radius), min(cols, tc + radius + 1)):
+                    if not blocked[r][c]:
+                        d = haversine_km(grid_points[r][c], target)
+                        if d < best_dist:
+                            best_dist = d
+                            best = (r, c)
+                            found = True
+        for dc in (-radius, radius):
+            c = tc + dc
+            if 0 <= c < cols:
+                for r in range(max(0, tr - radius + 1), min(rows, tr + radius)):
+                    if not blocked[r][c]:
+                        d = haversine_km(grid_points[r][c], target)
+                        if d < best_dist:
+                            best_dist = d
+                            best = (r, c)
+                            found = True
+        if found:
+            return best
+
+    raise RuntimeError("No-fly zone A*: entire local grid is blocked -- "
+                        "increase grid size or shrink the buffer_km margin.")
 
 
 def astar_around_obstacles(start: Point, end: Point, zones: List[Polygon],
@@ -141,22 +213,30 @@ def astar_around_obstacles(start: Point, end: Point, zones: List[Polygon],
     start_rc = _nearest_free_cell(grid_points, blocked, rows, cols, start)
     end_rc = _nearest_free_cell(grid_points, blocked, rows, cols, end)
 
-    # --- Standard A* search over the grid -----------------------------
-    # open_set: min-heap of (f_score, tie_breaker, (r, c))
-    # g_score:  best known real cost from start to this cell
-    # came_from: for path reconstruction
+    min_lat, min_lon = grid_points[0][0]
+    lat_step = (grid_points[1][0][0] - min_lat) if rows > 1 else 0.001
+    lon_step = (grid_points[0][1][1] - min_lon) if cols > 1 else 0.001
+    mid_lat = (min_lat + grid_points[-1][0][0]) * 0.5
+    cos_mid = max(math.cos(math.radians(mid_lat)), 0.1)
+
+    cell_lat_km = lat_step * 111.0
+    cell_lon_km = lon_step * 111.0 * cos_mid
+    cell_diag_km = math.hypot(cell_lat_km, cell_lon_km)
+
+    neighbor_offsets = [
+        (-1, -1, cell_diag_km), (-1, 0, cell_lat_km), (-1, 1, cell_diag_km),
+        ( 0, -1, cell_lon_km),                        ( 0, 1, cell_lon_km),
+        ( 1, -1, cell_diag_km), ( 1, 0, cell_lat_km), ( 1, 1, cell_diag_km),
+    ]
+
     def heuristic(rc):
-        return haversine_km(grid_points[rc[0]][rc[1]], grid_points[end_rc[0]][end_rc[1]])
+        return math.hypot((rc[0] - end_rc[0]) * cell_lat_km, (rc[1] - end_rc[1]) * cell_lon_km)
 
     open_set = [(heuristic(start_rc), 0, start_rc)]
     g_score = {start_rc: 0.0}
     came_from = {}
     visited = set()
     tie_breaker = 0
-
-    neighbor_offsets = [(-1, -1), (-1, 0), (-1, 1),
-                         (0, -1),           (0, 1),
-                         (1, -1),  (1, 0),  (1, 1)]
 
     while open_set:
         _, _, current = heapq.heappop(open_set)
@@ -168,7 +248,7 @@ def astar_around_obstacles(start: Point, end: Point, zones: List[Polygon],
             break
 
         r, c = current
-        for dr, dc in neighbor_offsets:
+        for dr, dc, step_cost in neighbor_offsets:
             nr, nc = r + dr, c + dc
             if not (0 <= nr < rows and 0 <= nc < cols):
                 continue
@@ -178,7 +258,6 @@ def astar_around_obstacles(start: Point, end: Point, zones: List[Polygon],
                 # Prevent diagonal corner-cutting across restricted zone boundaries
                 if blocked[r + dr][c] or blocked[r][c + dc]:
                     continue
-            step_cost = haversine_km(grid_points[r][c], grid_points[nr][nc])
             tentative_g = g_score[current] + step_cost
             neighbor = (nr, nc)
             if tentative_g < g_score.get(neighbor, float("inf")):

@@ -49,11 +49,11 @@ When a straight-line path crosses a no-fly zone, **A\* pathfinding** finds the s
 The fleet simulator runs missions forward in time and randomly injects disruptions — pop-up flight restrictions, new emergency patients, drone failures. When something changes mid-flight:
 
 - Active airborne drones replan from their **live GPS positions and remaining cargo/range budgets**
-- Full CVRP re-solves complete in **~200 ms** for small instances (8 stops) up to **~0.6–1.3 s** for larger instances (15 stops)
+- Measured CVRP re-solves (including obstacle-avoiding A* flight matrix rebuilding) execute in **~0.21 s** for 8-stop scenarios (Jaipur Disaster) up to **~0.64 s** for 15-stop scenarios on an Apple Silicon Mac
 - If a drone can't make it back to depot, it enters emergency hold
 - New emergency cargo physically originates at the depot — idle drones get dispatched immediately, or deliveries queue until a drone returns
 
-The full re-solve approach works because at representative cluster sizes (8–15 stops), sub-second to low-second solver turnaround is fast enough for dispatch without requiring complex partial-graph repair heuristics.
+The full re-solve approach works because at representative cluster sizes (8–15 stops), sub-second solver turnaround (~0.2–0.7 s) is fast enough for dispatch without requiring complex partial-graph repair heuristics.
 
 ---
 
@@ -70,7 +70,7 @@ python3 main.py --no-osmnx
 python3 run_simulation.py --events 5
 # Then open: http://localhost:8080/output/interactive_sim.html
 
-# All 89 tests
+# All 94 tests
 python3 -m unittest discover -s tests -p "test_*.py" -v
 ```
 
@@ -170,7 +170,7 @@ This is an operational screening layer, not a replacement for onboard hardware s
 ## Testing
 
 ```bash
-python3 -m unittest discover -s tests -p "test_*.py" -v   # 89 tests, zero pip installs
+python3 -m unittest discover -s tests -p "test_*.py" -v   # 94 tests, zero pip installs
 ```
 
 Coverage includes: Haversine geometry, A* pathfinding (including edge cases like pop-up TFR escape and dead-edge detection), all 3 CVRP heuristics with constraint checking, cold chain tracking, time window enforcement, YOLO decision logic, waypoint export validation, fleet simulation with disruptions, and scenario loading/validation.

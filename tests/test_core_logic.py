@@ -1411,4 +1411,105 @@ class TestWaypointExportDwellSemantics(unittest.TestCase):
             self.assertEqual(float(detour_fields[4]), 0.0)
 
 
+class TestAStarOptimizationAndSafety(unittest.TestCase):
+    """Focused tests for A* optimization, safety margin enforcement, and grid capping."""
+
+    def test_representative_scenarios_clearance(self):
+        """Detours in Jaipur and Chennai must maintain >= 50m clearance."""
+        from config import JAIPUR_DISASTER, CHENNAI_FLOOD
+        from distance_matrix import build_flight_distance_matrix
+
+        for scenario in (JAIPUR_DISASTER, CHENNAI_FLOOD):
+            matrix, detours = build_flight_distance_matrix(
+                scenario.all_locations, scenario.no_fly_zones, drone_config=scenario.drone
+            )
+            self.assertGreater(len(detours), 0)
+            for (u, v), waypoints in detours.items():
+                for i in range(len(waypoints) - 1):
+                    p1, p2 = waypoints[i], waypoints[i + 1]
+                    for zone in scenario.no_fly_zones:
+                        self.assertFalse(
+                            segment_intersects_polygon(p1, p2, zone, margin_m=50.0),
+                            f"{scenario.name} leg ({u}, {v}) segment {i} violates 50m safety margin"
+                        )
+
+    def test_randomized_obstacle_scenarios(self):
+        """Randomized obstacles and routes must strictly respect the configured safety margin."""
+        import random
+        rng = random.Random(12345)
+        for i in range(5):
+            center_lat = 26.9 + rng.uniform(-0.05, 0.05)
+            center_lon = 75.8 + rng.uniform(-0.05, 0.05)
+            dlat = rng.uniform(0.008, 0.015)
+            dlon = rng.uniform(0.008, 0.015)
+            zone = [
+                (center_lat - dlat, center_lon - dlon),
+                (center_lat - dlat, center_lon + dlon),
+                (center_lat + dlat, center_lon + dlon),
+                (center_lat + dlat, center_lon - dlon),
+            ]
+            start = (center_lat - dlat * 1.8, center_lon)
+            end = (center_lat + dlat * 1.8, center_lon)
+            waypoints, dist, rerouted = route_avoiding_zones(start, end, [zone], buffer_km=0.05)
+            self.assertTrue(rerouted)
+            self.assertIsNotNone(waypoints)
+            self.assertGreater(dist, haversine_km(start, end))
+            for k in range(len(waypoints) - 1):
+                self.assertFalse(
+                    segment_intersects_polygon(waypoints[k], waypoints[k + 1], zone, margin_m=50.0),
+                    f"Random obstacle {i} segment {k} breached 50m margin"
+                )
+
+    def test_max_cells_capped_grid_safety_clearance(self):
+        """When the grid is capped at MAX_CELLS = 120 and coarsened, safety margin is still enforced."""
+        start = (26.70, 75.80)
+        end = (27.05, 75.80)
+        zone = [
+            (26.87, 75.79), (26.87, 75.81),
+            (26.89, 75.81), (26.89, 75.79)
+        ]
+        waypoints, dist, rerouted = route_avoiding_zones(start, end, [zone], cell_size_km=0.05, buffer_km=0.05)
+        self.assertTrue(rerouted)
+        self.assertIsNotNone(waypoints)
+        for k in range(len(waypoints) - 1):
+            self.assertFalse(
+                segment_intersects_polygon(waypoints[k], waypoints[k + 1], zone, margin_m=50.0),
+                f"Capped grid detour segment {k} breached 50m margin"
+            )
+
+    def test_valid_detour_around_obstacle(self):
+        """A valid obstacle on the direct line produces a detour avoiding the zone."""
+        start = (26.90, 75.80)
+        end = (26.90, 75.85)
+        zone = [
+            (26.895, 75.82), (26.895, 75.83),
+            (26.905, 75.83), (26.905, 75.82)
+        ]
+        waypoints, dist, rerouted = route_avoiding_zones(start, end, [zone], buffer_km=0.05)
+        self.assertTrue(rerouted)
+        self.assertIsNotNone(waypoints)
+        self.assertGreater(len(waypoints), 2)
+        self.assertGreater(dist, haversine_km(start, end))
+        self.assertAlmostEqual(waypoints[0][0], start[0], places=5)
+        self.assertAlmostEqual(waypoints[-1][1], end[1], places=5)
+
+    def test_infeasible_and_blocked_cases(self):
+        """Infeasible endpoints or fully enclosed targets correctly fail or return inf."""
+        zone = [
+            (26.90, 75.80), (26.90, 75.82),
+            (26.92, 75.82), (26.92, 75.80)
+        ]
+        inside_target = (26.91, 75.81)
+        start = (26.85, 75.81)
+        wps, dist, _ = route_avoiding_zones(start, inside_target, [zone], buffer_km=0.05)
+        self.assertIsNone(wps)
+        self.assertEqual(dist, float("inf"))
+
+        near_target = (26.8998, 75.81)
+        wps, dist, _ = route_avoiding_zones(start, near_target, [zone], buffer_km=0.05)
+        self.assertIsNone(wps)
+        self.assertEqual(dist, float("inf"))
+
+
+
 

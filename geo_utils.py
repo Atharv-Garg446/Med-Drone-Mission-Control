@@ -143,12 +143,28 @@ def point_to_segment_distance_km(p: Point, a: Point, b: Point) -> float:
 
 def point_near_polygon(point: Point, polygon: Polygon, margin_m: float) -> bool:
     """True if point is inside polygon or within margin_m of any edge."""
+    margin_km = margin_m / 1000.0 if margin_m > 0 else 0.0
+    pad_lat = margin_km / 111.0
+    p_lat, p_lon = point
+
+    min_lat = min(v[0] for v in polygon)
+    max_lat = max(v[0] for v in polygon)
+    if p_lat < min_lat - pad_lat or p_lat > max_lat + pad_lat:
+        return False
+
+    max_lat_mag = max(abs(min_lat), abs(max_lat))
+    cos_lat = max(math.cos(math.radians(max_lat_mag)), 0.1)
+    pad_lon = margin_km / (111.0 * cos_lat)
+    min_lon = min(v[1] for v in polygon)
+    max_lon = max(v[1] for v in polygon)
+    if p_lon < min_lon - pad_lon or p_lon > max_lon + pad_lon:
+        return False
+
     if point_in_polygon(point, polygon):
         return True
     if margin_m <= 0:
         return False
         
-    margin_km = margin_m / 1000.0
     n = len(polygon)
     for i in range(n):
         if point_to_segment_distance_km(point, polygon[i], polygon[(i+1)%n]) <= margin_km:
@@ -157,6 +173,27 @@ def point_near_polygon(point: Point, polygon: Polygon, margin_m: float) -> bool:
 
 def segment_intersects_polygon(p1: Point, p2: Point, polygon: Polygon, margin_m: float = 0.0) -> bool:
     """Does the straight segment p1->p2 pass through or come within margin_m of `polygon`?"""
+    margin_km = margin_m / 1000.0 if margin_m > 0 else 0.0
+    pad_lat = margin_km / 111.0
+    min_poly_lat = min(v[0] for v in polygon)
+    max_poly_lat = max(v[0] for v in polygon)
+
+    min_seg_lat = min(p1[0], p2[0])
+    max_seg_lat = max(p1[0], p2[0])
+    if max_seg_lat < min_poly_lat - pad_lat or min_seg_lat > max_poly_lat + pad_lat:
+        return False
+
+    max_lat_mag = max(abs(min_poly_lat), abs(max_poly_lat))
+    cos_lat = max(math.cos(math.radians(max_lat_mag)), 0.1)
+    pad_lon = margin_km / (111.0 * cos_lat)
+    min_poly_lon = min(v[1] for v in polygon)
+    max_poly_lon = max(v[1] for v in polygon)
+
+    min_seg_lon = min(p1[1], p2[1])
+    max_seg_lon = max(p1[1], p2[1])
+    if max_seg_lon < min_poly_lon - pad_lon or min_seg_lon > max_poly_lon + pad_lon:
+        return False
+
     if point_near_polygon(p1, polygon, margin_m) or point_near_polygon(p2, polygon, margin_m):
         return True
 
@@ -169,7 +206,7 @@ def segment_intersects_polygon(p1: Point, p2: Point, polygon: Polygon, margin_m:
             
         if margin_m > 0:
             # Also check if any polygon vertex is dangerously close to the flight path
-            if point_to_segment_distance_km(edge_a, p1, p2) <= (margin_m / 1000.0):
+            if point_to_segment_distance_km(edge_a, p1, p2) <= margin_km:
                 return True
                 
     return False

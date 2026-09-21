@@ -7,9 +7,9 @@ the REMAINING undelivered stops and re-solve the CVRP from scratch.
 
 This is the bridge between "static pre-flight planner" and "reactive
 real-time system."  The key insight is that our from-scratch solver is
-fast enough (~200 ms for small 8-stop instances, ~0.6–1.3 s for larger
-15-stop instances) that we CAN re-solve the entire remaining problem on
-every disruption, rather than needing incremental patching.
+fast enough (~0.21 s for 8-stop instances, ~0.64 s for 15-stop instances)
+that we CAN re-solve the entire remaining problem on every disruption,
+rather than needing incremental patching.
 
 What triggers a replan:
   - A pop-up TFR (Temporary Flight Restriction) appears mid-mission
