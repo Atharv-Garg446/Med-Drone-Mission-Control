@@ -7,7 +7,7 @@ the REMAINING undelivered stops and re-solve the CVRP from scratch.
 
 This is the bridge between "static pre-flight planner" and "reactive
 real-time system."  The key insight is that our from-scratch solver is
-fast enough (~0.21 s for 8-stop instances, ~0.64 s for 15-stop instances)
+fast enough (~0.20–0.26 s for 8-stop instances, ~0.61–0.79 s for 15-stop instances)
 that we CAN re-solve the entire remaining problem on every disruption,
 rather than needing incremental patching.
 

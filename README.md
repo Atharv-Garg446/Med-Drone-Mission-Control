@@ -49,11 +49,11 @@ When a straight-line path crosses a no-fly zone, **A\* pathfinding** finds the s
 The fleet simulator runs missions forward in time and randomly injects disruptions — pop-up flight restrictions, new emergency patients, drone failures. When something changes mid-flight:
 
 - Active airborne drones replan from their **live GPS positions and remaining cargo/range budgets**
-- Measured CVRP re-solves (including obstacle-avoiding A* flight matrix rebuilding) execute in **~0.21 s** for 8-stop scenarios (Jaipur Disaster) up to **~0.64 s** for 15-stop scenarios on an Apple Silicon Mac
+- Measured CVRP re-solves (including obstacle-avoiding A* flight matrix rebuilding) execute in **~0.20–0.26 s** for 8-stop scenarios (Jaipur Disaster: ~0.20 s warm cache, ~0.26 s cold cache) up to **~0.61–0.79 s** for 15-stop scenarios on an Apple Silicon Mac
 - If a drone can't make it back to depot, it enters emergency hold
 - New emergency cargo physically originates at the depot — idle drones get dispatched immediately, or deliveries queue until a drone returns
 
-The full re-solve approach works because at representative cluster sizes (8–15 stops), sub-second solver turnaround (~0.2–0.7 s) is fast enough for dispatch without requiring complex partial-graph repair heuristics.
+The full re-solve approach works because at representative cluster sizes (8–15 stops), sub-second solver turnaround (~0.2–0.8 s) is fast enough for dispatch without requiring complex partial-graph repair heuristics.
 
 ---
 
