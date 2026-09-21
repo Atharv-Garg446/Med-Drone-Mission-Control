@@ -42,12 +42,13 @@ from typing import List, Optional, Tuple, Dict
 from config import Location, DroneConfig
 from nofly_astar import route_avoiding_zones
 
-# Real-world urban road networks are rarely a straight line between two
-# points. This factor approximates "how much longer the road path typically
-# is than the straight-line path", for the haversine-only fallback used
-# when OSMnx / internet access isn't available. 1.3x is a commonly-cited
-# rule of thumb for dense city street grids -- see README for the caveat
-# that this is an approximation, not a measurement.
+# Informational reference constant: real-world urban road networks typically
+# require ~1.2-1.4x the straight-line Euclidean distance due to street grid
+# tortuosity and intersections (1.3x is a widely cited rule of thumb).
+# Note: In this codebase, if OSMnx is unavailable or fails to fetch over the
+# network, build_osmnx_reference_matrix() cleanly returns None rather than
+# fabricating synthetic road distances; the routing engine optimizes the
+# actual flight-distance matrix.
 FALLBACK_ROAD_DETOUR_FACTOR = 1.3
 
 

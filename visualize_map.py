@@ -81,7 +81,8 @@ def build_route_animation_features(
     folium.plugins.TimestampedGeoJson expects."""
     features = []
     cumulative_km = 0.0
-    remaining_capacity = drone.capacity_kg
+    remaining_capacity = sum(locations[node].demand_kg for node in route[1:-1])
+    usable_range = drone.max_range_km * (1.0 - drone.reserve_fraction)
     seconds_per_km = 3600.0 / drone.cruise_speed_kmh
 
     for step in range(len(route) - 1):
@@ -92,7 +93,7 @@ def build_route_animation_features(
         for lat, lon, leg_km in _interpolate_along_path(path, step_km):
             last_leg_km = leg_km
             total_km_here = cumulative_km + leg_km
-            range_pct = max(0.0, 100.0 * (1 - total_km_here / drone.max_range_km))
+            range_pct = max(0.0, 100.0 * (1.0 - total_km_here / usable_range)) if usable_range > 0 else 0.0
             timestamp = start_time + datetime.timedelta(seconds=total_km_here * seconds_per_km)
 
             features.append({
@@ -109,7 +110,7 @@ def build_route_animation_features(
                     },
                     "popup": (f"Route {route_index + 1}<br>"
                               f"Range: {range_pct:.0f}%<br>"
-                              f"Cargo remaining: {remaining_capacity:.1f} kg<br>"
+                              f"Cargo remaining: {max(0.0, remaining_capacity):.1f} kg<br>"
                               f"Distance flown: {total_km_here:.2f} km"),
                 },
             })

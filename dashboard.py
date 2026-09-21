@@ -264,7 +264,8 @@ if solve_ok:
         names = " → ".join(locations[n].name.split(",")[0] for n in route)
         dist = sum(matrix[route[k]][route[k + 1]] for k in range(len(route) - 1))
         demand = sum(locations[n].demand_kg for n in route[1:-1])
-        range_pct = max(0, 100 * (1 - dist / drone.max_range_km))
+        usable_range = drone.max_range_km * (1.0 - drone.reserve_fraction)
+        range_pct = max(0.0, 100.0 * (1.0 - dist / usable_range)) if usable_range > 0 else 0.0
         st.markdown(
             f"**Route {i+1}**: {names}  \n"
             f"📏 {dist:.1f} km &nbsp; 📦 {demand:.1f} kg &nbsp; "

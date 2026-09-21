@@ -70,7 +70,7 @@ python3 main.py --no-osmnx
 python3 run_simulation.py --events 5
 # Then open: http://localhost:8080/output/interactive_sim.html
 
-# All 78 tests
+# All 89 tests
 python3 -m unittest discover -s tests -p "test_*.py" -v
 ```
 
@@ -170,7 +170,7 @@ This is an operational screening layer, not a replacement for onboard hardware s
 ## Testing
 
 ```bash
-python3 -m unittest discover -s tests -p "test_*.py" -v   # 78 tests, zero pip installs
+python3 -m unittest discover -s tests -p "test_*.py" -v   # 89 tests, zero pip installs
 ```
 
 Coverage includes: Haversine geometry, A* pathfinding (including edge cases like pop-up TFR escape and dead-edge detection), all 3 CVRP heuristics with constraint checking, cold chain tracking, time window enforcement, YOLO decision logic, waypoint export validation, fleet simulation with disruptions, and scenario loading/validation.
