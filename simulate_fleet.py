@@ -350,7 +350,7 @@ class FleetSimulator:
                 if loc.cold_chain_limit_minutes is not None and elapsed_sortie_min > loc.cold_chain_limit_minutes + 1e-9:
                     return False, None, 0.0
                 if check_deadlines and loc.window_minutes is not None:
-                    deadline_min = (getattr(loc, 'request_time_min', 0.0) or 0.0) + loc.window_minutes
+                    deadline_min = (loc.request_time_min or 0.0) + loc.window_minutes
                     if current_mission_min > deadline_min + 1e-9:
                         return False, None, 0.0
 
@@ -410,7 +410,7 @@ class FleetSimulator:
                 drone.leg_progress_km = 0.0
                 dropped_loc = self._get_location(dropped_stop)
                 loc_name = dropped_loc.name.split(",")[0] if dropped_loc else f"#{dropped_stop}"
-                deadline_min = ((getattr(dropped_loc, 'request_time_min', 0.0) or 0.0) + dropped_loc.window_minutes) if (dropped_loc and dropped_loc.window_minutes) else float('inf')
+                deadline_min = ((dropped_loc.request_time_min or 0.0) + dropped_loc.window_minutes) if (dropped_loc and dropped_loc.window_minutes) else float('inf')
                 if (self.tick / 60.0) >= deadline_min:
                     self.unserviceable_ids.add(dropped_stop)
                     self.time_window_misses += 1
@@ -426,7 +426,7 @@ class FleetSimulator:
         if pts_rtl is not None and not math.isinf(dist_rtl) and (drone.sortie_distance_km + dist_rtl <= max_allowed_dist + 1e-9):
             for st in rem_stops:
                 st_loc = self._get_location(st)
-                dl = ((getattr(st_loc, 'request_time_min', 0.0) or 0.0) + st_loc.window_minutes) if (st_loc and st_loc.window_minutes) else float('inf')
+                dl = ((st_loc.request_time_min or 0.0) + st_loc.window_minutes) if (st_loc and st_loc.window_minutes) else float('inf')
                 if (self.tick / 60.0) >= dl:
                     self.unserviceable_ids.add(st)
                     self.time_window_misses += 1
@@ -464,7 +464,7 @@ class FleetSimulator:
                     if u_rank < rank:
                         rank = u_rank
                     if loc.window_minutes is not None:
-                        dl = (getattr(loc, 'request_time_min', 0.0) or 0.0) + loc.window_minutes
+                        dl = (loc.request_time_min or 0.0) + loc.window_minutes
                         if dl < earliest_dl:
                             earliest_dl = dl
             return (rank, earliest_dl)
@@ -499,7 +499,7 @@ class FleetSimulator:
                         feasible_subset = []
                         for st in stops:
                             st_loc = self._get_location(st)
-                            dl = ((getattr(st_loc, 'request_time_min', 0.0) or 0.0) + st_loc.window_minutes) if (st_loc and st_loc.window_minutes is not None) else float('inf')
+                            dl = ((st_loc.request_time_min or 0.0) + st_loc.window_minutes) if (st_loc and st_loc.window_minutes is not None) else float('inf')
                             if depart_min >= dl:
                                 self.unserviceable_ids.add(st)
                                 self.time_window_misses += 1
@@ -707,7 +707,7 @@ class FleetSimulator:
             # Check time window against request creation time (queue delay counts toward deadline)
             tw_status = ""
             if arrived_loc and arrived_loc.window_minutes is not None:
-                req_time = getattr(arrived_loc, 'request_time_min', 0.0) or 0.0
+                req_time = (arrived_loc.request_time_min or 0.0) if arrived_loc else 0.0
                 deadline_min = req_time + arrived_loc.window_minutes
                 elapsed_mission_min = self.tick / 60.0
                 if elapsed_mission_min > deadline_min + 1e-9:
@@ -757,7 +757,7 @@ class FleetSimulator:
 
         elif event.event_type == "emergency":
             loc = event.data["location"]
-            req_time = getattr(loc, 'request_time_min', 0.0)
+            req_time = loc.request_time_min or 0.0
             if req_time <= 0:
                 req_time = self.tick / 60.0
             # Assign a unique ID and store creation request time

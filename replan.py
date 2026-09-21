@@ -92,7 +92,7 @@ def replan_from_remaining(
             window_minutes=loc.window_minutes,
             cold_chain_limit_minutes=loc.cold_chain_limit_minutes,
             landing_zone_image=loc.landing_zone_image,
-            request_time_min=getattr(loc, 'request_time_min', 0.0),
+            request_time_min=loc.request_time_min or 0.0,
         ))
 
     t0 = time.perf_counter()
@@ -182,7 +182,7 @@ def try_insert_emergency_into_active_drones(
                 tot_km = leg_km + ret_km
                 if tot_km <= max_allowed_dist + 1e-9 and emergency_loc.demand_kg <= drone_config.capacity_kg + 1e-9:
                     leg_time_min = (leg_km / drone_config.cruise_speed_kmh) * 60.0
-                    deadline_min = (getattr(emergency_loc, 'request_time_min', current_tick / 60.0) or (current_tick / 60.0)) + (emergency_loc.window_minutes or float("inf"))
+                    deadline_min = (emergency_loc.request_time_min or (current_tick / 60.0)) + (emergency_loc.window_minutes or float("inf"))
                     if (current_tick / 60.0) + leg_time_min <= deadline_min + 1e-9:
                         if tot_km < best_cost_increase:
                             best_cost_increase = tot_km
@@ -231,7 +231,7 @@ def try_insert_emergency_into_active_drones(
                     if stop_loc.cold_chain_limit_minutes is not None and elapsed_sortie_min > stop_loc.cold_chain_limit_minutes + 1e-9:
                         feasible = False
                         break
-                    dl = (getattr(stop_loc, 'request_time_min', 0.0) or 0.0) + (stop_loc.window_minutes or float("inf"))
+                    dl = (stop_loc.request_time_min or 0.0) + (stop_loc.window_minutes or float("inf"))
                     if stop_loc.window_minutes is not None and current_mission_min > dl + 1e-9:
                         feasible = False
                         break
@@ -289,7 +289,7 @@ def try_insert_emergency_into_active_drones(
                 if stop_loc.cold_chain_limit_minutes is not None and elapsed_sortie_min > stop_loc.cold_chain_limit_minutes + 1e-9:
                     sortie1_feasible = False
                     break
-                dl = (getattr(stop_loc, 'request_time_min', 0.0) or 0.0) + (stop_loc.window_minutes or float("inf"))
+                dl = (stop_loc.request_time_min or 0.0) + (stop_loc.window_minutes or float("inf"))
                 if stop_loc.window_minutes is not None and current_mission_min > dl + 1e-9:
                     sortie1_feasible = False
                     break
@@ -331,7 +331,7 @@ def try_insert_emergency_into_active_drones(
                 continue
 
             # Deadline for emergency delivery
-            emerg_deadline = (getattr(emergency_loc, 'request_time_min', current_tick / 60.0) or (current_tick / 60.0)) + (emergency_loc.window_minutes or float("inf"))
+            emerg_deadline = (emergency_loc.request_time_min or (current_tick / 60.0)) + (emergency_loc.window_minutes or float("inf"))
             if emergency_loc.window_minutes is not None and t_emerg_arrival > emerg_deadline + 1e-9:
                 continue
 

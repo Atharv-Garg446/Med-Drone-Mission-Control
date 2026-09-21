@@ -200,7 +200,7 @@ def validate_scenario(city: CityConfig):
             raise ValueError(f"Delivery {d.name} window_minutes cannot be negative: {d.window_minutes}")
         if d.cold_chain_limit_minutes is not None and d.cold_chain_limit_minutes < 0:
             raise ValueError(f"Delivery {d.name} cold_chain_limit_minutes cannot be negative: {d.cold_chain_limit_minutes}")
-        if getattr(d, 'request_time_min', 0.0) < 0:
+        if (d.request_time_min or 0.0) < 0:
             raise ValueError(f"Delivery {d.name} request_time_min cannot be negative")
 
         for zone in city.no_fly_zones:

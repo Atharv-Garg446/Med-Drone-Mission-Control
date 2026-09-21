@@ -65,7 +65,7 @@ def eta_for_route(
             continue
 
         eta_minutes = current_time
-        deadline = ((getattr(loc, 'request_time_min', 0.0) or 0.0) + loc.window_minutes) if loc.window_minutes is not None else None
+        deadline = ((loc.request_time_min or 0.0) + loc.window_minutes) if loc.window_minutes is not None else None
         missed = deadline is not None and eta_minutes > deadline + 1e-9
 
         results.append(ETAResult(

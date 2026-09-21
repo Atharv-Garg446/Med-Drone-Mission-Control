@@ -100,7 +100,7 @@ def is_route_feasible(route: List[int], locations: List[Location], matrix: List[
                 return False
                 
             if loc.window_minutes is not None:
-                deadline = (getattr(loc, 'request_time_min', 0.0) or 0.0) + loc.window_minutes
+                deadline = (loc.request_time_min or 0.0) + loc.window_minutes
                 if current_time > deadline + 1e-9:
                     return False
                 
