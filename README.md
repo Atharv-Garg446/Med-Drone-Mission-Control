@@ -17,16 +17,16 @@ An operations research and autonomous mission control testbed designed for emerg
 
 The platform integrates operations research, computational geometry, discrete-event simulation, and computer vision into an integrated mission architecture:
 
-- **From-Scratch Multi-Heuristic CVRP Solver**: Implements three independent construction heuristics (Clarke-Wright Savings, Sweep, and Urgency-Discounted Nearest Neighbor) with intra-route 2-opt and inter-route Or-opt relocate operators. Evaluates all candidates and selects the globally shortest feasible plan.
+- **From-Scratch Multi-Heuristic CVRP Solver**: Implements three independent construction heuristics (Nearest Neighbor, Urgency-Weighted Nearest Neighbor, and Clarke-Wright Savings) with intra-route 2-opt and inter-route Or-opt relocate operators. Evaluates all candidates and selects the best feasible solution found across multiple construction heuristics and local-search passes.
 - **Simultaneous Multi-Constraint Routing**: Jointly enforces vehicle payload capacity, flight range energy budgets (with reserve margins), cumulative cold-chain thermal decay limits, and strict delivery deadline time windows.
 - **NFZ/TFR-Aware A\* Pathfinding**: Automatically routes around polygon no-fly zones and pop-up Temporary Flight Restrictions. Uses conservative axis-aligned bounding box (AABB) pre-filtering, 8-connected grid search, corner-cutting prevention, and bidirectional string-pulling path smoothing.
-- **Guaranteed Safety Clearance**: Maintains a strict 50-meter safety margin around all obstacle edges. Automatically scales cell diagonal compensation when large search areas trigger grid coarsening under `MAX_CELLS = 120`.
-- **Sub-Second Dynamic Replanning**: Injects mid-mission disruptions (pop-up TFRs, urgent medical requests, drone motor failures) and re-solves remaining stops from live airborne GPS positions and remaining cargo/range budgets in **~0.20–0.26 s** (8 stops) to **~0.61–0.79 s** (15 stops).
+- **50 m Safety-Clearance Enforcement**: Enforces a configured 50-meter safety margin around all obstacle edges. Automatically scales cell diagonal compensation when large search areas trigger grid coarsening under `MAX_CELLS = 120`.
+- **Sub-Second Dynamic Replanning**: Injects mid-mission disruptions (pop-up TFRs, urgent medical requests, drone motor failures) and re-solves remaining stops from live airborne GPS positions and remaining cargo/range budgets in approximately **0.20–0.26 s** (8 stops) to **0.61–0.79 s** (15 stops) on the tested machine.
 - **Physical Infeasibility Diagnosis**: Immediately catches and diagnoses physically impossible missions (e.g. destinations exceeding round-trip battery range or locations trapped inside restricted airspace) before dispatch.
 - **Multi-Drone Discrete-Event Fleet Simulator**: Simulates time-stepped fleet execution with realistic vehicle state machines (`IDLE`, `DISPATCHED`, `TRANSIT`, `DELIVERING`, `RETURNING`, `CHARGING`, `HOLD`), physical depot departures, and live telemetry logging.
 - **MAVLink / QGroundControl WPL 110 Export**: Generates industry-standard mission files compatible with ArduPilot and PX4 autopilots, embedding intermediate detour waypoints and payload delivery hover/dwell times.
 - **Computer Vision Landing Zone Screening**: Integrates YOLOv8 obstruction screening to verify landing pad safety (detecting people, vehicles, and debris) prior to descent.
-- **OR-Tools Benchmarking**: Compares the from-scratch heuristic suite directly against Google OR-Tools routing on identical matrices, showing near-optimal solution quality with single-digit millisecond solve times.
+- **OR-Tools Benchmarking**: Provides a comparative baseline for capacity- and range-constrained routing against Google OR-Tools on identical distance matrices.
 - **Exhaustive Automated Testing & CI**: Includes 94 automated tests covering geometry, routing heuristics, constraints, simulation mechanics, and export formats, verified on GitHub Actions CI.
 
 <p align="center">
@@ -49,16 +49,20 @@ Traditional routing systems treat pre-flight plans as static commitments. When u
 
 ### Measured Empirical Benchmarks
 
-Measured on an Apple Silicon Mac (M-series, Python 3.10+):
+These timings represent measured benchmark results on the tested machine (Apple Silicon Mac, M-series, Python 3.10+) across the specified scenarios, demonstrating sub-second response across cold-cache and warm-cache runs:
+
+- **8-Stop Replan** (Jaipur Disaster): approximately **0.20–0.26 s** (~201 ms warm cache, ~254 ms cold cache)
+- **15-Stop Replan** (Multi-obstacle random clusters): approximately **0.61–0.79 s** (~617 ms warm cache, ~801 ms cold cache)
+- **Distance Matrix Construction**: ~200–258 ms (Jaipur, 18 detours), ~206–280 ms (Chennai, 12 detours)
 
 | Operation | Scenario / Scale | Cold Cache (Mean) | Warm Cache (Mean) |
 | :--- | :--- | :---: | :---: |
-| **Flight Distance Matrix** | Jaipur Disaster (9 locs, 18 detours) | 258 ms | 202 ms (min: 200 ms) |
-| **Flight Distance Matrix** | Chennai Flood (8 locs, 12 detours) | 280 ms | 206 ms (min: 205 ms) |
-| **8-Stop Dynamic Replan** | Jaipur Disaster (8 deliveries, 2 NFZs) | 254 ms | 201 ms (min: 200 ms) |
-| **15-Stop Dynamic Replan** | Multi-Obstacle Clusters (5 seeds) | 801 ms | 617 ms (min: 91 ms) |
+| **Flight Distance Matrix** | Jaipur Disaster (9 locs, 18 detours) | ~258 ms | ~202 ms (min: ~200 ms) |
+| **Flight Distance Matrix** | Chennai Flood (8 locs, 12 detours) | ~280 ms | ~206 ms (min: ~205 ms) |
+| **8-Stop Dynamic Replan** | Jaipur Disaster (8 deliveries, 2 NFZs) | ~254 ms | ~201 ms (min: ~200 ms) |
+| **15-Stop Dynamic Replan** | Multi-Obstacle Clusters (5 seeds) | ~801 ms | ~617 ms (min: ~91 ms) |
 
-Because typical tactical medical drone clusters operate at 8–15 stops, sub-second to low-second solver turnaround eliminates the need for complex, bug-prone partial-graph repair heuristics.
+For the tested 8–15-stop scenarios, full replanning remains sub-second to low-second (~0.20–0.26 s for 8 stops, ~0.61–0.79 s for 15 stops on the tested machine), eliminating the need for complex partial-graph repair heuristics.
 
 To reproduce these benchmarks on your machine:
 ```bash
@@ -173,7 +177,7 @@ Med-Drone Mission Control is an algorithmic testbed and simulation prototype. Op
 
 - **Range Energy Model**: Employs a distance-and-reserve model (Haversine distance with configured reserve percentage) rather than multi-cell electrochemical battery models, temperature-dependent discharge curves, dynamic wind vectors, or payload mass-adjusted drag profiles.
 - **Airspace Regulation**: No-fly zones and pop-up TFRs are modeled as 2D polygonal spatial barriers on local grids, rather than live UTM/U-Space feeds or dynamic civil aviation NOTAM broadcasts.
-- **OR-Tools Baseline Scope**: Serves as an algorithmic benchmark; it does not model the custom cumulative cold-chain exposure limits implemented in the primary solver.
+- **OR-Tools Baseline Scope**: Serves as a comparative baseline for capacity- and range-constrained routing; it does not model the custom cumulative cold-chain exposure limits or time-window urgency discounts implemented in the primary solver.
 - **Landing Vision Verification**: Pretrained YOLOv8 provides aerial scene screening; it is an algorithmic safety screen rather than certified dual-redundant landing sensor fusion.
 - **MAVLink Mission Scope**: Produces navigation mission waypoints with site hover delays; it does not actuate hardware release solenoids.
 
@@ -185,9 +189,9 @@ Med-Drone Mission Control is an algorithmic testbed and simulation prototype. Op
 python3 -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-The test suite consists of **94 automated tests** with 100% standard-library coverage:
+The test suite consists of **94 automated tests using Python's standard-library unittest framework**:
 - **Geometry & Spherical Math**: Haversine distances, ray-casting point-in-polygon parity, segment-to-polygon distance, AABB pre-filtering equivalence.
-- **A\* Pathfinding & Airspace Safety**: Obstacle avoidance, corner-cutting block enforcement, 50 m clearance guarantees, `MAX_CELLS` coarsened grid handling, pop-up TFR escape vectors, dead-edge detection.
+- **A\* Pathfinding & Airspace Safety**: Obstacle avoidance, corner-cutting block enforcement, 50 m safety-clearance enforcement, `MAX_CELLS` coarsened grid handling, pop-up TFR escape vectors, dead-edge detection.
 - **Routing Heuristics & Local Search**: Nearest-Neighbor, Clarke-Wright Savings, Urgency NN, 2-opt segment reversals, Or-opt relocate operators.
 - **Hard Operational Constraints**: Cumulative cold-chain exposure, delivery deadline windows, payload capacity, return-to-base range bounds, infeasibility validation.
 - **Fleet Simulation & Replanning**: Discrete-event mission execution, state transitions, dynamic mid-air replanning, disruption response.
