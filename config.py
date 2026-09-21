@@ -38,13 +38,10 @@ class Location:
 
 @dataclass
 class DroneConfig:
-    """Physical limits of the delivery drone used for this run.
-
-    These two numbers are what turn a plain TSP into a *Capacitated* VRP with
-    range limits: a single trip out of the depot must satisfy both
-        sum(demand of stops on this trip)      <= capacity_kg
-        total flight distance of this trip     <= max_range_km
-    at every point, or it has to return to the depot and start a new trip.
+    """Vehicle specifications and operational parameters for the drone fleet.
+    
+    Defines physical payload capacity, flight range budget, operational speeds,
+    fleet sizing, and safety margins for multi-stop delivery sorties.
     """
     capacity_kg: float
     max_range_km: float

@@ -1,17 +1,9 @@
 """
 waypoint_export.py
 ===================
-Exports a solved route as a real "QGC WPL 110" waypoint file -- the plain
-text mission format used by QGroundControl and Mission Planner, and
-understood natively by ArduPilot- and PX4-based flight controllers over
-MAVLink.
-
->>> COMPATIBILITY, IN PLAIN TERMS <<<
-This format flies on ArduCopter, PX4, and anything else speaking MAVLink
-mission-protocol. It does NOT fly on DJI, Skydio, or other closed consumer
-drone ecosystems -- those use proprietary app-based mission formats with no
-public "load this waypoint file" path. See README "Scope & Design
-Boundaries" for the full statement; this comment is the short version.
+Exports a solved route as a "QGC WPL 110" waypoint file -- the standard plain-text
+mission format used by QGroundControl and Mission Planner, and supported natively
+by ArduPilot- and PX4-based flight controllers via MAVLink.
 
 FILE FORMAT (tab-separated columns, one waypoint per line):
 

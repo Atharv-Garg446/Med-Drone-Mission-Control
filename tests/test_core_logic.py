@@ -139,6 +139,29 @@ class TestNoFlyAstar(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             astar_around_obstacles(p1, p2, [huge_zone], cell_size_km=0.25, buffer_km=0.3)
 
+    def test_enclosed_destination_unreachable(self):
+        """A* returns None and infinite distance when destination is enclosed by a zone."""
+        start = (0.0, 0.0)
+        dest = (0.0, 5.0)
+        nfz = [[(-1.0, 4.0), (-1.0, 6.0), (1.0, 6.0), (1.0, 4.0)]]
+        path, dist, rerouted = route_avoiding_zones(start, dest, nfz)
+        self.assertIsNone(path)
+        self.assertEqual(dist, float('inf'))
+
+    def test_destination_in_safety_buffer_unreachable(self):
+        """A destination located within the safety buffer of a no-fly zone is unreachable."""
+        p_start = (26.90, 75.80)
+        zone = [
+            (26.920, 75.800),
+            (26.920, 75.810),
+            (26.930, 75.810),
+            (26.930, 75.800),
+        ]
+        p_dest_in_buffer = (26.9198, 75.805)
+        waypoints, dist, _ = route_avoiding_zones(p_start, p_dest_in_buffer, [zone], buffer_km=0.05)
+        self.assertIsNone(waypoints)
+        self.assertTrue(math.isinf(dist))
+
 
 class TestNearestNeighborConstruction(unittest.TestCase):
 
@@ -221,6 +244,24 @@ class TestClarkeWrightConstruction(unittest.TestCase):
             self.assertEqual(route[0], 0)
             self.assertEqual(route[-1], 0)
 
+    def test_clarke_wright_respects_max_range(self):
+        """Clarke-Wright must not produce routes exceeding drone max range."""
+        locations = [
+            Location(0, "Depot", 0.0, 0.0, demand_kg=0.0),
+            Location(1, "Far 1", 0.0, 15.0, demand_kg=1.0),
+            Location(2, "Far 2", 0.0, 15.1, demand_kg=1.0),
+        ]
+        matrix = [[abs(i - j) * 15.0 if i == 0 or j == 0 else 0.1 for j in range(3)] for i in range(3)]
+        matrix[0][0] = 0.0
+        drone = DroneConfig(max_range_km=20.0, capacity_kg=5.0, cruise_speed_kmh=50.0)
+        try:
+            routes = clarke_wright_construction(locations, matrix, drone)
+            for r in routes:
+                dist = _route_distance(r, matrix)
+                self.assertLessEqual(dist, drone.max_range_km)
+        except (ValueError, RuntimeError):
+            pass
+
 
 class TestUrgencyNearestNeighborConstruction(unittest.TestCase):
     """Tests for the urgency-weighted nearest-neighbor heuristic."""
@@ -287,6 +328,29 @@ class TestTwoOpt(unittest.TestCase):
         drone = DroneConfig(capacity_kg=10, max_range_km=100)
         result = two_opt(optimal_route, locations, matrix, drone)
         self.assertEqual(result, optimal_route)
+
+    def test_two_opt_preserves_time_windows(self):
+        """2-opt must not select a shorter route that violates delivery deadlines."""
+        locations = [
+            Location(0, "Depot", 0.0, 0.0, demand_kg=0.0),
+            Location(1, "A", 0.0, 5.0, demand_kg=1.0, window_minutes=2),
+            Location(2, "B", 0.0, 1.0, demand_kg=1.0, window_minutes=60),
+        ]
+        drone = DroneConfig(max_range_km=100.0, capacity_kg=5.0, cruise_speed_kmh=60.0)
+        matrix = [
+            [0.0, 1.5, 1.0],
+            [1.5, 0.0, 4.0],
+            [1.0, 1.5, 0.0],
+        ]
+        matrix[0][1] = 1.5
+        matrix[1][2] = 1.5
+        matrix[2][0] = 1.0
+        matrix[0][2] = 1.0
+        matrix[2][1] = 1.5
+        matrix[1][0] = 1.0
+        route_feasible = [0, 1, 2, 0]
+        optimized = two_opt(route_feasible, locations, matrix, drone)
+        self.assertEqual(optimized, [0, 1, 2, 0])
 
 
 class TestOrOptInterRoute(unittest.TestCase):
@@ -428,6 +492,18 @@ class TestTimeWindows(unittest.TestCase):
         report = check_time_windows(routes, locations, matrix, drone)
         self.assertEqual(len(report), 0)
 
+    def test_departure_delay_affects_deadlines(self):
+        """Sortie departure delay pushes back arrival times toward deadlines."""
+        depot = Location(0, "Depot", 26.90, 75.80, 0.0)
+        stop = Location(1, "Post", 26.95, 75.80, 2.0, window_minutes=15.0, request_time_min=0.0)
+        locations = [depot, stop]
+        matrix = [[0.0, 5.0], [5.0, 0.0]]
+        drone = DroneConfig(capacity_kg=5.0, max_range_km=40.0, cruise_speed_kmh=60.0)
+        res_t0 = eta_for_route([0, 1, 0], locations, matrix, drone, departure_time_min=0.0)
+        self.assertFalse(res_t0[0].missed_window)
+        res_t20 = eta_for_route([0, 1, 0], locations, matrix, drone, departure_time_min=20.0)
+        self.assertTrue(res_t20[0].missed_window)
+
 
 class TestYoloSafetyDecisionLogic(unittest.TestCase):
 
@@ -516,6 +592,20 @@ class TestWaypointExport(unittest.TestCase):
             # (header + home + takeoff + 2 intermediate + delivery + land = 7)
             self.assertGreater(len(lines), 5)
 
+    def test_export_rejects_infeasible_route(self):
+        """Exporting an unvalidated or infeasible route must raise ValueError."""
+        depot = Location(0, "Depot", 26.90, 75.80, demand_kg=0.0)
+        loc1 = Location(1, "Too Heavy", 26.91, 75.81, demand_kg=50.0)
+        locations = [depot, loc1]
+        matrix = [[0.0, 2.0], [2.0, 0.0]]
+        drone = DroneConfig(capacity_kg=10.0, max_range_km=40.0)
+
+        with self.assertRaises(ValueError):
+            export_route_to_wpl([0, 1, 0], locations, "output/test.waypoints")
+
+        with self.assertRaises(ValueError):
+            export_route_to_wpl([0, 1, 0], locations, "output/test_infeasible.waypoints", matrix=matrix, drone=drone)
+
 
 class TestRouteFeasibility(unittest.TestCase):
     """Tests for the route feasibility checking helper."""
@@ -537,6 +627,26 @@ class TestRouteFeasibility(unittest.TestCase):
         drone = DroneConfig(capacity_kg=100.0, max_range_km=3.0, reserve_fraction=0.0)
         route = [0, 1, 2, 0]  # distance = 1 + 1 + 2 = 4 > 3
         self.assertFalse(is_route_feasible(route, locations, matrix, drone))
+
+    def test_dwell_time_enforced_in_feasibility(self):
+        """Delivery dwell time is accounted for in route feasibility and cold chain checks."""
+        from cold_chain import check_cold_chain
+        depot = Location(0, "Depot", 26.90, 75.80, demand_kg=0.0)
+        loc1 = Location(1, "Stop1", 26.90, 75.89, demand_kg=1.0)
+        loc2 = Location(2, "Stop2", 26.90, 75.98, demand_kg=1.0, window_minutes=35, cold_chain_limit_minutes=35)
+        locations = [depot, loc1, loc2]
+        matrix = [
+            [0.0, 10.0, 20.0],
+            [10.0, 0.0, 10.0],
+            [20.0, 10.0, 0.0],
+        ]
+        drone = DroneConfig(capacity_kg=10.0, max_range_km=100.0, cruise_speed_kmh=40.0, dwell_min=10.0)
+        route = [0, 1, 2, 0]
+        self.assertFalse(is_route_feasible(route, locations, matrix, drone))
+        tw_report = check_time_windows([route], locations, matrix, drone)
+        self.assertTrue(tw_report[0][-1].missed_window)
+        cc_report = check_cold_chain(route, locations, matrix, drone)
+        self.assertTrue(cc_report[0].violated)
 
 class TestColdChain(unittest.TestCase):
     """Tests for the cold-chain constraint module."""
@@ -725,6 +835,94 @@ class TestReplan(unittest.TestCase):
         # The blocked version should have equal or greater distance
         self.assertGreaterEqual(result_blocked.total_km, result_clear.total_km)
 
+    def test_replan_emergency_position_continuity(self):
+        """Emergency dynamic dispatch preserves physical speed limits without instantaneous jumps."""
+        from simulate_fleet import FleetSimulator, SimEvent
+        from config import CityConfig
+        locations = [
+            Location(0, "Depot", 0.0, 0.0, demand_kg=0.0),
+            Location(1, "Far", 0.0, 0.0898, demand_kg=1.0),
+        ]
+        drone = DroneConfig(max_range_km=100.0, capacity_kg=5.0, cruise_speed_kmh=60.0)
+        city = CityConfig("Test", depot=locations[0], deliveries=[locations[1]], no_fly_zones=[], drone=drone)
+        emer_loc = Location(2, "Emer", 0.0, 0.0449, demand_kg=1.0, window_minutes=60)
+        events = [SimEvent(tick=300, event_type="emergency", data={"location": emer_loc})]
+        sim = FleetSimulator(city, events=events, speed_multiplier=1000, live_print=False)
+        sim.run(max_ticks=400)
+        last_pos = {}
+        for pos in sim.position_history:
+            did = pos["drone_id"]
+            if did in last_pos:
+                prev = last_pos[did]
+                dt = pos["tick"] - prev["tick"]
+                if dt > 0:
+                    dist = haversine_km((prev["lat"], prev["lon"]), (pos["lat"], pos["lon"]))
+                    speed_km_sec = dist / dt
+                    max_speed = (drone.cruise_speed_kmh / 3600.0) + 0.005
+                    self.assertLessEqual(speed_km_sec, max_speed)
+            last_pos[did] = pos
+
+    def test_replan_tfr_position_continuity(self):
+        """TFR reroute starts from drone live coordinates without discontinuous jumps."""
+        from simulate_fleet import FleetSimulator, SimEvent
+        from config import CityConfig
+        depot = Location(0, "Depot", 26.90, 75.80, demand_kg=0.0)
+        loc1 = Location(1, "Dest", 26.90, 75.88, demand_kg=1.0)
+        drone = DroneConfig(max_range_km=50.0, capacity_kg=5.0, cruise_speed_kmh=60.0)
+        city = CityConfig("Test TFR", depot=depot, deliveries=[loc1], no_fly_zones=[], drone=drone)
+        tfr_zone = [(26.895, 75.83), (26.895, 75.85), (26.905, 75.85), (26.905, 75.83)]
+        events = [SimEvent(tick=120, event_type="tfr", data={"zone": tfr_zone, "reason": "Mid-leg TFR"})]
+        sim = FleetSimulator(city, events=events, speed_multiplier=1000, live_print=False)
+        sim.run(max_ticks=300)
+        last_pos = {}
+        for pos in sim.position_history:
+            did = pos["drone_id"]
+            if did in last_pos:
+                prev = last_pos[did]
+                dt = pos["tick"] - prev["tick"]
+                if dt > 0:
+                    dist = haversine_km((prev["lat"], prev["lon"]), (pos["lat"], pos["lon"]))
+                    speed_km_sec = dist / dt
+                    max_speed = (drone.cruise_speed_kmh / 3600.0) + 0.005
+                    self.assertLessEqual(speed_km_sec, max_speed)
+            last_pos[did] = pos
+
+    def test_emergency_cargo_respects_drone_capacity(self):
+        """Emergency dispatch never exceeds physical payload capacity."""
+        from simulate_fleet import FleetSimulator, SimEvent
+        from config import CityConfig
+        depot = Location(0, "Depot", 26.90, 75.80, demand_kg=0.0)
+        loc1 = Location(1, "Stop1", 26.90, 75.85, demand_kg=4.0)
+        drone = DroneConfig(max_range_km=50.0, capacity_kg=5.0, cruise_speed_kmh=60.0)
+        city = CityConfig("Test Emergency Cargo", depot=depot, deliveries=[loc1], no_fly_zones=[], drone=drone)
+        emerg = SimEvent(tick=30, event_type="emergency", data={
+            "location": Location(999, "Emerg", 26.91, 75.82, demand_kg=3.0, urgency="critical", window_minutes=20)
+        })
+        sim = FleetSimulator(city, events=[emerg], speed_multiplier=1000, live_print=False)
+        sim.run(max_ticks=200)
+        for d in sim.drones:
+            self.assertLessEqual(d.remaining_cargo_kg, drone.capacity_kg)
+
+    def test_depot_cargo_requires_depot_dispatch(self):
+        """Airborne drones cannot receive supplies mid-flight without visiting the depot."""
+        from simulate_fleet import DroneState
+        from replan import try_insert_emergency_into_active_drones
+        depot = Location(0, "Depot", 26.90, 75.80, 0.0)
+        s1 = Location(1, "Stop1", 26.92, 75.80, 2.0)
+        emerg = Location(2, "Emergency", 26.95, 75.80, 2.0, urgency="critical", window_minutes=30)
+        drone_cfg = DroneConfig(capacity_kg=5.0, max_range_km=40.0)
+        drone = DroneState(
+            drone_id=1, status="flying", lat=26.91, lon=75.80,
+            route=[0, 1, 0], route_step=0, remaining_cargo_kg=2.0,
+            launch_tick=0, sortie_launch_tick=0,
+        )
+        res = try_insert_emergency_into_active_drones(
+            [drone], emerg, [depot, s1, emerg], [], drone_cfg, current_tick=100, cargo_onboard=False
+        )
+        if res:
+            _, new_route = res
+            self.assertIn(0, new_route[1:-1])
+
 
 class TestFleetSimulation(unittest.TestCase):
     """Tests for the fleet simulator."""
@@ -755,6 +953,77 @@ class TestFleetSimulation(unittest.TestCase):
         # Should have delivered original + 1 emergency
         self.assertGreaterEqual(report.deliveries_completed, report.deliveries_planned)
         self.assertEqual(report.replans_performed, 1)
+
+    def test_expired_queued_route_marked_unserviceable(self):
+        """A queued request whose deadline expires before launch is flagged unserviceable."""
+        from simulate_fleet import FleetSimulator
+        from config import CityConfig
+        depot = Location(0, "Depot", 26.90, 75.80, 0.0)
+        s1 = Location(1, "Stop1", 26.95, 75.80, 2.0, window_minutes=10.0, request_time_min=0.0)
+        city = CityConfig(
+            name="Test Delayed Queue",
+            depot=depot,
+            deliveries=[s1],
+            no_fly_zones=[],
+            drone=DroneConfig(capacity_kg=5.0, max_range_km=40.0, fleet_size=1, cruise_speed_kmh=60.0),
+        )
+        sim = FleetSimulator(city, events=[], live_print=False)
+        for d in sim.drones:
+            d.route = []
+            d.status = "idle"
+            d.available_tick = 0
+        sim.unassigned_routes = [[0, 1, 0]]
+        sim.tick = 900  # 15 minutes have passed (> deadline 10m)
+        sim._assign_routes()
+
+        self.assertIn(1, sim.unserviceable_ids)
+        self.assertEqual(len(sim.drones[0].route), 0)
+        self.assertEqual(sim.drones[0].status, "idle")
+        self.assertGreaterEqual(sim.time_window_misses, 1)
+
+    def test_multi_sortie_intermediate_depot_turnaround(self):
+        """A multi-sortie route executes turnaround dwell and cargo reload at depot stops."""
+        from simulate_fleet import FleetSimulator
+        from config import CityConfig
+        depot = Location(0, "Depot", 26.90, 75.80, 0.0)
+        s1 = Location(1, "Stop1", 26.91, 75.80, 2.0)
+        s2 = Location(2, "Stop2", 26.92, 75.80, 3.0)
+        city = CityConfig(
+            name="Test Intermediate Depot",
+            depot=depot,
+            deliveries=[s1, s2],
+            no_fly_zones=[],
+            drone=DroneConfig(capacity_kg=5.0, max_range_km=40.0, fleet_size=1, cruise_speed_kmh=120.0, turnaround_min=2.0, dwell_min=0.0),
+        )
+        sim = FleetSimulator(city, events=[], live_print=False)
+        drone = sim.drones[0]
+        drone.route = [0, 1, 0, 2, 0]
+        drone.route_step = 0
+        drone.remaining_cargo_kg = 2.0
+        drone.status = "flying"
+        sim._init_leg_path(drone)
+
+        for _ in range(300):
+            if 1 in sim.delivered_ids:
+                break
+            sim._move_drone(drone, 1.0)
+            sim.tick += 1
+        self.assertIn(1, sim.delivered_ids)
+
+        for _ in range(300):
+            if abs(drone.lat - depot.lat) < 1e-5 and abs(drone.lon - depot.lon) < 1e-5 and drone.status == "delivering":
+                break
+            sim._move_drone(drone, 1.0)
+            sim.tick += 1
+
+        self.assertEqual(drone.status, "delivering")
+        self.assertGreater(drone.dwell_seconds_left, 0.0)
+
+        # Complete turnaround dwell
+        sim._move_drone(drone, drone.dwell_seconds_left + 1.0)
+        self.assertEqual(drone.status, "flying")
+        self.assertEqual(drone.sortie_distance_km, 0.0)
+        self.assertEqual(drone.remaining_cargo_kg, 3.0)
 
 
 class TestLoadScenario(unittest.TestCase):
@@ -834,13 +1103,51 @@ class TestLoadScenario(unittest.TestCase):
         finally:
             os.unlink(tmp_path)
 
+    def test_load_json_all_drone_parameters(self):
+        """load_scenario_from_json parses all vehicle configuration fields."""
+        import tempfile, json
+        from load_scenario import load_scenario_from_json
+
+        data = {
+            "name": "Test JSON",
+            "depot": {"name": "Depot", "lat": 26.90, "lon": 75.80},
+            "deliveries": [{"name": "D1", "lat": 26.91, "lon": 75.81, "demand_kg": 2.0}],
+            "drone": {
+                "capacity_kg": 12.0,
+                "max_range_km": 45.0,
+                "cruise_speed_kmh": 50.0,
+                "fleet_size": 7,
+                "turnaround_min": 15.0,
+                "dwell_min": 3.0,
+                "reserve_fraction": 0.15,
+                "safety_margin_m": 75.0,
+            }
+        }
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump(data, f)
+            fname = f.name
+
+        city = load_scenario_from_json(fname)
+        self.assertEqual(city.drone.fleet_size, 7)
+        self.assertEqual(city.drone.turnaround_min, 15.0)
+        self.assertEqual(city.drone.dwell_min, 3.0)
+        self.assertEqual(city.drone.reserve_fraction, 0.15)
+        self.assertEqual(city.drone.safety_margin_m, 75.0)
+
+    def test_random_scenario_deterministic_seeds(self):
+        """Random scenarios generate structurally valid configs consistently across seeds."""
+        from load_scenario import generate_random_scenario
+        for seed in range(1, 101):
+            city = generate_random_scenario(26.9127, 75.8010, num_deliveries=5, num_no_fly_zones=1, seed=seed)
+            self.assertEqual(len(city.deliveries), 5)
+            self.assertIsNotNone(city.drone)
+
 
 class TestAStarRobustness(unittest.TestCase):
     """Tests that A* handles edge cases gracefully."""
 
     def test_astar_fallback_on_overlapping_zones(self):
-        """When multiple no-fly zones make routing impossible, the system
-        should fall back to a penalty distance instead of crashing."""
+        """When no-fly zones block a corridor, route_avoiding_zones returns infinite distance without crashing."""
         from nofly_astar import route_avoiding_zones
         p1 = (26.9, 75.7)
         p2 = (26.9, 75.9)
@@ -906,282 +1213,6 @@ class TestStressSimulation(unittest.TestCase):
         self.assertIn("lon", pos)
 
 
-# ---------------------------------------------------------------------------
-# Regression Edge Cases
-# ---------------------------------------------------------------------------
-
-class TestRegressionEdgeCases(unittest.TestCase):
-    """Regression tests for critical edge cases: range violations,
-    unreachable destinations, and constraint-aware local search."""
-
-    def test_clarke_wright_range_violation(self):
-        """Clarke-Wright must not return routes exceeding max_range_km."""
-        locations = [
-            Location(0, "Depot", 0.0, 0.0, demand_kg=0.0),
-            Location(1, "Far 1", 0.0, 15.0, demand_kg=1.0),
-            Location(2, "Far 2", 0.0, 15.1, demand_kg=1.0),
-        ]
-        # Distances: Depot to Far 1 is 15. (Round trip 30)
-        # Far 1 to Far 2 is 0.1
-        matrix = [[abs(i - j) * 15.0 if i==0 or j==0 else 0.1 for j in range(3)] for i in range(3)]
-        matrix[0][0] = 0.0
-
-        # Drone only has 20km range. It cannot even reach Far 1 and return!
-        drone = DroneConfig(max_range_km=20.0, capacity_kg=5.0, cruise_speed_kmh=50.0)
-
-        # CW should refuse to serve these, or return only feasible routes.
-        try:
-            routes = clarke_wright_construction(locations, matrix, drone)
-            for r in routes:
-                dist = _route_distance(r, matrix)
-                self.assertLessEqual(dist, drone.max_range_km, 
-                                     "CW returned a route exceeding max_range_km")
-        except (ValueError, RuntimeError):
-            # Correctly refuses to solve — test passes
-            pass
-
-    def test_nfz_enclosed_unservable(self):
-        """A* must return None/inf for a destination enclosed by an NFZ."""
-        # Start (0,0), Dest (0,5). Dest is surrounded by an NFZ box.
-        start = (0.0, 0.0)
-        dest = (0.0, 5.0)
-        nfz = [[(-1.0, 4.0), (-1.0, 6.0), (1.0, 6.0), (1.0, 4.0)]]
-        
-        path, dist, rerouted = route_avoiding_zones(start, dest, nfz)
-        self.assertIsNone(path, "A* should return None for an unreachable enclosed destination")
-        self.assertEqual(dist, float('inf'))
-
-    def test_hard_time_windows_in_local_search(self):
-        """2-opt must not choose a shorter route that violates time windows."""
-        locations = [
-            Location(0, "Depot", 0.0, 0.0, demand_kg=0.0),
-            # Stop A is far, but has a tight 10-minute window
-            Location(1, "A (Tight)", 0.0, 5.0, demand_kg=1.0, window_minutes=10),
-            # Stop B is near, with a loose 60-minute window
-            Location(2, "B (Loose)", 0.0, 1.0, demand_kg=1.0, window_minutes=60),
-        ]
-        # Custom matrix so 0->1->2->0 is fast enough for A, but 0->2->1->0 misses A's window
-        # Drone speed 60 km/h (1 km/min)
-        drone = DroneConfig(max_range_km=100.0, capacity_kg=5.0, cruise_speed_kmh=60.0)
-        matrix = [
-            [0.0, 5.0, 1.0],
-            [5.0, 0.0, 4.0],
-            [1.0, 4.0, 0.0]
-        ]
-        # Feasible route: Depot -> A -> B -> Depot
-        # ETA A: 5 mins (passes 10m window)
-        route_feasible = [0, 1, 2, 0]
-        report = check_time_windows([route_feasible], locations, matrix, drone)
-        for e in report[0]:
-            self.assertFalse(e.missed_window)
-
-        # 2-opt will try to uncross/optimize this purely on distance.
-        # 0->2->1->0 distance is 1+4+5=10. 0->1->2->0 distance is 5+4+1=10.
-        # Let's artificially make 0->2->1->0 shorter in the matrix to tempt 2-opt:
-        matrix[0][2] = 1.0
-        matrix[2][1] = 1.0
-        matrix[1][0] = 5.0 # Total 7
-        
-        # Now 2-opt will prefer [0, 2, 1, 0].
-        # But ETA at A is 1(to B) + 1(to A) = 2 mins. Wait, 2 mins < 10 mins.
-        # Let's make it miss the window.
-        locations[1].window_minutes = 2
-        matrix[0][1] = 1.5 # ETA A = 1.5 min. (Passes)
-        matrix[1][2] = 1.5
-        matrix[2][0] = 1.0
-        # Route [0, 1, 2, 0]: Dist = 1.5 + 1.5 + 1 = 4.0
-        
-        matrix[0][2] = 1.0
-        matrix[2][1] = 1.5 # ETA A = 2.5 min. (Misses 2 min window!)
-        matrix[1][0] = 1.0
-        # Route [0, 2, 1, 0]: Dist = 1.0 + 1.5 + 1.0 = 3.5 (Shorter!)
-
-        try:
-            # two_opt may accept additional constraint args
-            optimized = two_opt(route_feasible, locations, matrix, drone)
-        except TypeError:
-            # Currently it only takes route and matrix, and only optimizes distance
-            optimized = two_opt(route_feasible, matrix)
-
-        # 2-opt should not choose [0, 2, 1, 0] because it violates the time window.
-        self.assertEqual(optimized, [0, 1, 2, 0], "2-opt chose a shorter route that violates time windows")
-
-    def test_teleport_detector(self):
-        """Drones must not teleport to depot on replan."""
-        from simulate_fleet import FleetSimulator, SimEvent
-        from config import CityConfig
-        
-        locations = [
-            Location(0, "Depot", 0.0, 0.0, demand_kg=0.0),
-            Location(1, "Far", 0.0, 0.0898, demand_kg=1.0),
-        ]
-        drone = DroneConfig(max_range_km=100.0, capacity_kg=5.0, cruise_speed_kmh=60.0)
-        city = CityConfig("Test", depot=locations[0], deliveries=[locations[1]], no_fly_zones=[], drone=drone)
-        
-        # Event at tick 300 (5 mins). Drone should be at 5km out.
-        # Speed is 60kmh = 1 km/min.
-        emer_loc = Location(2, "Emer", 0.0, 0.0449, demand_kg=1.0, window_minutes=60)
-        events = [SimEvent(tick=300, event_type="emergency", data={"location": emer_loc})]
-        
-        sim = FleetSimulator(city, events=events, speed_multiplier=1000, live_print=False)
-        sim.run(max_ticks=400)
-        
-        # Analyze position history to find teleportations
-        last_pos = {}
-        for pos in sim.position_history:
-            did = pos["drone_id"]
-            if did in last_pos:
-                prev = last_pos[did]
-                dt = pos["tick"] - prev["tick"]
-                if dt > 0:
-                    dist = haversine_km((prev["lat"], prev["lon"]), (pos["lat"], pos["lon"]))
-                    speed_km_sec = dist / dt
-                    # Max physical speed is 60kmh / 3600 = 0.0166 km/sec
-                    max_speed = (drone.cruise_speed_kmh / 3600.0) + 0.005 # Small margin
-                    self.assertLessEqual(speed_km_sec, max_speed, 
-                                         f"Drone {did} teleported! Speed: {speed_km_sec:.4f} km/s > {max_speed:.4f}")
-            last_pos[did] = pos
-
-
-class TestDeepAuditFixes(unittest.TestCase):
-
-    def test_waypoint_export_refuses_infeasible_or_unvalidated_route(self):
-        """waypoint_export.py must raise ValueError when export is attempted without matrix/drone or on an infeasible route."""
-        from waypoint_export import export_route_to_wpl
-        from config import Location, DroneConfig
-        depot = Location(0, "Depot", 26.90, 75.80, demand_kg=0.0)
-        loc1 = Location(1, "Too Heavy", 26.91, 75.81, demand_kg=50.0)  # Exceeds 10kg capacity
-        locations = [depot, loc1]
-        matrix = [[0.0, 2.0], [2.0, 0.0]]
-        drone = DroneConfig(capacity_kg=10.0, max_range_km=40.0)
-
-        # 1. Missing matrix/drone must raise ValueError
-        with self.assertRaises(ValueError):
-            export_route_to_wpl([0, 1, 0], locations, "output/test.waypoints")
-
-        # 2. Infeasible route must raise ValueError
-        with self.assertRaises(ValueError):
-            export_route_to_wpl([0, 1, 0], locations, "output/test_infeasible.waypoints", matrix=matrix, drone=drone)
-
-    def test_unified_dwell_time_violation(self):
-        """All timing modules (is_route_feasible, time_windows, cold_chain, simulator) must include dwell_min."""
-        from config import Location, DroneConfig
-        from vrp_scratch import is_route_feasible
-        from time_windows import check_time_windows
-        from cold_chain import check_cold_chain
-
-        depot = Location(0, "Depot", 26.90, 75.80, demand_kg=0.0)
-        # Flight 0->1 = 15 min. Dwell at 1 = 10 min. Flight 1->2 = 15 min. Total to 2 = 40 min.
-        loc1 = Location(1, "Stop1", 26.90, 75.89, demand_kg=1.0)
-        loc2 = Location(2, "Stop2", 26.90, 75.98, demand_kg=1.0, window_minutes=35, cold_chain_limit_minutes=35)
-        locations = [depot, loc1, loc2]
-        matrix = [
-            [0.0, 10.0, 20.0],
-            [10.0, 0.0, 10.0],
-            [20.0, 10.0, 0.0],
-        ]
-        drone = DroneConfig(capacity_kg=10.0, max_range_km=100.0, cruise_speed_kmh=40.0, dwell_min=10.0)
-        route = [0, 1, 2, 0]
-
-        # Feasibility check must agree that dwell pushes arrival at Stop 2 to 40 min > 35 min limit
-        self.assertFalse(is_route_feasible(route, locations, matrix, drone))
-
-        # time_windows check must flag missed window
-        tw_report = check_time_windows([route], locations, matrix, drone)
-        self.assertTrue(tw_report[0][-1].missed_window)
-
-        # cold_chain check must flag violation
-        cc_report = check_cold_chain(route, locations, matrix, drone)
-        self.assertTrue(cc_report[0].violated)
-
-    def test_tfr_reroute_no_teleport(self):
-        """TFR reroute must start at drone's exact current GPS coordinates with zero teleportation."""
-        from simulate_fleet import FleetSimulator, SimEvent
-        from config import CityConfig, Location, DroneConfig
-        
-        depot = Location(0, "Depot", 26.90, 75.80, demand_kg=0.0)
-        loc1 = Location(1, "Dest", 26.90, 75.88, demand_kg=1.0)
-        drone = DroneConfig(max_range_km=50.0, capacity_kg=5.0, cruise_speed_kmh=60.0)
-        city = CityConfig("Test TFR", depot=depot, deliveries=[loc1], no_fly_zones=[], drone=drone)
-        
-        # Inject TFR mid-flight at tick 120 (2 mins in)
-        tfr_zone = [(26.895, 75.83), (26.895, 75.85), (26.905, 75.85), (26.905, 75.83)]
-        events = [SimEvent(tick=120, event_type="tfr", data={"zone": tfr_zone, "reason": "Mid-leg TFR"})]
-        
-        sim = FleetSimulator(city, events=events, speed_multiplier=1000, live_print=False)
-        sim.run(max_ticks=300)
-        
-        # Verify drone position history for zero teleport jumps
-        last_pos = {}
-        for pos in sim.position_history:
-            did = pos["drone_id"]
-            if did in last_pos:
-                prev = last_pos[did]
-                dt = pos["tick"] - prev["tick"]
-                if dt > 0:
-                    dist = haversine_km((prev["lat"], prev["lon"]), (pos["lat"], pos["lon"]))
-                    speed_km_sec = dist / dt
-                    max_speed = (drone.cruise_speed_kmh / 3600.0) + 0.005
-                    self.assertLessEqual(speed_km_sec, max_speed, f"Teleport detected on tick {pos['tick']}!")
-            last_pos[did] = pos
-
-    def test_emergency_cargo_physics_no_midair_addition(self):
-        """Emergency deliveries must not add cargo mid-air to an airborne drone."""
-        from simulate_fleet import FleetSimulator, SimEvent
-        from config import CityConfig, Location, DroneConfig
-        depot = Location(0, "Depot", 26.90, 75.80, demand_kg=0.0)
-        loc1 = Location(1, "Stop1", 26.90, 75.85, demand_kg=4.0)
-        drone = DroneConfig(max_range_km=50.0, capacity_kg=5.0, cruise_speed_kmh=60.0)
-        city = CityConfig("Test Emergency Cargo", depot=depot, deliveries=[loc1], no_fly_zones=[], drone=drone)
-
-        emerg = SimEvent(tick=30, event_type="emergency", data={
-            "location": Location(999, "Emerg", 26.91, 75.82, demand_kg=3.0, urgency="critical", window_minutes=20)
-        })
-        sim = FleetSimulator(city, events=[emerg], speed_multiplier=1000, live_print=False)
-        sim.run(max_ticks=200)
-        for d in sim.drones:
-            self.assertLessEqual(d.remaining_cargo_kg, drone.capacity_kg)
-
-    def test_json_loads_all_drone_parameters(self):
-        """load_scenario_from_json must parse all drone configuration fields."""
-        import tempfile, json
-        from load_scenario import load_scenario_from_json
-
-        data = {
-            "name": "Test JSON",
-            "depot": {"name": "Depot", "lat": 26.90, "lon": 75.80},
-            "deliveries": [{"name": "D1", "lat": 26.91, "lon": 75.81, "demand_kg": 2.0}],
-            "drone": {
-                "capacity_kg": 12.0,
-                "max_range_km": 45.0,
-                "cruise_speed_kmh": 50.0,
-                "fleet_size": 7,
-                "turnaround_min": 15.0,
-                "dwell_min": 3.0,
-                "reserve_fraction": 0.15,
-                "safety_margin_m": 75.0,
-            }
-        }
-        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
-            json.dump(data, f)
-            fname = f.name
-
-        city = load_scenario_from_json(fname)
-        self.assertEqual(city.drone.fleet_size, 7)
-        self.assertEqual(city.drone.turnaround_min, 15.0)
-        self.assertEqual(city.drone.dwell_min, 3.0)
-        self.assertEqual(city.drone.reserve_fraction, 0.15)
-        self.assertEqual(city.drone.safety_margin_m, 75.0)
-
-    def test_100_deterministic_seeds_random_scenario_structural_validity(self):
-        """Generate random scenarios across 100 deterministic seeds ensuring structural validity."""
-        from load_scenario import generate_random_scenario
-        for seed in range(1, 101):
-            city = generate_random_scenario(26.9127, 75.8010, num_deliveries=5, num_no_fly_zones=1, seed=seed)
-            self.assertEqual(len(city.deliveries), 5)
-            self.assertIsNotNone(city.drone)
-
-
 class TestScenarioValidation(unittest.TestCase):
     """Test comprehensive input validation for scenarios."""
 
@@ -1221,144 +1252,5 @@ class TestScenarioValidation(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             validate_scenario(bad_city)
-
-
-class TestQueueWaitTimeDeadlines(unittest.TestCase):
-    """Test that queue waiting time counts toward request delivery deadlines."""
-
-    def test_departure_delay_causes_deadline_miss(self):
-        from config import Location, DroneConfig
-        from time_windows import eta_for_route
-        depot = Location(0, "Depot", 26.90, 75.80, 0.0)
-        stop = Location(1, "Post", 26.95, 75.80, 2.0, window_minutes=15.0, request_time_min=0.0)
-        locations = [depot, stop]
-        matrix = [[0.0, 5.0], [5.0, 0.0]]
-        drone = DroneConfig(capacity_kg=5.0, max_range_km=40.0, cruise_speed_kmh=60.0)  # 5km = 5 minutes flight
-
-        # If departing immediately at T=0m: arrives at T=5m <= deadline T=15m (on-time)
-        res_t0 = eta_for_route([0, 1, 0], locations, matrix, drone, departure_time_min=0.0)
-        self.assertFalse(res_t0[0].missed_window)
-
-        # If delayed in queue and departs at T=20m: arrives at T=25m > deadline T=15m (missed)
-        res_t20 = eta_for_route([0, 1, 0], locations, matrix, drone, departure_time_min=20.0)
-        self.assertTrue(res_t20[0].missed_window)
-
-
-class TestDynamicReplanningPhysicalCargo(unittest.TestCase):
-    """Test emergency dispatch physics and unserviceable state transitions."""
-
-    def test_airborne_drone_cannot_receive_depot_cargo_midair(self):
-        from config import Location, DroneConfig
-        from simulate_fleet import DroneState
-        from replan import try_insert_emergency_into_active_drones
-        depot = Location(0, "Depot", 26.90, 75.80, 0.0)
-        s1 = Location(1, "Stop1", 26.92, 75.80, 2.0)
-        emerg = Location(2, "Emergency", 26.95, 75.80, 2.0, urgency="critical", window_minutes=30)
-        drone_cfg = DroneConfig(capacity_kg=5.0, max_range_km=40.0)
-
-        # Drone is flying mid-leg towards Stop 1 with 2kg on board
-        drone = DroneState(
-            drone_id=1, status="flying", lat=26.91, lon=75.80,
-            route=[0, 1, 0], route_step=0, remaining_cargo_kg=2.0,
-            launch_tick=0, sortie_launch_tick=0,
-        )
-        # Without cargo_onboard=True, mid-air insertion is rejected unless routed back to depot
-        res = try_insert_emergency_into_active_drones(
-            [drone], emerg, [depot, s1, emerg], [], drone_cfg, current_tick=100, cargo_onboard=False
-        )
-        # It must not insert directly between stop1 and depot midair without touching depot
-        if res:
-            _, new_route = res
-            self.assertIn(0, new_route[1:-1])  # Must route through depot (0) to pick up supplies
-
-    def test_queued_route_infeasible_at_actual_departure_time(self):
-        """A queued route whose deadline expires while waiting in queue is marked unserviceable
-        and not launched as an invalid sortie."""
-        from config import CityConfig, Location, DroneConfig
-        from simulate_fleet import FleetSimulator
-        depot = Location(0, "Depot", 26.90, 75.80, 0.0)
-        s1 = Location(1, "Stop1", 26.95, 75.80, 2.0, window_minutes=10.0, request_time_min=0.0)
-        city = CityConfig(
-            name="Test Delayed Queue",
-            depot=depot,
-            deliveries=[s1],
-            no_fly_zones=[],
-            drone=DroneConfig(capacity_kg=5.0, max_range_km=40.0, fleet_size=1, cruise_speed_kmh=60.0),
-        )
-        sim = FleetSimulator(city, events=[], live_print=False)
-        for d in sim.drones:
-            d.route = []
-            d.status = "idle"
-            d.available_tick = 0
-        sim.unassigned_routes = [[0, 1, 0]]
-        sim.tick = 900  # 15 minutes have passed (> deadline 10m)
-        sim._assign_routes()
-
-        self.assertIn(1, sim.unserviceable_ids)
-        self.assertEqual(len(sim.drones[0].route), 0)
-        self.assertEqual(sim.drones[0].status, "idle")
-        self.assertGreaterEqual(sim.time_window_misses, 1)
-
-    def test_intermediate_depot_turnaround_reload_execution(self):
-        """A multi-sortie route with an intermediate depot stop executes turnaround dwell,
-        resets sortie distance, and reloads cargo for the next sortie segment."""
-        from config import CityConfig, Location, DroneConfig
-        from simulate_fleet import FleetSimulator
-        depot = Location(0, "Depot", 26.90, 75.80, 0.0)
-        s1 = Location(1, "Stop1", 26.91, 75.80, 2.0)
-        s2 = Location(2, "Stop2", 26.92, 75.80, 3.0)
-        city = CityConfig(
-            name="Test Intermediate Depot",
-            depot=depot,
-            deliveries=[s1, s2],
-            no_fly_zones=[],
-            drone=DroneConfig(capacity_kg=5.0, max_range_km=40.0, fleet_size=1, cruise_speed_kmh=120.0, turnaround_min=2.0, dwell_min=0.0),
-        )
-        sim = FleetSimulator(city, events=[], live_print=False)
-        drone = sim.drones[0]
-        drone.route = [0, 1, 0, 2, 0]
-        drone.route_step = 0
-        drone.remaining_cargo_kg = 2.0
-        drone.status = "flying"
-        sim._init_leg_path(drone)
-
-        for _ in range(300):
-            if 1 in sim.delivered_ids:
-                break
-            sim._move_drone(drone, 1.0)
-            sim.tick += 1
-        self.assertIn(1, sim.delivered_ids)
-
-        for _ in range(300):
-            if abs(drone.lat - depot.lat) < 1e-5 and abs(drone.lon - depot.lon) < 1e-5 and drone.status == "delivering":
-                break
-            sim._move_drone(drone, 1.0)
-            sim.tick += 1
-        
-        self.assertEqual(drone.status, "delivering")
-        self.assertGreater(drone.dwell_seconds_left, 0.0)
-
-        # Complete turnaround dwell
-        sim._move_drone(drone, drone.dwell_seconds_left + 1.0)
-        self.assertEqual(drone.status, "flying")
-        self.assertEqual(drone.sortie_distance_km, 0.0)
-        self.assertEqual(drone.remaining_cargo_kg, 3.0)
-
-    def test_dynamic_tfr_inside_safety_buffer_unreachable(self):
-        """A destination located within the safety buffer of a no-fly zone is unreachable."""
-        import math
-        from nofly_astar import route_avoiding_zones
-        p_start = (26.90, 75.80)
-        zone = [
-            (26.920, 75.800),
-            (26.920, 75.810),
-            (26.930, 75.810),
-            (26.930, 75.800),
-        ]
-        # Destination is ~20m south of south edge (26.920) with 50m buffer
-        p_dest_in_buffer = (26.9198, 75.805)
-        waypoints, dist, _ = route_avoiding_zones(p_start, p_dest_in_buffer, [zone], buffer_km=0.05)
-        self.assertIsNone(waypoints)
-        self.assertTrue(math.isinf(dist))
 
 

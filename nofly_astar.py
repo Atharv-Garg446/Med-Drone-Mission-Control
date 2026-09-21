@@ -272,12 +272,9 @@ def route_avoiding_zones(p1: Point, p2: Point, zones: List[Polygon],
     no grid search needed). If it does, run A* around the obstacle(s).
 
     Returns (waypoints, distance_km, was_rerouted).
-
-    If A* fails to find a valid path (too many overlapping zones, endpoint
-    inside a zone, etc.), we fall back to a large penalty distance rather
-    than crashing the entire pipeline.  This is essential for robustness
-    in random simulations where dynamically injected TFRs may create
-    unsolvable airspace geometry.
+    If A* cannot find a valid path (e.g. destination inside a restricted zone
+    or completely obstructed corridor), returns (None, float('inf'), True)
+    so upstream solvers recognize the edge as unreachable.
     """
     margin_m = buffer_km * 1000.0
 

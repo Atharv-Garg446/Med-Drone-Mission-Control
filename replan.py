@@ -171,7 +171,7 @@ def try_insert_emergency_into_active_drones(
 
     # 1. First consider idle drones already at the depot (fastest dispatch for newly requested depot cargo)
     for drone in drones:
-        if getattr(drone, 'status', '') == "idle" and current_tick >= getattr(drone, 'available_tick', 0):
+        if drone.status == "idle" and current_tick >= drone.available_tick:
             pts, leg_km, _ = route_avoiding_zones(
                 (depot_loc.lat, depot_loc.lon), (emergency_loc.lat, emergency_loc.lon), no_fly_zones, buffer_km=buffer_km
             )
