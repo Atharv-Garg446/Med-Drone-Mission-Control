@@ -172,7 +172,7 @@ def plot_heuristic_comparison(results, title="Construction Heuristic Comparison"
     return fig, ax
 
 
-def plot_sensitivity(results, base_range_km, title="Battery Range Sensitivity", ax=None):
+def plot_sensitivity(results, base_range_km, title="Flight Range Sensitivity", ax=None):
     """Line plot showing how distance and routes change with range."""
     import matplotlib.pyplot as plt
 
@@ -253,7 +253,7 @@ def save_all_plots(city: CityConfig, experiments: dict, output_dir: str = "outpu
     if exp2:
         fig = plot_sensitivity(
             exp2["results"], exp2["base_range_km"],
-            title=f"Battery Range Sensitivity — {city.name}"
+            title=f"Flight Range Sensitivity — {city.name}"
         )
         fig.savefig(os.path.join(output_dir, "range_sensitivity.png"), dpi=150, bbox_inches="tight")
         plt.close(fig)

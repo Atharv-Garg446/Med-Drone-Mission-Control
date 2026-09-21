@@ -310,7 +310,7 @@ def try_insert_emergency_into_active_drones(
             if drone.sortie_distance_km + sortie1_dist > max_allowed_dist + 1e-9:
                 continue
 
-            # Depot turnaround: reloading cargo and swapping/recharging battery
+            # Depot turnaround: reloading cargo and resetting range budget
             t_sortie2_depart = current_mission_min + drone_config.turnaround_min
 
             # Check Sortie 2 feasibility (depot -> emergency -> depot)

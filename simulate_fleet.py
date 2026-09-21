@@ -4,7 +4,7 @@ simulate_fleet.py
 Discrete-event fleet simulator for drone medical-supply delivery.
 
 Runs a solved set of routes forward in simulated time, tracking every
-drone's GPS position, battery, and cargo second by second. At random
+drone's GPS position, range budget, and cargo second by second. At random
 (or user-specified) intervals, injects disruptive events:
 
   - Pop-up TFR (Temporary Flight Restriction): a new no-fly zone appears
@@ -29,6 +29,7 @@ Usage:
 
 import argparse
 import math
+import os
 import random
 import sys
 import time
@@ -177,7 +178,7 @@ def generate_random_events(
         elif etype == "drone_failure":
             events.append(SimEvent(
                 tick=tick, event_type="drone_failure",
-                data={"reason": "Simulated battery failure"},
+                data={"reason": "Simulated drone failure"},
             ))
 
     events.sort(key=lambda e: e.tick)
@@ -286,13 +287,13 @@ class FleetSimulator:
         
         Decision Process:
         1. Attempt safe continuation to current destination.
-        2. Evaluate remaining onboard deliveries against remaining battery range/reserve,
+        2. Evaluate remaining onboard deliveries against remaining range budget/reserve,
            delivery deadlines, cold-chain exposure, and dwell times.
         3. Reorder remaining stops if another permutation provides a feasible mission.
         4. If full remaining mission is infeasible, drop unreachable/violating stops to depot queue
            and deliver to feasible stops.
         5. If no remaining stops can be safely reached, execute Return to Launch (RTL) to depot.
-        6. If even RTL is unreachable or out of battery range, transition to 'unserviceable'
+        6. If even RTL is unreachable or out of usable range, transition to 'unserviceable'
            (holding / emergency landing) and return undelivered stops to queue.
         """
         if drone.status not in ("flying", "delivering"):
@@ -315,7 +316,7 @@ class FleetSimulator:
             if pts is None or math.isinf(ret_dist) or (drone.sortie_distance_km + ret_dist > max_allowed_dist + 1e-9):
                 drone.status = "unserviceable"
                 drone.active_path = []
-                self._log(f"🚨 Drone {drone.drone_id} UNSERVICEABLE: return path to depot blocked or exceeds battery reserve — holding/emergency landing at ({drone.lat:.4f}, {drone.lon:.4f})")
+                self._log(f"🚨 Drone {drone.drone_id} UNSERVICEABLE: return path to depot blocked or exceeds range reserve — holding/emergency landing at ({drone.lat:.4f}, {drone.lon:.4f})")
                 return False
             drone.active_path = pts
             drone.active_path_length_km = ret_dist
@@ -444,7 +445,7 @@ class FleetSimulator:
             self.time_window_misses += 1
         drone.status = "unserviceable"
         drone.active_path = []
-        self._log(f"🚨 Drone {drone.drone_id} UNSERVICEABLE: no safe path or insufficient battery to return to depot — holding/emergency landing at ({drone.lat:.4f}, {drone.lon:.4f})")
+        self._log(f"🚨 Drone {drone.drone_id} UNSERVICEABLE: no safe path or insufficient range to return to depot — holding/emergency landing at ({drone.lat:.4f}, {drone.lon:.4f})")
         return False
 
     def _assign_routes(self):

@@ -70,7 +70,7 @@ def main():
     events = generate_random_events(city, args.events, 3600, rng) if args.events > 0 else []
 
     # Run simulation
-    sim = FleetSimulator(city, events=events, speed_multiplier=100)
+    sim = FleetSimulator(city, events=events, speed_multiplier=100, seed=args.seed)
     report = sim.run(max_ticks=3600)
 
     # Generate interactive HTML
@@ -94,7 +94,7 @@ def main():
     handler.log_message = lambda self, format, *a: None  # Suppress access logs
 
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("", args.port), handler) as httpd:
+    with socketserver.TCPServer(("127.0.0.1", args.port), handler) as httpd:
         # Open browser
         url = f"http://localhost:{args.port}/output/interactive_sim.html"
         threading.Timer(0.5, lambda: webbrowser.open(url)).start()

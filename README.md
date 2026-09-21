@@ -4,7 +4,7 @@ Route planning and fleet management software for medical drone delivery in disas
 
 When floods, cyclones, or earthquakes cut off road access, this system figures out how to get medical supplies — vaccines, blood, emergency meds — from a hospital depot to relief camps and stranded clinics using a fleet of delivery drones.
 
-It handles all the messy real-world constraints: limited battery, cargo weight limits, no-fly zones, refrigeration deadlines for vaccines, and what to do when things go wrong mid-flight.
+It handles all the messy real-world constraints: limited flight range, cargo weight limits, no-fly zones, refrigeration deadlines for vaccines, and what to do when things go wrong mid-flight.
 
 <p align="center">
   <img src="assets/routes_map.png" alt="Optimized drone routes with obstacle avoidance" width="550"/>
@@ -30,7 +30,7 @@ Each solution gets refined with **2-opt** (uncrosses paths within a route) and *
 When a straight-line path crosses a no-fly zone, **A\* pathfinding** finds the shortest way around using a grid overlay with Haversine distances.
 
 ### Constraints enforced simultaneously:
-- **Battery range** — total flight distance per trip can't exceed drone max (with reserve)
+- **Flight range** — total flight distance per trip can't exceed drone max (with reserve)
 - **Cargo capacity** — total payload weight per trip
 - **Cold chain** — cumulative time out of refrigeration since leaving the depot (not per-leg — a vaccine degrades continuously from launch)
 - **Time windows** — delivery deadlines measured from when the request was created
@@ -49,7 +49,7 @@ When a straight-line path crosses a no-fly zone, **A\* pathfinding** finds the s
 The fleet simulator runs missions forward in time and randomly injects disruptions — pop-up flight restrictions, new emergency patients, drone failures. When something changes mid-flight:
 
 - Active drones evaluate from their **current GPS position** (no teleporting)
-- Routes get re-solved in **<200ms** for the remaining deliveries
+- Routes get re-solved in under **200ms** for the bundled scenarios (8–15 stops, 3–6 drones)
 - If a drone can't make it back to depot, it enters emergency hold
 - New emergency cargo physically originates at the depot — idle drones get dispatched immediately, or deliveries queue until a drone returns
 

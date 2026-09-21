@@ -264,11 +264,11 @@ if solve_ok:
         names = " → ".join(locations[n].name.split(",")[0] for n in route)
         dist = sum(matrix[route[k]][route[k + 1]] for k in range(len(route) - 1))
         demand = sum(locations[n].demand_kg for n in route[1:-1])
-        battery_pct = max(0, 100 * (1 - dist / drone.max_range_km))
+        range_pct = max(0, 100 * (1 - dist / drone.max_range_km))
         st.markdown(
             f"**Route {i+1}**: {names}  \n"
             f"📏 {dist:.1f} km &nbsp; 📦 {demand:.1f} kg &nbsp; "
-            f"🔋 {battery_pct:.0f}% remaining &nbsp; 🏥 {len(route)-2} stops"
+            f"🔋 {range_pct:.0f}% range remaining &nbsp; 🏥 {len(route)-2} stops"
         )
 
     # --- Time windows ---
@@ -357,7 +357,7 @@ with tab1:
             pass
 
 with tab2:
-    st.subheader("How does battery range affect the solution?")
+    st.subheader("How does flight range affect the solution?")
     if st.button("Run Sensitivity Analysis", key="exp2"):
         with st.spinner("Testing range variations..."):
             exp2 = experiment_constraint_sensitivity(city)

@@ -52,7 +52,7 @@ class DroneConfig:
     fleet_size: int = 5              # Hard limit on number of physical drones available
     turnaround_min: float = 10.0     # Time required at depot to reload/recharge before next sortie
     dwell_min: float = 2.0           # Time spent at each delivery location (handoff/landing)
-    reserve_fraction: float = 0.10   # Reserve battery buffer (e.g. 0.10 means we can only plan to use 90% of max_range)
+    reserve_fraction: float = 0.10   # Reserve range buffer (e.g. 0.10 means we can only plan to use 90% of max_range)
     safety_margin_m: float = 50.0    # Distance in meters to keep clear of all No-Fly Zones
 
 

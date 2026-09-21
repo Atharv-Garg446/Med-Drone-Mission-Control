@@ -133,7 +133,7 @@ def nearest_neighbor_construction(
     """Build an initial set of routes with a greedy nearest-neighbor rule,
     respecting both the drone's payload CAPACITY and flight RANGE.
 
-    The drone starts every route back at the depot with a full battery
+    The drone starts every route back at the depot with a full range budget
     budget (max_range_km) and an empty cargo hold's worth of capacity
     (capacity_kg). We keep adding "go to the nearest customer we can still
     legally reach" until no more customers fit on this trip, then send the

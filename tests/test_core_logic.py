@@ -907,16 +907,15 @@ class TestStressSimulation(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# Phase 0: Failing Regression Tests (TDD for Deep Audit Fixes)
+# Regression Edge Cases
 # ---------------------------------------------------------------------------
 
-class TestPhase0FailingRegressions(unittest.TestCase):
-    """Tests designed to FAIL until the Phase 1-6 fixes are implemented.
-    These reproduce the core non-negotiable architectural bugs."""
+class TestRegressionEdgeCases(unittest.TestCase):
+    """Regression tests for critical edge cases: range violations,
+    unreachable destinations, and constraint-aware local search."""
 
     def test_clarke_wright_range_violation(self):
-        """Bug: Clarke-Wright starts with unvalidated base routes and merges
-        them without checking range limits."""
+        """Clarke-Wright must not return routes exceeding max_range_km."""
         locations = [
             Location(0, "Depot", 0.0, 0.0, demand_kg=0.0),
             Location(1, "Far 1", 0.0, 15.0, demand_kg=1.0),
@@ -930,35 +929,30 @@ class TestPhase0FailingRegressions(unittest.TestCase):
         # Drone only has 20km range. It cannot even reach Far 1 and return!
         drone = DroneConfig(max_range_km=20.0, capacity_kg=5.0, cruise_speed_kmh=50.0)
 
-        # CW should refuse to serve these, or return no routes. Currently, it merges them.
-        # Once Phase 3 is implemented, it should raise an error or return unservable.
+        # CW should refuse to serve these, or return only feasible routes.
         try:
             routes = clarke_wright_construction(locations, matrix, drone)
             for r in routes:
                 dist = _route_distance(r, matrix)
-                # If CW returned a route longer than max_range, the test FAILS.
                 self.assertLessEqual(dist, drone.max_range_km, 
                                      "CW returned a route exceeding max_range_km")
         except (ValueError, RuntimeError):
-            # If it correctly refuses to solve, the test passes
+            # Correctly refuses to solve — test passes
             pass
 
     def test_nfz_enclosed_unservable(self):
-        """Bug: A* failing silently returns a straight line with 5x penalty
-        instead of rejecting the impossible path."""
+        """A* must return None/inf for a destination enclosed by an NFZ."""
         # Start (0,0), Dest (0,5). Dest is surrounded by an NFZ box.
         start = (0.0, 0.0)
         dest = (0.0, 5.0)
         nfz = [[(-1.0, 4.0), (-1.0, 6.0), (1.0, 6.0), (1.0, 4.0)]]
         
-        # Currently returns a valid path (a straight line) but it should fail.
         path, dist, rerouted = route_avoiding_zones(start, dest, nfz)
-        # Once fixed (Phase 2), this should return None or an empty path representing failure
         self.assertIsNone(path, "A* should return None for an unreachable enclosed destination")
         self.assertEqual(dist, float('inf'))
 
     def test_hard_time_windows_in_local_search(self):
-        """Bug: 2-opt ignores time windows when minimizing distance."""
+        """2-opt must not choose a shorter route that violates time windows."""
         locations = [
             Location(0, "Depot", 0.0, 0.0, demand_kg=0.0),
             # Stop A is far, but has a tight 10-minute window
@@ -1003,18 +997,17 @@ class TestPhase0FailingRegressions(unittest.TestCase):
         # Route [0, 2, 1, 0]: Dist = 1.0 + 1.5 + 1.0 = 3.5 (Shorter!)
 
         try:
-            # In Phase 3, we will update the signature to accept these args
+            # two_opt may accept additional constraint args
             optimized = two_opt(route_feasible, locations, matrix, drone)
         except TypeError:
             # Currently it only takes route and matrix, and only optimizes distance
             optimized = two_opt(route_feasible, matrix)
 
-        # It should NOT choose [0, 2, 1, 0] because it violates the time window.
-        # Once Phase 3 is implemented, optimized should remain [0, 1, 2, 0].
+        # 2-opt should not choose [0, 2, 1, 0] because it violates the time window.
         self.assertEqual(optimized, [0, 1, 2, 0], "2-opt chose a shorter route that violates time windows")
 
     def test_teleport_detector(self):
-        """Bug: Drones teleport to depot on replan."""
+        """Drones must not teleport to depot on replan."""
         from simulate_fleet import FleetSimulator, SimEvent
         from config import CityConfig
         

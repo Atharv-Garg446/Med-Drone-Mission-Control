@@ -5,7 +5,7 @@ Runs the drone route optimization pipeline end-to-end.
 
 Computes optimal drone routes from a central hospital depot to relief camps 
 and emergency medical posts, respecting real physical constraints (payload, 
-battery, no-fly zones, cold chain).
+range, no-fly zones, cold chain).
 
 Pipeline steps:
   1. Build the flight-distance matrix (no-fly-zone aware, with A* detours)

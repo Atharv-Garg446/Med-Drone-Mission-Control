@@ -4,7 +4,7 @@ visualize_map.py
 Renders an animated folium map: a marker that moves along each solved
 route over time, with no-fly zones drawn as red polygons, the route
 visibly bending around them where a detour was needed, and a popup at
-every animation frame showing live battery-remaining and cargo-remaining.
+every animation frame showing live range-remaining and cargo-remaining.
 
 REQUIRES: `pip install folium`. Uses folium.plugins.TimestampedGeoJson,
 which renders a play/pause/scrub timeline control in the browser and steps
@@ -22,7 +22,7 @@ HOW THE ANIMATION IS BUILT
    30 simulated seconds), interpolating intermediate lat/lon points so the
    marker moves smoothly rather than teleporting stop-to-stop.
 3. At each simulated instant we also know the cumulative distance flown so
-   far and the cumulative demand delivered so far, so "battery remaining"
+   far and the cumulative demand delivered so far, so "range remaining"
    and "cargo remaining" fall out as simple arithmetic against the drone's
    max_range_km / capacity_kg.
 """
@@ -76,7 +76,7 @@ def build_route_animation_features(
     step_km: float = 0.5,
 ) -> list:
     """Build the list of GeoJSON Point features (one per animation frame)
-    for a single route, each carrying a timestamp and live battery/cargo
+    for a single route, each carrying a timestamp and live range/cargo
     telemetry in its `popup`/`tooltip` properties -- this is the format
     folium.plugins.TimestampedGeoJson expects."""
     features = []
@@ -92,7 +92,7 @@ def build_route_animation_features(
         for lat, lon, leg_km in _interpolate_along_path(path, step_km):
             last_leg_km = leg_km
             total_km_here = cumulative_km + leg_km
-            battery_pct = max(0.0, 100.0 * (1 - total_km_here / drone.max_range_km))
+            range_pct = max(0.0, 100.0 * (1 - total_km_here / drone.max_range_km))
             timestamp = start_time + datetime.timedelta(seconds=total_km_here * seconds_per_km)
 
             features.append({
@@ -108,7 +108,7 @@ def build_route_animation_features(
                         "radius": 7,
                     },
                     "popup": (f"Route {route_index + 1}<br>"
-                              f"Battery: {battery_pct:.0f}%<br>"
+                              f"Range: {range_pct:.0f}%<br>"
                               f"Cargo remaining: {remaining_capacity:.1f} kg<br>"
                               f"Distance flown: {total_km_here:.2f} km"),
                 },

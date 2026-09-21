@@ -82,7 +82,9 @@ def solve_vrp_with_ortools(
     )
 
     # --- distance dimension: enforces "total flight distance per trip <= max_range_km"
-    # (this is what turns "vehicle capacity" into "vehicle capacity AND battery range")
+    # (this is what turns "vehicle capacity" into "vehicle capacity AND flight range")
+    # Note: this benchmark enforces capacity + range only; the custom solver
+    # additionally enforces cold-chain and time-window constraints.
     routing.AddDimension(
         transit_callback_index,
         0,                       # no slack

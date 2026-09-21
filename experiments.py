@@ -9,7 +9,7 @@ on controlled scenarios to measure performance differences.
 Each experiment answers a concrete question:
   1. "Which construction heuristic is best, and by how much?"
   2. "How much do 2-opt and or-opt actually improve the initial solution?"
-  3. "What happens when we tighten the battery constraint?"
+  3. "What happens when we tighten the range constraint?"
   4. "If an emergency delivery is added mid-mission, how does replanning compare?"
   5. "What distance penalty do the no-fly zones impose?"
 
@@ -129,7 +129,7 @@ def experiment_heuristic_comparison(city: CityConfig) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def experiment_constraint_sensitivity(city: CityConfig) -> Dict[str, Any]:
-    """Vary battery range and observe how solutions change.
+    """Vary flight range and observe how solutions change.
 
     Question: "What happens to total distance and number of routes as the
     drone's range gets tighter? Is there a critical threshold?"
@@ -171,7 +171,7 @@ def experiment_constraint_sensitivity(city: CityConfig) -> Dict[str, Any]:
             })
 
     return {
-        "title": "Experiment 2: Battery Range Sensitivity",
+        "title": "Experiment 2: Flight Range Sensitivity",
         "city": city.name,
         "base_range_km": base_range,
         "results": results,
