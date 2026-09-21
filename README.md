@@ -62,7 +62,7 @@ These timings represent measured benchmark results on the tested machine (Apple 
 | **8-Stop Dynamic Replan** | Jaipur Disaster (8 deliveries, 2 NFZs) | ~254 ms | ~201 ms (min: ~200 ms) |
 | **15-Stop Dynamic Replan** | Multi-Obstacle Clusters (5 seeds) | ~801 ms | ~617 ms (min: ~91 ms) |
 
-For the tested 8–15-stop scenarios, full replanning remains sub-second to low-second (~0.20–0.26 s for 8 stops, ~0.61–0.79 s for 15 stops on the tested machine), eliminating the need for complex partial-graph repair heuristics.
+For the tested 8–15-stop scenarios, full replanning remains sub-second to low-second (~0.20–0.26 s for 8 stops, ~0.61–0.79 s for 15 stops on the tested machine), using full replanning rather than partial-graph repair heuristics.
 
 To reproduce these benchmarks on your machine:
 ```bash
