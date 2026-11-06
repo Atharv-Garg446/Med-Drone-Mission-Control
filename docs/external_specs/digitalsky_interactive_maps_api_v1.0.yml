@@ -1,0 +1,224 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: DigitalSky Flight Plan API
+  license:
+    name: DGCA and AAI
+servers:
+  - url: 'https://digitalsky.dgca.gov.in/digital-sky'
+paths:
+  /flightplan/validate/airspace:
+    post:
+      summary: Validate flight plan airspace with geo json
+      operationId: validateFlightPlanZone
+      parameters:
+        - name: X-API-VERSION
+          in: header
+          description: API version
+          required: true
+          schema:
+            type: integer
+            default: 1
+        - name: source
+          in: header
+          required: true
+          description: >-
+            Application name which is creating the application, for example web,
+            android, mobile
+          schema:
+            type: string
+        - name: x-source-type
+          in: header
+          required: false
+          description: Type of the source e.g. Software Application / Mobile / Rest API client / Flight Planner device
+          schema:
+            type: string
+        - name: x-device-id
+          in: header
+          required: false
+          description: Indetifier of the device or application as applicable
+          schema:
+            type: string
+        - name: x-device-ip
+          in: header
+          required: false
+          description: IP address of the calling device
+          schema:
+            type: string
+        - name: x-latitude
+          in: header
+          required: false
+          description: Geo location tatitude of the device from where this API is invoked 13.293825236231228
+          schema:
+            type: string
+        - name: x-longitude
+          in: header
+          required: false
+          description: Geo location longitude of the device from where this API is invoked e.g. 77.12504941859402
+          schema:
+            type: string
+        - name: x-auth
+          in: header
+          required: true
+          description: Token generated after the user is authenticated
+          schema:
+            type: string
+        - name: x-correlation-id
+          in: header
+          required: false
+          description: >-
+            Unique identifier for each request that is being submitted to
+            server. It is an optional field, if the field is empty then server
+            will generate the identifier and will include in the response.
+            Version 1 UUID will be used for this field. Refer
+            'https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_1_(date-time_and_MAC_address)'
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightPlanAreaValidateRequest'
+      tags:
+        - Flight Plan Validation
+      responses:
+        '200':
+          description: FlightPlan zone validated successfully
+          headers:
+            x-correlation-id:
+              description: >-
+                Identifier of the request which is included while submitting the
+                request, if not provided then server sends auto generated
+                identifier
+              schema:
+                type: string
+                format: uuid
+        '400':
+          description: Bad request.
+          headers:
+            x-correlation-id:
+              description: >-
+                Identifier of the request which is included while submitting the
+                request, if not provided then server sends auto generated
+                identifier
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Error'
+                  - $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Internal Server Error.
+          headers:
+            x-correlation-id:
+              description: >-
+                Identifier of the request which is included while submitting the
+                request, if not provided then server sends auto generated
+                identifier
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Unspecified error.
+          headers:
+            x-correlation-id:
+              description: >-
+                Identifier of the request which is included while submitting the
+                request, if not provided then server sends auto generated
+                identifier
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ValidationError:
+      type: object
+      required:
+        - message
+        - _links
+      properties:
+        message:
+          type: string
+        _links:
+          $ref: '#/components/schemas/_links'
+        _embeded:
+          $ref: '#/components/schemas/_embeded'
+    _links:
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/Self'
+    _embeded:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+    Self:
+      type: object
+      required:
+        - href
+        - templated
+      properties:
+        href:
+          type: string
+        templated:
+          type: string
+          format: boolean
+    FlightPlanAreaValidateRequest:
+      type: object
+      properties:
+        maxAltitude:
+          type: number
+          format: double
+          maximum: 400
+          description: Maximum operational altitude in feet at which the flight operation is to be planned. Capped at 400 feet.
+        minAltitude:
+          type: number
+          format: double
+          description: Minimum operational altitude in feet at which the flight operation is to be planned.
+        startDateTime:
+          type: string
+        endDateTime:
+          type: string
+        geom:
+          type: string
+          description: GeoJson as base64 encoded string e.g. eyJ0eXBlIjoiRmVhdHVyZUNvbGxlY3Rpb24iLCJmZWF0dXJlcyI6W3sidHlwZSI6IkZlYXR1cmUiLCJwcm9wZXJ0aWVzIjp7fSwiZ2VvbWV0cnkiOnsiY29vcmRpbmF0ZXMiOltbWzc3LjEyMjAzMTIzMTQ5MDM4LDEzLjI5MjUxOTc2MTI3OTE5NV0sWzc3LjEyMTE5Mjg0NjE4MzI1LDEzLjI4Nzk1MDU0MzYxMjQ4Ml0sWzc3LjEyNTcyMDEyNjgzODc2LDEzLjI4ODI3NjkxOTE1Nzc1Ml0sWzc3LjEyODIzNTI4Mjc1ODQ1LDEzLjI5MDcyNDcyMTc0Njk0XSxbNzcuMTI1MDQ5NDE4NTk0MDIsMTMuMjkzODI1MjM2MjMxMjI4XSxbNzcuMTIyMDMxMjMxNDkwMzgsMTMuMjkyNTE5NzYxMjc5MTk1XV1dLCJ0eXBlIjoiUG9seWdvbiJ9fV19
+        radius:
+          type: number
+          format: double
+          description: If isCircle parameter is true then it should be mandatory
+        isCircle:
+          type: boolean
+          description: If the given geom is a circle, set this boolean as true

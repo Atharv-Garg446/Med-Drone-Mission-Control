@@ -1,0 +1,41 @@
+# Extra SITL defaults loaded after ArduPilot's copter.parm.
+# Used by flightstack/sitl.py for the delivery demonstrations.
+#
+# Servo gripper on SERVO9, simulated by ArduPilot's SIM_GRPS model, so the
+# hover-and-release mission step (MAV_CMD_DO_GRIPPER) has a real actuator.
+GRIP_ENABLE      1
+GRIP_TYPE        1
+SERVO9_FUNCTION  28
+SIM_GRPS_ENABLE  1
+SIM_GRPS_PIN     9
+#
+# Finite simulated battery so BATTERY_STATUS/SYS_STATUS report consumption.
+# Aligned with MedDrone-Hexa-16 BatterySpec (6S 16 Ah = 16000 mAh).
+SIM_BATT_CAP_AH  16
+BATT_CAPACITY    16000
+#
+# Mission speeds (cm/s) -- planner cruise speed must match WPNAV_SPEED.
+WPNAV_SPEED      1000
+RTL_ALT          6000
+#
+# Land-and-deliver: MIS_OPTIONS bit 2 (ContinueAfterLand) lets an AUTO mission
+# continue with NAV_TAKEOFF after NAV_LAND. Without it ArduCopter disarms on
+# touchdown and ends the mission (observed in SITL, 2026-10-26).
+MIS_OPTIONS      4
+#
+# Native ArduPilot Obstacle Avoidance (BendyRuler) via C++ SITL Raycasting Proximity Sensor
+# PRX1_TYPE = 10 (AP_Proximity_SITL) raycasts 8 sectors in C++ against world obstacles
+# stored in AC_PolyFence_loader while FENCE_ENABLE = 0 keeps geofence failsafe actions off.
+FENCE_ENABLE     0
+FENCE_ALT_MAX    120
+PRX1_TYPE        10
+PRX1_MIN         0.2
+PRX1_MAX         50.0
+OA_TYPE          1
+OA_MARGIN_MAX    10.0
+OA_OPTIONS       5
+OA_DB_EXPIRE     10.0
+OA_DB_OUTPUT     3
+OA_DB_RADIUS_MIN 3.0
+OA_BR_LOOKAHEAD  35.0
+SR0_ADSB         5

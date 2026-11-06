@@ -69,13 +69,21 @@ def _route_demand(route: List[int], locations: List[Location]) -> float:
 
 import math
 
-def is_route_feasible(route: List[int], locations: List[Location], matrix: List[List[float]], drone: DroneConfig, depart_minutes: float = 0.0) -> bool:
+def is_route_feasible(
+    route: List[int],
+    locations: List[Location],
+    matrix: List[List[float]],
+    drone: DroneConfig,
+    depart_minutes: float = 0.0,
+    energy_estimator: Optional[object] = None,
+) -> bool:
     """Check if a route satisfies ALL hard constraints:
     - No `inf` edges (unreachable)
     - Payload <= drone.capacity_kg
     - Distance <= drone.max_range_km * (1.0 - drone.reserve_fraction)
     - Time windows met for all stops
     - Cold chain limits met for all stops
+    - Vehicle MTOW and battery energy feasibility (if energy_estimator configured)
     """
     total_demand = 0.0
     elapsed_km = 0.0
@@ -114,6 +122,23 @@ def is_route_feasible(route: List[int], locations: List[Location], matrix: List[
     max_allowed_dist = drone.max_range_km * (1.0 - drone.reserve_fraction)
     if elapsed_km > max_allowed_dist + 1e-9:
         return False
+
+    # Check vehicle physics and battery energy model if active
+    estimator = energy_estimator or getattr(drone, "energy_estimator", None)
+    if estimator is not None:
+        leg_distances = [matrix[route[i - 1]][route[i]] for i in range(1, len(route))]
+        demands = [loc.demand_kg for loc in locations]
+        cruise_speed_ms = (drone.cruise_speed_kmh * 1000.0) / 3600.0
+        dwell_s = drone.dwell_min * 60.0
+        report = estimator.evaluate_route(
+            route_indices=route,
+            leg_distances_km=leg_distances,
+            demands_kg=demands,
+            cruise_speed_ms=cruise_speed_ms,
+            dwell_time_s=dwell_s,
+        )
+        if not report.is_feasible:
+            return False
         
     return True
 
@@ -168,10 +193,26 @@ def _diagnose_unreachable_customer(
             f"exceeds cold-chain exposure limit ({loc.cold_chain_limit_minutes:.1f}m)."
         )
 
+    estimator = getattr(drone, "energy_estimator", None)
+    if estimator is not None:
+        report = estimator.evaluate_route(
+            route_indices=[depot_index, stranded, depot_index],
+            leg_distances_km=[dist_out, dist_back],
+            demands_kg=[0.0 if i != stranded else loc.demand_kg for i in range(len(locations))],
+            cruise_speed_ms=(drone.cruise_speed_kmh * 1000.0) / 3600.0,
+            dwell_time_s=drone.dwell_min * 60.0,
+        )
+        if not report.is_feasible:
+            return (
+                f"Location '{loc.name}' can never be delivered to: vehicle physics / battery energy "
+                f"limit breached ({report.failure_reason})."
+            )
+
     return (
         f"Location '{loc.name}' can never be delivered to: fails feasibility constraints "
-        f"(capacity, range, deadline, cold-chain, or airspace) even alone."
+        f"(capacity, range, deadline, cold-chain, energy, or airspace) even alone."
     )
+
 
 
 def nearest_neighbor_construction(

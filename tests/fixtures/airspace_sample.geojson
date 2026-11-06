@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "version": "fixture-1",
+    "updated_at": "2026-10-25T00:00:00Z",
+    "notes": "SYNTHETIC TEST FIXTURE - hand-made geometry near Jaipur for unit tests. Not Digital Sky data."
+  },
+  "features": [
+    {"type": "Feature", "id": "R1",
+     "properties": {"category": "red", "name": "fixture red zone"},
+     "geometry": {"type": "Polygon", "coordinates": [[[75.793, 26.813], [75.830, 26.813], [75.830, 26.838], [75.793, 26.838], [75.793, 26.813]]]}},
+    {"type": "Feature", "id": "Y1",
+     "properties": {"category": "yellow", "name": "fixture yellow zone", "ceiling_m_agl": 60},
+     "geometry": {"type": "Polygon", "coordinates": [[[75.840, 26.880], [75.850, 26.880], [75.850, 26.890], [75.840, 26.890], [75.840, 26.880]]]}},
+    {"type": "Feature", "id": "G1",
+     "properties": {"category": "green", "name": "fixture green zone"},
+     "geometry": {"type": "Polygon", "coordinates": [[[75.700, 26.900], [75.710, 26.900], [75.710, 26.910], [75.700, 26.910], [75.700, 26.900]]]}},
+    {"type": "Feature", "id": "T1",
+     "properties": {"category": "temporary_restriction", "name": "fixture time-bounded restriction",
+                    "valid_from": "2026-10-26T00:00:00Z", "valid_to": "2026-10-26T12:00:00Z"},
+     "geometry": {"type": "MultiPolygon", "coordinates": [[[[75.811, 26.858], [75.818, 26.858], [75.818, 26.864], [75.811, 26.864], [75.811, 26.858]]]]}}
+  ]
+}

@@ -35,6 +35,10 @@ class Location:
     # For initial pre-planned missions this is 0.0; for dynamic emergency events it is tick/60.
     request_time_min: float = 0.0
 
+    # Optional delivery-site suitability descriptor (flightstack.payload.SiteSuitability
+    # or compatible dict/object) specifying ground surface condition, slope, and clearance.
+    site_suitability: Optional[object] = None
+
 
 @dataclass
 class DroneConfig:
@@ -51,6 +55,15 @@ class DroneConfig:
     dwell_min: float = 2.0           # Time spent at each delivery location (handoff/landing)
     reserve_fraction: float = 0.10   # Reserve range buffer (e.g. 0.10 means we can only plan to use 90% of max_range)
     safety_margin_m: float = 50.0    # Distance in meters to keep clear of all No-Fly Zones
+    energy_estimator: Optional[object] = None
+
+    def enable_energy_model(self, vehicle_profile=None, battery_spec=None):
+        """Attach a first-principles physics and battery energy estimator to this vehicle config."""
+        from flightstack.vehicle_model import VehicleProfile, BatterySpec, EnergyEstimator
+        v = vehicle_profile or VehicleProfile(max_payload_kg=max(self.capacity_kg, 8.0))
+        b = battery_spec or BatterySpec(reserve_fraction=self.reserve_fraction)
+        self.energy_estimator = EnergyEstimator(vehicle=v, battery=b)
+        return self.energy_estimator
 
 
 @dataclass
@@ -306,12 +319,94 @@ CHENNAI_FLOOD = CityConfig(
 
 
 # ===========================================================================
+# SCENARIO 4: Jaipur Single-UAV Reference Autonomy Sortie
+# ===========================================================================
+# Grounded in flightstack/vehicle_model.py (VehicleProfile "MedDrone-Hexa-16"
+# and BatterySpec):
+#   - Empty airframe: 5.5 kg, 6S 16 Ah LiPo battery: 3.2 kg (355.2 Wh total,
+#     284.16 Wh usable with 20% reserve_fraction).
+#   - Structural cargo limit: max_payload_kg = 8.0 kg (MTOW = 17.5 kg).
+#   - Cruise speed: 10.0 m/s (36.0 km/h), matching ArduPilot WPNAV_SPEED=1000 cm/s.
+#   - Provisional range assumption: at 10.0 m/s with 3.5 kg initial payload
+#     (676 W outbound cruise, 417 W empty return, ~546 W mean), 284.16 Wh usable
+#     energy yields ~18.0 km safe nominal round-trip range with hover dwell and
+#     20% battery reserve.
+# ===========================================================================
+
+JAIPUR_SINGLE_UAV_DELIVERIES = [
+    Location(
+        1,
+        "Gopalpura Flooded Relief Camp",
+        26.8850,
+        75.7930,
+        demand_kg=2.0,
+        urgency="critical",
+        window_minutes=20,
+        cold_chain_limit_minutes=30,
+        site_suitability={
+            "is_safe_for_landing": False,
+            "surface_condition": "flooded",
+            "slope_deg": 4.0,
+            "obstacle_clearance_m": 12.0,
+            "recommended_mode": "hover",
+            "notes": "Inundated school courtyard; hover rope/gripper release required",
+        },
+    ),
+    Location(
+        2,
+        "Jhalana Elevated Medical Post",
+        26.8890,
+        75.8180,
+        demand_kg=1.5,
+        urgency="urgent",
+        window_minutes=35,
+        cold_chain_limit_minutes=45,
+        landing_zone_image="sanganer_clinic_landing.jpg",
+        site_suitability={
+            "is_safe_for_landing": True,
+            "surface_condition": "clear",
+            "slope_deg": 2.0,
+            "obstacle_clearance_m": 18.0,
+            "recommended_mode": "land",
+            "notes": "Elevated dry courtyard suitable for either hover or land handoff",
+        },
+    ),
+]
+
+JAIPUR_SINGLE_UAV_DRONE = DroneConfig(
+    capacity_kg=8.0,          # Matches VehicleProfile.max_payload_kg (5.5+3.2+8.0 = 16.7 kg <= 17.5 kg MTOW)
+    max_range_km=18.0,        # Grounded in 284.16 Wh usable battery budget at 10 m/s (36 km/h)
+    cruise_speed_kmh=36.0,    # Matches SITL WPNAV_SPEED = 1000 cm/s (10.0 m/s)
+    fleet_size=1,             # Dedicated single-UAV reference configuration
+    reserve_fraction=0.20,    # Matches BatterySpec.reserve_fraction (20% SoC floor)
+    safety_margin_m=50.0,
+)
+
+JAIPUR_SINGLE_UAV = CityConfig(
+    name="Jaipur Single-UAV Medical Autonomy Reference",
+    depot=JAIPUR_DISASTER_DEPOT,
+    deliveries=JAIPUR_SINGLE_UAV_DELIVERIES,
+    no_fly_zones=[JAIPUR_AIRPORT_ZONE, CITY_PALACE_ZONE],
+    drone=JAIPUR_SINGLE_UAV_DRONE,
+    scenario_description=(
+        "Single-UAV autonomous medical delivery reference scenario grounded in "
+        " the MedDrone-Hexa-16 physical model (8.0 kg max payload, 284.16 Wh "
+        "usable energy, 20% reserve, 10 m/s cruise). Visits a flooded relief camp "
+        "(requiring hover release) and an elevated medical post (supporting "
+        "hover or land handoff) while enforcing 4D airspace restrictions, "
+        "cold-chain limits, and proximity obstacle avoidance."
+    ),
+)
+
+
+# ===========================================================================
 # CITY_CONFIGS REGISTRY
 # ===========================================================================
 # Maps CLI-friendly names to CityConfig objects.
 # ===========================================================================
 
 CITY_CONFIGS = {
+    "jaipur_single_uav": JAIPUR_SINGLE_UAV,
     "jaipur_disaster": JAIPUR_DISASTER,
     "jaipur_hospital": JAIPUR_HOSPITAL,
     "jaipur": JAIPUR_HOSPITAL,       # backward-compatible alias

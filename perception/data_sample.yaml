@@ -1,0 +1,16 @@
+# Med-Drone Mission Control — Custom Aerial Perception Dataset Configuration
+path: datasets/med_drone_aerial  # dataset root dir
+train: images/train              # train images (relative to 'path')
+val: images/val                  # val images (relative to 'path')
+test: images/test                # test images (optional)
+
+# Aerial obstacle and landing zone classes
+names:
+  0: person
+  1: vehicle
+  2: construction_crane
+  3: communication_tower
+  4: power_line_pylon
+  5: uncooperative_uav
+  6: emergency_landing_pad
+  7: flood_debris

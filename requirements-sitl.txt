@@ -1,0 +1,8 @@
+# Flight-stack integration (sitl_mission_demo.py, flightstack/, SITL tests).
+# Install into a virtualenv:  python3 -m venv .venv-sitl && .venv-sitl/bin/pip install -r requirements-sitl.txt
+# Verified with pymavlink 2.4.50 against ArduCopter 4.5 (Copter-4.5 branch) SITL.
+pymavlink>=2.4.40
+# Needed only to BUILD ArduPilot SITL with ./waf (not imported by this repo):
+empy==3.3.4
+pexpect
+future
