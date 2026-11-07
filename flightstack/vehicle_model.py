@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 GRAVITY = 9.80665              # m/s^2
 AIR_DENSITY_SEA_LEVEL = 1.225  # kg/m^3
@@ -145,8 +145,12 @@ class VehicleProfile:
         return self.total_mass(payload_kg)
 
     @property
+    def total_battery_wh(self) -> float:
+        return BatterySpec().total_energy_wh
+
+    @property
     def usable_battery_wh(self) -> float:
-        return (22.2 * 16000.0 / 1000.0) * (1.0 - 0.20)
+        return BatterySpec().usable_energy_wh
 
 
 @dataclass
@@ -201,41 +205,98 @@ class EnergyEstimator:
         cruise_speed_ms: float = 11.11,
         dwell_time_s: float = 120.0,
         hover_time_s: Optional[float] = None,
+        leg_km_list: Optional[List[float]] = None,
     ) -> RouteEnergyReport:
         """Compute leg-by-leg energy consumption as cargo is delivered.
 
         Supports both index-based route evaluation and aggregate distance evaluation:
         1. evaluate_route(route_indices, leg_distances_km, demands_kg, ...)
-        2. evaluate_route(planned_km, stops_payload, cruise_speed_ms, hover_time_s)
+        2. evaluate_route(planned_km, stops_payload, cruise_speed_ms=..., hover_time_s=..., leg_km_list=...)
         """
         # Aggregate distance overload: evaluate_route(planned_km, stops_payload, ...)
         if isinstance(route_indices, (int, float)):
             planned_km = float(route_indices)
             stops_payload = leg_distances_km if isinstance(leg_distances_km, list) else []
             h_time = hover_time_s if hover_time_s is not None else dwell_time_s
-            
-            # Cargo carried for cruise approximation
-            rem_cargo = stops_payload[0][1] if stops_payload else 0.0
-            p_cruise = self.vehicle.cruise_power_watts(rem_cargo, cruise_speed_ms)
-            flight_time_s = (planned_km * 1000.0) / max(cruise_speed_ms, 0.1)
-            e_cruise_wh = (p_cruise * flight_time_s) / 3600.0
-            
-            e_hover_wh = sum(
-                (self.vehicle.hover_power_watts(c) * h_time) / 3600.0
-                for _, c in stops_payload
-            )
-            total_wh = e_cruise_wh + e_hover_wh
             usable_wh = getattr(self.vehicle, "usable_battery_wh", self.battery.usable_energy_wh)
+            rem_cargo = float(stops_payload[0][1]) if stops_payload else 0.0
+
+            try:
+                self.vehicle.total_mass(rem_cargo)
+            except ValueError as e:
+                return RouteEnergyReport(
+                    is_feasible=False,
+                    total_energy_wh=0.0,
+                    usable_energy_wh=usable_wh,
+                    total_energy_pct=0.0,
+                    reserve_margin_pct=0.0,
+                    initial_cargo_kg=rem_cargo,
+                    mtow_ok=False,
+                    legs=[],
+                    failure_reason=str(e),
+                )
+
+            legs_result: List[LegEnergyResult] = []
+            if leg_km_list:
+                eff_legs_km = [float(d) for d in leg_km_list]
+            elif stops_payload:
+                n_legs = len(stops_payload) + 1
+                eff_legs_km = [planned_km / n_legs] * n_legs
+            else:
+                eff_legs_km = [planned_km] if planned_km > 0.0 else []
+
+            total_wh = 0.0
+            prev_id = 0
+            for idx, dist_km in enumerate(eff_legs_km):
+                if idx < len(stops_payload):
+                    stop_obj, cargo_kg = stops_payload[idx]
+                    cargo_kg = float(cargo_kg)
+                    to_id = int(getattr(stop_obj, "id", idx + 1)) if stop_obj is not None else 0
+                    leg_dwell_s = float(h_time) if stop_obj is not None else 0.0
+                else:
+                    if stops_payload:
+                        last_stop, last_cargo = stops_payload[-1]
+                        last_demand = float(getattr(last_stop, "demand_kg", 0.0) or 0.0) if last_stop is not None else 0.0
+                        cargo_kg = max(0.0, float(last_cargo) - last_demand)
+                    else:
+                        cargo_kg = 0.0
+                    to_id = 0
+                    leg_dwell_s = 0.0
+
+                flight_time_s = (dist_km * 1000.0) / max(cruise_speed_ms, 0.1)
+                p_cruise = self.vehicle.cruise_power_watts(cargo_kg, cruise_speed_ms)
+                p_hover = self.vehicle.hover_power_watts(cargo_kg)
+                e_cruise_wh = (p_cruise * flight_time_s) / 3600.0
+                e_hover_wh = (p_hover * leg_dwell_s) / 3600.0
+                leg_wh = e_cruise_wh + e_hover_wh
+                total_wh += leg_wh
+                legs_result.append(LegEnergyResult(
+                    from_index=prev_id,
+                    to_index=to_id,
+                    distance_km=dist_km,
+                    payload_carried_kg=cargo_kg,
+                    airspeed_ms=cruise_speed_ms,
+                    flight_time_s=flight_time_s,
+                    dwell_time_s=leg_dwell_s,
+                    cruise_power_w=p_cruise,
+                    hover_power_w=p_hover,
+                    energy_wh=leg_wh,
+                ))
+                prev_id = to_id
+
+            total_batt_wh = usable_wh / max(1.0 - self.battery.reserve_fraction, 0.01)
+            consumed_pct = (total_wh / max(total_batt_wh, 1.0)) * 100.0
+            reserve_pct = 100.0 - consumed_pct
             feasible = total_wh <= usable_wh
             return RouteEnergyReport(
                 is_feasible=feasible,
                 total_energy_wh=total_wh,
                 usable_energy_wh=usable_wh,
-                total_energy_pct=(total_wh / max(usable_wh, 1.0)) * 100.0,
-                reserve_margin_pct=100.0 - (total_wh / max(usable_wh, 1.0)) * 100.0,
+                total_energy_pct=consumed_pct,
+                reserve_margin_pct=reserve_pct,
                 initial_cargo_kg=rem_cargo,
                 mtow_ok=True,
-                legs=[],
+                legs=legs_result,
                 failure_reason=None if feasible else f"Required {total_wh:.1f}Wh exceeds {usable_wh:.1f}Wh",
             )
 

@@ -51,6 +51,16 @@ COPTER_MODES = {
     26: "AUTOROTATE", 27: "AUTO_RTL",
 }
 
+MAV_TYPE_NAMES = {
+    0: "GENERIC",
+    1: "FIXED_WING",
+    2: "QUADROTOR",
+    4: "HELICOPTER",
+    13: "HEXAROTOR",
+    14: "OCTOROTOR",
+    15: "TRICOPTER",
+}
+
 DEFAULT_MAX_AGE_S = 2.0   # position/attitude older than this is "stale"
 
 
@@ -124,6 +134,8 @@ class TelemetryState:
     battery: Stamped = field(default_factory=Stamped)
     ekf: Stamped = field(default_factory=Stamped)
     heartbeat: Stamped = field(default_factory=Stamped)   # value = (mode, armed)
+    mav_type_id: Optional[int] = None
+    mav_type: Optional[str] = None
     mission_current: Stamped = field(default_factory=Stamped)
     last_reached_seq: Stamped = field(default_factory=Stamped)
     sim_ground_truth: Stamped = field(default_factory=Stamped)
@@ -149,8 +161,12 @@ class TelemetryState:
 
     def _on_HEARTBEAT(self, msg, now):
         # Ignore heartbeats from GCS/companion components (type 6 = GCS).
-        if getattr(msg, "type", None) == 6:
+        mtype_id = getattr(msg, "type", None)
+        if mtype_id == 6:
             return
+        if mtype_id is not None:
+            self.mav_type_id = int(mtype_id)
+            self.mav_type = MAV_TYPE_NAMES.get(self.mav_type_id, f"MAV_TYPE_{self.mav_type_id}")
         mode = COPTER_MODES.get(msg.custom_mode, "MODE_%d" % msg.custom_mode)
         armed = bool(msg.base_mode & MAV_MODE_FLAG_SAFETY_ARMED)
         self.heartbeat = Stamped((mode, armed), now)
@@ -306,6 +322,7 @@ class TelemetryState:
         return {
             "source": "autopilot_mavlink",
             "mode": self.mode, "armed": self.armed,
+            "mav_type": self.mav_type, "mav_type_id": self.mav_type_id,
             "position": grp(self.position), "gnss": grp(self.gnss),
             "battery": grp(self.battery), "ekf_flags": grp(self.ekf),
             "mission_current": grp(self.mission_current),

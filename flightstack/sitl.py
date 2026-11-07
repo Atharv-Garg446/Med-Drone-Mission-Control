@@ -5,6 +5,14 @@ Starts/stops an ArduPilot ArduCopter SITL process (the real autopilot
 firmware compiled for the host) using ArduPilot's built-in multicopter
 physics model, or an external simulator such as Gazebo via ``--model JSON``.
 
+The default ``--model hexa:med_drone_hexa_16.json`` configures ArduPilot's
+``SIM_Multicopter`` C++ physics with 6 motors in Plus geometry and loads the
+``MedDrone-Hexa-16`` mass, rotor disc area, drag, and 6S 16 Ah LiPo battery
+parameters from ``flightstack/params/med_drone_hexa_16.json``. Combined with
+``FRAME_CLASS=2`` and ``FRAME_TYPE=0`` in ``sitl_delivery.parm``, both the
+physics simulator (``SIM_Frame``) and the autopilot motor mixer
+(``AP_MotorsMatrix``) operate as a unified 6-rotor hexacopter.
+
 Locating the binary:
   * ``ARDUPILOT_HOME`` env var -> $ARDUPILOT_HOME/build/sitl/bin/arducopter
   * or ``ARDUCOPTER_SITL_BIN`` pointing directly at the binary.
@@ -16,6 +24,7 @@ Build once with (see docs/SITL_SETUP.md):
 from __future__ import annotations
 
 import os
+import shutil
 import socket
 import subprocess
 import tempfile
@@ -59,7 +68,8 @@ class SitlProcess:
     """Context manager around one ArduCopter SITL instance."""
 
     def __init__(self, home: Sequence[float], instance: int = 0, speedup: float = 1.0,
-                 model: str = "+", extra_defaults: Optional[List[str]] = None,
+                 model: str = "hexa:med_drone_hexa_16.json",
+                 extra_defaults: Optional[List[str]] = None,
                  workdir: Optional[str] = None, binary: Optional[str] = None,
                  wipe: bool = True, enable_lidar: bool = False,
                  extra_args: Optional[List[str]] = None):
@@ -92,7 +102,22 @@ class SitlProcess:
         if _port_open(self.port):
             raise SitlNotAvailable("port %d already in use (another SITL running?)" % self.port)
         lat, lon, alt, hdg = (list(self.home) + [0, 0])[:4]
-        cmd = [self.binary, "--model", self.model, "--speedup", str(self.speedup),
+        model_arg = self.model
+        if ":" in model_arg and model_arg.endswith(".json"):
+            prefix, json_ref = model_arg.split(":", 1)
+            params_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "params")
+            cand_paths = [
+                json_ref,
+                os.path.join(params_dir, os.path.basename(json_ref)),
+            ]
+            src_json = next((p for p in cand_paths if os.path.isfile(p)), None)
+            if src_json is not None:
+                local_name = os.path.basename(src_json)
+                dst_json = os.path.join(self.workdir, local_name)
+                if os.path.abspath(src_json) != os.path.abspath(dst_json):
+                    shutil.copyfile(src_json, dst_json)
+                model_arg = f"{prefix}:{local_name}"
+        cmd = [self.binary, "--model", model_arg, "--speedup", str(self.speedup),
                "--defaults", ",".join(self.defaults), "-I%d" % self.instance,
                "--home", "%f,%f,%f,%f" % (lat, lon, alt, hdg)]
         if self.wipe:

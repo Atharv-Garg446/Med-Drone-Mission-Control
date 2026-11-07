@@ -195,11 +195,13 @@ def main(argv=None):
     for s in plan.stops:
         stops_payload.append((s, running_cargo))
         running_cargo = max(0.0, running_cargo - float(getattr(s, "demand_kg", 0.0) or 0.0))
+    leg_km_list = [_polyline_km(lp) for lp in plan.leg_paths] if plan.leg_paths else None
     energy_report = ee.evaluate_route(
         plan.planned_km,
         stops_payload,
         cruise_speed_ms=profile.cruise_speed_ms or 10.0,
         hover_time_s=profile.hover_hold_s,
+        leg_km_list=leg_km_list,
     )
 
     # 3. Check DigitalSky OpenAPI 3.0 endpoint across the ENTIRE planned route (honestly gated unless pilot JWT is set)
@@ -238,6 +240,10 @@ def main(argv=None):
             gdacs_mission_impact=gdacs_impact,
             energy_validation={
                 "vehicle": vp.name,
+                "num_rotors": vp.num_rotors,
+                "battery_cells": bs.cell_count,
+                "nominal_voltage_v": bs.nominal_voltage_v,
+                "capacity_mah": bs.capacity_mah,
                 "empty_mass_kg": vp.empty_mass_kg,
                 "battery_mass_kg": vp.battery_mass_kg,
                 "initial_cargo_kg": round(rem_cargo, 2),
@@ -248,6 +254,17 @@ def main(argv=None):
                 "usable_energy_wh": round(energy_report.usable_energy_wh, 2),
                 "reserve_margin_pct": round(energy_report.reserve_margin_pct, 1),
                 "is_feasible": energy_report.is_feasible,
+                "legs": [
+                    {
+                        "from": lg.from_index,
+                        "to": lg.to_index,
+                        "distance_km": round(lg.distance_km, 3),
+                        "payload_carried_kg": round(lg.payload_carried_kg, 2),
+                        "cruise_power_w": round(lg.cruise_power_w, 1),
+                        "energy_wh": round(lg.energy_wh, 2),
+                    }
+                    for lg in energy_report.legs
+                ],
                 "cold_chain_check_type": "time_based_cold_chain_limit_minutes",
             },
             mission=plan_summary(plan))
@@ -281,8 +298,8 @@ def main(argv=None):
                                extra_defaults=[os.path.join(HERE, "flightstack", "params",
                                                             "sitl_delivery.parm")]).start()
             url = sitl.url
-            log.log("sitl_started", url=url, binary=sitl.binary, speedup=args.speedup,
-                    workdir=sitl.workdir)
+            log.log("sitl_started", url=url, binary=sitl.binary, model=sitl.model,
+                    speedup=args.speedup, workdir=sitl.workdir)
         link = AutopilotLink.connect(url)
         # Note: In headless SITL, obstacle sensing and avoidance are handled by ArduPilot's
         # native C++ AP_Proximity_SITL (PRX1_TYPE=10) + AP_OABendyRuler. The Python
@@ -382,6 +399,9 @@ def main(argv=None):
         }
         log.log("summary",
                 success=ok and set(runner.state.delivered) >= {s.id for s in runner.plan.stops} and not runner.state.failed_deliveries,
+                vehicle_name=vp.name,
+                mav_type=tel.mav_type,
+                mav_type_id=tel.mav_type_id,
                 delivered=runner.state.delivered,
                 failed_deliveries=runner.state.failed_deliveries,
                 requested_delivery_mode=args.mode,

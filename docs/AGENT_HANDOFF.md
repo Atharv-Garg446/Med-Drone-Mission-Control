@@ -1,6 +1,6 @@
 # Med-Drone Mission Control — Agent Handoff Document
 
-**Last Updated**: 2026-11-06 (Stabilisation Release)  
+**Last Updated**: 2026-11-08 (Increment 1 Checkpoint — Hexacopter Physics, 6S Battery Coupling & Energy Model Integrity)  
 **Workspace**: `/Users/mahigarg/Documents/Drone Shit/drone_medical_router`  
 **Python Environment**: `/Users/mahigarg/Documents/Drone Shit/.venv-sitl/bin/python` (Python 3.10.13)  
 **ArduPilot SITL Binary**: `/Users/mahigarg/Documents/Drone Shit/ardupilot/build/sitl/bin/arducopter` (ArduCopter V4.7.0-dev `arm64`)
@@ -56,11 +56,21 @@ The following corrections were applied in the stabilisation pass:
 - DigitalSky live integration marked BLOCKED on DGCA pilot JWT.
 - Test count updated to 216+ (was 208).
 
-### 1.3 Test Evidence
+### 1.3 Vehicle, SITL Physics & Energy Model Integrity (Increment 1 — COMPLETE)
+- **Root Cause of Prior Failed Run (`sitl_run_20261107_213336.jsonl`) Resolved**: Setting `FRAME_CLASS=2` (6 motors in `AP_MotorsMatrix`) while leaving `SitlProcess` on `--model +` (4 motors in `SIM_Frame.cpp`) caused motors 5 & 6 to be ignored by the physics simulator and prevented takeoff.
+- **Unified 6-Motor Hexacopter Physics (`flightstack/params/med_drone_hexa_16.json`, `flightstack/sitl.py`, `flightstack/params/sitl_delivery.parm`)**:
+  - `SitlProcess` now defaults to `model="hexa:med_drone_hexa_16.json"` and automatically stages `med_drone_hexa_16.json` into `self.workdir` for `AP::FS().stat()`.
+  - `med_drone_hexa_16.json` configures 6 motors (`num_motors: 6`), `disc_area: 1.4255` m², `mass: 11.2` kg (`12.2 kg` takeoff gross mass with `SIM_GRPS_ENABLE=1` external load, dropping `1.0 kg` on release), and 6S 16 Ah LiPo battery parameters (`maxVoltage: 25.2`, `refVoltage: 22.2`, `battCapacityAh: 16.0`, `refBatRes: 0.012`).
+  - `TelemetryState._on_HEARTBEAT` records `mav_type_id=13` (`"HEXAROTOR"`) from autopilot heartbeats while ignoring GCS (`type=6`).
+- **Energy Feasibility Corrections (`flightstack/vehicle_model.py`, `flightstack/mission_runner.py`)**:
+  - Fixed double-reserve battery bug in `_validate_plan_feasibility` using `usable_span_pct = max(1.0, 100.0 - self.battery_reserve_pct)`.
+  - Updated `EnergyEstimator.evaluate_route` aggregate overload to accept `leg_km_list`, step down carried payload mass after each delivery stop (`3.5 kg -> 1.5 kg -> 0.0 kg` on RTL), and catch MTOW/payload violations cleanly (`mtow_ok=False`).
 
-- **Full test suite**: 216 tests, 0 failures, 1 skipped (exit code 0).
+### 1.4 Test Evidence
+
+- **Full test suite**: 219 tests, 0 failures, 1 skipped (exit code 0, including live hexacopter `test_sitl_integration.py`).
 - **Previous SITL logs preserved** in `output/` (from before stabilisation changes).
-- SITL rerun with stabilised code pending (see Section 5).
+- SITL rerun with hexacopter + stabilised code in progress (Increment 2).
 
 ---
 

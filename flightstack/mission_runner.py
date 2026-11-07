@@ -1034,6 +1034,7 @@ class MissionRunner:
                     else 100.0
                 )
 
+            from flightstack.mission import _polyline_km
             from flightstack.vehicle_model import EnergyEstimator
             ee = EnergyEstimator(vm)
             running_cargo = rem_cargo
@@ -1043,14 +1044,17 @@ class MissionRunner:
                 running_cargo = max(0.0, running_cargo - float(getattr(s, "demand_kg", 0.0) or 0.0))
             if not stops_payload and rem_cargo > 0.0:
                 stops_payload = [(None, rem_cargo)]
+            leg_km_list = [_polyline_km(lp) for lp in plan.leg_paths] if plan.leg_paths else None
             energy_eval = ee.evaluate_route(
                 plan.planned_km,
                 stops_payload,
                 cruise_speed_ms=self.profile.cruise_speed_ms or 15.0,
                 hover_time_s=self.profile.hover_hold_s if plan.stops else 0.0,
+                leg_km_list=leg_km_list,
             )
+            usable_span_pct = max(1.0, 100.0 - float(self.battery_reserve_pct))
             usable_wh_remaining = max(
-                0.0, ((current_pct - self.battery_reserve_pct) / 100.0) * vm.usable_battery_wh
+                0.0, ((current_pct - self.battery_reserve_pct) / usable_span_pct) * vm.usable_battery_wh
             )
             if energy_eval.total_energy_wh > usable_wh_remaining:
                 return _fail(

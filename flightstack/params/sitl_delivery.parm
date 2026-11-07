@@ -1,16 +1,37 @@
 # Extra SITL defaults loaded after ArduPilot's copter.parm.
 # Used by flightstack/sitl.py for the delivery demonstrations.
 #
+# ---- Frame & propulsion configuration (MedDrone-Hexa-16) ----
+# Override ArduPilot's default FRAME_CLASS=1 (Quad) to match the
+# MedDrone-Hexa-16 VehicleProfile (num_rotors=6) in vehicle_model.py
+# AND pair with --model hexa:med_drone_hexa_16.json in flightstack/sitl.py
+# so both AP_MotorsMatrix (control) and SIM_Multicopter (physics) simulate
+# 6 motors in Plus ("+") geometry. (Using --model "+" with FRAME_CLASS=2
+# leaves physics with 4 motors and prevents takeoff.)
+FRAME_CLASS      2
+FRAME_TYPE       0
+MOT_THST_EXPO    0.65
+MOT_THST_HOVER   0.42
+MOT_BAT_VOLT_MAX 25.2
+MOT_BAT_VOLT_MIN 19.8
+EK3_DRAG_BCOEF_X 55.6
+EK3_DRAG_BCOEF_Y 55.6
+EK3_DRAG_MCOEF   0.177
+#
 # Servo gripper on SERVO9, simulated by ArduPilot's SIM_GRPS model, so the
-# hover-and-release mission step (MAV_CMD_DO_GRIPPER) has a real actuator.
+# hover-and-release / ground-release step (MAV_CMD_DO_GRIPPER) has a real
+# actuator that attaches a 1.0 kg external load on takeoff and drops it on
+# release.
 GRIP_ENABLE      1
 GRIP_TYPE        1
 SERVO9_FUNCTION  28
 SIM_GRPS_ENABLE  1
 SIM_GRPS_PIN     9
 #
-# Finite simulated battery so BATTERY_STATUS/SYS_STATUS report consumption.
-# Aligned with MedDrone-Hexa-16 BatterySpec (6S 16 Ah = 16000 mAh).
+# Finite 6S 16 Ah LiPo battery coupled with med_drone_hexa_16.json
+# (maxVoltage=25.2 V, refVoltage=22.2 V, battCapacityAh=16.0, refBatRes=0.012).
+# SIM_BATT_VOLTAGE=25.04 V initializes SIM_Battery at 100% SoC (6 * 4.173 V/cell).
+SIM_BATT_VOLTAGE 25.04
 SIM_BATT_CAP_AH  16
 BATT_CAPACITY    16000
 #

@@ -6,7 +6,11 @@ Runs in pure Python standard library without requiring SITL, Gazebo, or GPUs.
 """
 
 import math
+import os
+import sys
 import unittest
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flightstack.vehicle_model import (
     VehicleProfile,
@@ -100,6 +104,118 @@ class TestVehicleModel(unittest.TestCase):
         report = self.estimator.evaluate_route(route, distances, demands)
         self.assertFalse(report.is_feasible)
         self.assertIn("exceeds usable battery budget", report.failure_reason)
+
+    def test_aggregate_overload_leg_mass_stepdown_and_mtow_check(self):
+        from dataclasses import dataclass
+
+        @dataclass
+        class _Stop:
+            id: int
+            demand_kg: float
+
+        s1 = _Stop(id=1, demand_kg=2.0)
+        s2 = _Stop(id=2, demand_kg=1.5)
+        stops_payload = [(s1, 3.5), (s2, 1.5)]
+        leg_kms = [3.0, 2.5, 3.5]
+
+        rep = self.estimator.evaluate_route(
+            sum(leg_kms),
+            stops_payload,
+            cruise_speed_ms=10.0,
+            hover_time_s=5.0,
+            leg_km_list=leg_kms,
+        )
+        self.assertTrue(rep.is_feasible)
+        self.assertTrue(rep.mtow_ok)
+        self.assertEqual(len(rep.legs), 3)
+        self.assertAlmostEqual(rep.legs[0].payload_carried_kg, 3.5)
+        self.assertAlmostEqual(rep.legs[1].payload_carried_kg, 1.5)
+        self.assertAlmostEqual(rep.legs[2].payload_carried_kg, 0.0)
+        self.assertGreater(rep.legs[0].cruise_power_w, rep.legs[1].cruise_power_w)
+        self.assertGreater(rep.legs[1].cruise_power_w, rep.legs[2].cruise_power_w)
+
+        # Compare against a constant-cargo single-leg evaluation of the same 9.0 km
+        s_const = _Stop(id=1, demand_kg=0.0)
+        rep_const = self.estimator.evaluate_route(
+            sum(leg_kms),
+            [(s_const, 3.5), (s_const, 3.5)],
+            cruise_speed_ms=10.0,
+            hover_time_s=5.0,
+            leg_km_list=leg_kms,
+        )
+        self.assertLess(rep.total_energy_wh, rep_const.total_energy_wh)
+
+        # Overload check (> max_payload_kg=8.0) returns mtow_ok=False cleanly
+        rep_over = self.estimator.evaluate_route(
+            5.0,
+            [(_Stop(id=1, demand_kg=9.5), 9.5)],
+            cruise_speed_ms=10.0,
+            hover_time_s=5.0,
+        )
+        self.assertFalse(rep_over.is_feasible)
+        self.assertFalse(rep_over.mtow_ok)
+        self.assertIsNotNone(rep_over.failure_reason)
+
+    def test_cross_layer_hexacopter_and_battery_alignment(self):
+        import json
+        import os
+        from flightstack.telemetry import TelemetryState
+
+        params_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "flightstack",
+            "params",
+        )
+        json_path = os.path.join(params_dir, "med_drone_hexa_16.json")
+        parm_path = os.path.join(params_dir, "sitl_delivery.parm")
+
+        with open(json_path, "r") as f:
+            sim_model = json.load(f)
+
+        parms = {}
+        with open(parm_path, "r") as f:
+            for raw in f:
+                line = raw.strip()
+                if not line or line.startswith("#"):
+                    continue
+                parts = line.split()
+                if len(parts) >= 2:
+                    parms[parts[0]] = float(parts[1])
+
+        # 6-rotor hexacopter consistency across Python model, SITL JSON, and ArduPilot .parm
+        self.assertEqual(self.vehicle.num_rotors, 6)
+        self.assertEqual(sim_model["num_motors"], self.vehicle.num_rotors)
+        self.assertEqual(int(parms["FRAME_CLASS"]), 2)  # AP_Motors::MOTOR_FRAME_HEXA
+        self.assertEqual(int(parms["FRAME_TYPE"]), 0)   # AP_Motors::MOTOR_FRAME_TYPE_PLUS
+        self.assertAlmostEqual(sim_model["disc_area"], self.vehicle.total_rotor_disk_area_m2, places=3)
+
+        # 6S 16Ah LiPo consistency across BatterySpec, SITL JSON, and ArduPilot .parm
+        self.assertEqual(self.battery.cell_count, 6)
+        self.assertAlmostEqual(sim_model["refVoltage"], self.battery.nominal_voltage_v, places=2)
+        self.assertAlmostEqual(sim_model["maxVoltage"], self.battery.cell_count * 4.2, places=2)
+        self.assertAlmostEqual(sim_model["battCapacityAh"] * 1000.0, self.battery.capacity_mah, places=1)
+        self.assertAlmostEqual(parms["SIM_BATT_CAP_AH"] * 1000.0, self.battery.capacity_mah, places=1)
+        self.assertAlmostEqual(parms["BATT_CAPACITY"], self.battery.capacity_mah, places=1)
+        self.assertAlmostEqual(parms["MOT_BAT_VOLT_MAX"], sim_model["maxVoltage"], places=2)
+
+        # TelemetryState HEARTBEAT MAV_TYPE_HEXAROTOR (13) decoding
+        class _HbMsg:
+            def __init__(self, mtype_id, custom_mode=3, base_mode=128):
+                self.type = mtype_id
+                self.custom_mode = custom_mode
+                self.base_mode = base_mode
+            def get_type(self):
+                return "HEARTBEAT"
+
+        tel = TelemetryState()
+        tel.update(_HbMsg(13))
+        self.assertEqual(tel.mav_type_id, 13)
+        self.assertEqual(tel.mav_type, "HEXAROTOR")
+        # GCS heartbeat (type 6) must not overwrite vehicle mav_type
+        tel.update(_HbMsg(6, custom_mode=0, base_mode=0))
+        self.assertEqual(tel.mav_type, "HEXAROTOR")
+        self.assertEqual(tel.mode, "AUTO")
+        self.assertTrue(tel.armed)
 
 
 class TestPrecisionLanding(unittest.TestCase):

@@ -15,11 +15,14 @@ Comprehensive acceptance tests covering:
 import json
 import math
 import os
+import sys
 import tempfile
 import time
 import unittest
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 
@@ -1023,6 +1026,48 @@ class TestInitialMissionFeasibilityAndExternalData(unittest.TestCase):
         self.assertFalse(res.checked)
         self.assertFalse(res.official_clearance)
         self.assertIsNone(res.intersects)
+
+    def test_battery_usable_wh_remaining_no_double_reserve_penalty(self):
+        """At 100% SoC with 20% reserve floor, full usable_battery_wh is available (no double-reserve penalty)."""
+        from flightstack.mission import MissionValidationError
+        from flightstack.mission_runner import EventLog, MissionRunner
+        from flightstack.vehicle_model import EnergyEstimator, MulticopterModel
+
+        home = (26.8920, 75.8070)
+        stop = Location(2, "Medical Post", 26.9050, 75.8180, demand_kg=1.5)
+        # Compute exact required route energy first
+        vm_probe = MulticopterModel(battery_usable_wh=100.0)
+        profile_probe = MissionProfile(delivery_mode="hover", cruise_speed_ms=10.0, vehicle_model=vm_probe)
+        plan = build_delivery_mission(home, [stop], zones=[], profile=profile_probe)
+        ee = EnergyEstimator(vm_probe)
+        req_wh = ee.evaluate_route(
+            plan.planned_km,
+            [(stop, 1.5)],
+            cruise_speed_ms=10.0,
+            hover_time_s=profile_probe.hover_hold_s,
+        ).total_energy_wh
+
+        # Set usable_battery_wh slightly above req_wh (e.g. req_wh * 1.05).
+        # Under the old double-reserve bug, 100% SoC multiplied usable_battery_wh by 0.80 again
+        # and falsely rejected a route requiring 95% of usable_battery_wh!
+        vm_exact = MulticopterModel(battery_usable_wh=req_wh * 1.05)
+        profile_exact = MissionProfile(delivery_mode="hover", cruise_speed_ms=10.0, vehicle_model=vm_exact)
+        link_full = self._ready_link(remaining_pct=100)
+        runner_ok = MissionRunner(
+            link_full, plan, zones=[], profile=profile_exact, home=home,
+            battery_reserve_pct=20, log=EventLog(echo=False),
+        )
+        rep = runner_ok.validate_initial_mission(require_battery_telemetry=True)
+        self.assertTrue(rep["feasible"])
+
+        # At 20% SoC (at reserve floor), usable remaining Wh is 0.0 -> must reject
+        link_floor = self._ready_link(remaining_pct=20)
+        runner_floor = MissionRunner(
+            link_floor, plan, zones=[], profile=profile_exact, home=home,
+            battery_reserve_pct=20, log=EventLog(echo=False),
+        )
+        with self.assertRaises(MissionValidationError):
+            runner_floor.validate_initial_mission(require_battery_telemetry=True)
 
 
 if __name__ == "__main__":
