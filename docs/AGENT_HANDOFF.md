@@ -1,6 +1,6 @@
 # Med-Drone Mission Control — Agent Handoff Document
 
-**Last Updated**: 2026-11-08 (Increment 1 Checkpoint — Hexacopter Physics, 6S Battery Coupling & Energy Model Integrity)  
+**Last Updated**: 2026-11-08 (Increment 2 Checkpoint — End-to-End Hexacopter SITL Verification & Controlled Experimental Suite)  
 **Workspace**: `/Users/mahigarg/Documents/Drone Shit/drone_medical_router`  
 **Python Environment**: `/Users/mahigarg/Documents/Drone Shit/.venv-sitl/bin/python` (Python 3.10.13)  
 **ArduPilot SITL Binary**: `/Users/mahigarg/Documents/Drone Shit/ardupilot/build/sitl/bin/arducopter` (ArduCopter V4.7.0-dev `arm64`)
@@ -66,11 +66,17 @@ The following corrections were applied in the stabilisation pass:
   - Fixed double-reserve battery bug in `_validate_plan_feasibility` using `usable_span_pct = max(1.0, 100.0 - self.battery_reserve_pct)`.
   - Updated `EnergyEstimator.evaluate_route` aggregate overload to accept `leg_km_list`, step down carried payload mass after each delivery stop (`3.5 kg -> 1.5 kg -> 0.0 kg` on RTL), and catch MTOW/payload violations cleanly (`mtow_ok=False`).
 
-### 1.4 Test Evidence
+### 1.4 Test & Live Hexacopter SITL Evidence (Increment 2 — COMPLETE)
 
 - **Full test suite**: 219 tests, 0 failures, 1 skipped (exit code 0, including live hexacopter `test_sitl_integration.py`).
-- **Previous SITL logs preserved** in `output/` (from before stabilisation changes).
-- SITL rerun with hexacopter + stabilised code in progress (Increment 2).
+- **Controlled Experimental Validation Suite (`experiments_validation.py`)**: 8/8 controlled experiments passed (`output/experimental_validation_report.json`).
+- **Complete 2-Stop End-to-End Hexacopter SITL Reference Mission**:
+  - Log: [`output/sitl_run_20261108_034446.jsonl`](file:///Users/mahigarg/Documents/Drone%20Shit/drone_medical_router/output/sitl_run_20261108_034446.jsonl)
+  - Verified: `model="hexa:med_drone_hexa_16.json"`, `mav_type="HEXAROTOR"` (`13`), 6S battery discharge `25.039 V -> 21.925 V` (`39%` remaining, `9,721.0 mAh` consumed), live GDACS pre-mission assessment (`OK_LIVE`, `100` active events), DigitalSky full-route validation (`4` waypoints), C++ `AP_Proximity_SITL` + `AP_OABendyRuler` avoidance (`17` frames, `50` `OA_DB` items, `max_oa_deviation_m = 34.08 m`), Stop 1 `hover` (`simulated_hover_gripper_release`), mid-flight `TFR_POPUP_4D_01` replan, Stop 2 `land` + `MAV_CMD_NAV_DELAY` (`93`) 5 s ground dwell + retakeoff (`simulated_ground_gripper_release_after_dwell`, `recipient_handover_verified=False`), RTL touchdown (`alt_rel_m = 0.019 m`) & disarm (`success: true`, `delivered: [1, 2]`, `failed_deliveries: []`).
+- **Controlled 1-Stop Hexacopter Obstacle-Avoidance Comparison Pair** (`--max-stops 1 --mode hover --speedup 10`, differing only in `--inject-obstacle`):
+  - Baseline (`without --inject-obstacle`): [`output/sitl_run_20261108_035408.jsonl`](file:///Users/mahigarg/Documents/Drone%20Shit/drone_medical_router/output/sitl_run_20261108_035408.jsonl) — `mav_type="HEXAROTOR"`, `0` proximity frames, `max_oa_deviation_m = 0.0 m`, `6,589.0 mAh` consumed (`22.979 V`, `58%` left), `delivered: [1]`, `success: true`.
+  - Obstacle-Present (`with --inject-obstacle`): [`output/sitl_run_20261108_035631.jsonl`](file:///Users/mahigarg/Documents/Drone%20Shit/drone_medical_router/output/sitl_run_20261108_035631.jsonl) — `mav_type="HEXAROTOR"`, `63` proximity frames, `50` `OA_DB` items, `max_oa_deviation_m = 38.42 m` (`min_obstacle_surface_clearance_m = 11.64 m`), `6,699.0 mAh` consumed (`+110.0 mAh` avoidance energy cost, `22.948 V`, `58%` left), `delivered: [1]`, `success: true`.
+- **Previous SITL logs preserved** in `output/` (including historical quad runs and the diagnostic `sitl_run_20261107_213336.jsonl` motor-mismatch log).
 
 ---
 
