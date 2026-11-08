@@ -23,7 +23,7 @@ Usage:
     python3 sitl_mission_demo.py --airspace-change     # + mid-flight airspace update
     python3 sitl_mission_demo.py --mode land --speedup 5
 Requires: pymavlink (requirements-sitl.txt) and a built ArduCopter SITL
-binary (docs/SITL_SETUP.md).
+binary (docs/simulation_setup.md).
 """
 
 import argparse

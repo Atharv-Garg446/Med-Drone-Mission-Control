@@ -2,7 +2,7 @@
 SITL integration test: real ArduCopter firmware over MAVLink.
 
 Skipped automatically unless pymavlink is installed AND an ArduCopter SITL
-binary is found (ARDUPILOT_HOME / ARDUCOPTER_SITL_BIN, see docs/SITL_SETUP.md).
+binary is found (ARDUPILOT_HOME / ARDUCOPTER_SITL_BIN, see docs/simulation_setup.md).
 Run explicitly with:
     ARDUPILOT_HOME=../ardupilot ../.venv-sitl/bin/python -m unittest tests.test_sitl_integration -v
 

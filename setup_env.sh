@@ -84,7 +84,7 @@ if [ -n "$SITL_BIN" ]; then
 else
     echo -e "${YELLOW}[!] ArduCopter SITL binary not found in standard paths.${NC}"
     echo -e "    Pure Python algorithms, VRP routing, physics models, and replay dashboard remain 100% operational."
-    echo -e "    To compile SITL for macOS, see: docs/SITL_SETUP.md"
+    echo -e "    To compile SITL for macOS, see: docs/simulation_setup.md"
 fi
 
 # 5. Check port 5760 availability

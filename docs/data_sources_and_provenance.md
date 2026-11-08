@@ -20,7 +20,7 @@ Every external, cached, simulated, or synthetic data input in Med-Drone Mission 
 ### 2.1 Verified API Contract
 - **Search Endpoint:** `GET https://www.gdacs.org/gdacsapi/api/Events/geteventlist/SEARCH?eventlist=FL,EQ,TC`
 - **Polygon Footprint Endpoint:** `GET https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=<type>&eventid=<id>&episodeid=<ep>`
-- **Local OpenAPI Reference:** [`docs/external_specs/gdacs_openapi_v1.json`](file:///Users/mahigarg/Documents/Drone%20Shit/drone_medical_router/docs/external_specs/gdacs_openapi_v1.json)
+- **Local OpenAPI Reference:** [`docs/external_specs/gdacs_openapi_v1.json`](external_specs/gdacs_openapi_v1.json)
 - **Response Behaviour:**
   - Returns HTTP `200` with a GeoJSON `FeatureCollection` when matching alerts exist.
   - Returns HTTP `204 No Content` (empty body) when no events match the filter criteria.
@@ -43,7 +43,7 @@ Every `GDACSEvent` and `GDACSSnapshot` includes:
 
 ### 3.1 Official DigitalSky OpenAPI 3.0 Specification
 - **Retrieved Spec:** `https://digitalsky.aai.aero/Interactive-Maps-API-Swagger-Documentation-v1.0.yml`
-- **Local Copy:** [`docs/external_specs/digitalsky_interactive_maps_api_v1.0.yml`](file:///Users/mahigarg/Documents/Drone%20Shit/drone_medical_router/docs/external_specs/digitalsky_interactive_maps_api_v1.0.yml)
+- **Local Copy:** [`docs/external_specs/digitalsky_interactive_maps_api_v1.0.yml`](external_specs/digitalsky_interactive_maps_api_v1.0.yml)
 - **Actual Endpoint:** `POST https://digitalsky.dgca.gov.in/digital-sky/flightplan/validate/airspace`
 - **Required Request Headers:**
   - `X-API-VERSION: 1`

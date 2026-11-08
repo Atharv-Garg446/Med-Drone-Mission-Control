@@ -17,7 +17,7 @@ Locating the binary:
   * ``ARDUPILOT_HOME`` env var -> $ARDUPILOT_HOME/build/sitl/bin/arducopter
   * or ``ARDUCOPTER_SITL_BIN`` pointing directly at the binary.
 
-Build once with (see docs/SITL_SETUP.md):
+Build once with (see docs/simulation_setup.md):
     ./waf configure --board sitl && ./waf copter
 """
 

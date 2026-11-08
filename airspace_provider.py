@@ -27,7 +27,7 @@ Providers
                                 authorised source). Fully implemented.
   ScenarioProvider           -- wraps the polygons in config.py scenarios,
                                 labelled ``scenario``.
-  DigitalSkyIntersectionChecker -- see docs/AIRSPACE_DATA.md. The Digital Sky
+  DigitalSkyIntersectionChecker -- see docs/data_sources_and_provenance.md. The Digital Sky
                                 public interface checks flight-plan
                                 intersection only; it requires a pilot token
                                 and the officially published request schema.
