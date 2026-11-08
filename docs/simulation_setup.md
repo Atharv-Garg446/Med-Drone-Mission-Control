@@ -18,7 +18,23 @@ We inspected the OSRF Homebrew tap (`/opt/homebrew/Library/Taps/osrf/homebrew-si
      - `AP_Proximity_SITL` (`PRX1_TYPE = 10` in `libraries/AP_Proximity/AP_Proximity_SITL.cpp`)
      - `SIM::measure_distance_at_angle_bf` (`libraries/SITL/SITL.cpp` + `SIM_PS_LightWare_SF45B.cpp` / `SIM_PS_LD06.cpp`)
 
-**Engineering Decision:** Use native ArduCopter SITL (`arducopter` V4.7.0-dev) with its built-in C++ 6-DoF flight dynamics, EKF3 state estimator, `SIM_Gripper_Servo` actuator, and native C++ `AP_Proximity_SITL` (`PRX1_TYPE = 10`) raycasting sensor as the primary simulation environment on the 8 GB Apple M3.
+**Engineering Decision:** Use native ArduCopter SITL (`arducopter` V4.7.0-dev) with its built-in C++ 6-DoF flight dynamics, coupled 6-motor hexacopter airframe & 6S LiPo battery model (`--model hexa:med_drone_hexa_16.json` + `FRAME_CLASS = 2`), EKF3 state estimator, `SIM_Gripper_Servo` actuator, and native C++ `AP_Proximity_SITL` (`PRX1_TYPE = 10`) raycasting sensor as the primary simulation environment on the 8 GB Apple M3.
+
+---
+
+## 1.3 Coupled 6-Motor Hexacopter Airframe & 6S LiPo Physics (`med_drone_hexa_16.json`)
+
+To eliminate any mismatch between Python's `MedDrone-Hexa-16` (`flightstack/vehicle_model.py`), ArduCopter's motor mixer (`AP_MotorsMatrix`), and ArduPilot's C++ physics engine (`SIM_Frame.cpp` + `SIM_Battery.cpp`), all three layers are configured as a unified 6-motor hexacopter on a 6S 16 Ah LiPo pack:
+
+1. **Physics Airframe (`flightstack/params/med_drone_hexa_16.json` via `SitlProcess` `--model hexa:med_drone_hexa_16.json`):**
+   - `num_motors = 6`, `disc_area = 1.4255` m² (`6` × `18-inch` rotors), `mass = 11.2` kg (`5.5` kg empty + `3.2` kg battery + `2.5` kg cargo allowance; plus `1.0` kg `SIM_Gripper_Servo` external load = `12.2` kg takeoff gross mass, dropping `1.0` kg upon release).
+   - 6S 16 Ah LiPo parameters: `maxVoltage = 25.2` V, `refVoltage = 22.2` V, `battCapacityAh = 16.0` Ah, `refBatRes = 0.012` Ω, `refCurrent = 31.0` A, `hoverThrOut = 0.42`, `propExpo = 0.65`.
+2. **Autopilot Parameters (`flightstack/params/sitl_delivery.parm`):**
+   - `FRAME_CLASS = 2` (`MAV_TYPE_HEXAROTOR = 13` verified in live `HEARTBEAT` telemetry as `mav_type = "HEXAROTOR"`), `FRAME_TYPE = 0`.
+   - `SIM_BATT_VOLTAGE = 25.04` (`6 × 4.173 V` = `100%` SoC on ArduPilot's `soc_table`), `SIM_BATT_CAP_AH = 16`, `BATT_CAPACITY = 16000`, `MOT_BAT_VOLT_MAX = 25.2`, `MOT_BAT_VOLT_MIN = 19.8`.
+   - `EK3_DRAG_BCOEF_X/Y = 55.6`, `EK3_DRAG_MCOEF = 0.177`.
+3. **Critical Engineering Lesson (`sitl_run_20261107_213336.jsonl`):**
+   - Setting `FRAME_CLASS = 2` (6 motors in `AP_MotorsMatrix`) while leaving `SitlProcess` on `--model +` (4 motors in `SIM_Frame.cpp`) caused motors 5 and 6 to be ignored by the physics simulator and prevented takeoff. Pairing `--model hexa:med_drone_hexa_16.json` with `FRAME_CLASS = 2` restores full 6-motor thrust symmetry and realistic 6S voltage sag (`25.039 V -> 21.925 V` over the 2-stop mission).
 
 ---
 
@@ -47,15 +63,20 @@ Instead of spoofing proximity packets from Python (`PRX1_TYPE = 2` `OBSTACLE_DIS
 ## 3. Reproducible Commands
 
 ```bash
-# 1. Run all unit & acceptance tests (no SITL required)
+# 1. Run fast unit, contract & vehicle/perception tests (no SITL required)
 PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl/bin/python" -m unittest \
   drone_medical_router/tests/test_flightstack.py \
   drone_medical_router/tests/test_full_autonomy_acceptance.py \
-  drone_medical_router/tests/test_gdacs_and_provenance.py -v
+  drone_medical_router/tests/test_gdacs_and_provenance.py \
+  drone_medical_router/tests/test_vehicle_and_perception.py -v
 
-# 2. Run the full single-UAV SITL mission (GDACS + 4D NFZ replan + C++ OA + hover & land delivery)
+# 2. Run the full single-UAV hexacopter SITL mission (GDACS + 4D NFZ replan + C++ OA + auto hover/land delivery)
 PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl/bin/python" \
   drone_medical_router/sitl_mission_demo.py \
-  --scenario jaipur_single_uav --mode land --airspace-change --inject-obstacle --speedup 10
+  --scenario jaipur_single_uav --mode auto --airspace-change --inject-obstacle --speedup 10
+
+# 3. Run the 8-case controlled experimental validation suite
+PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl/bin/python" \
+  drone_medical_router/experiments_validation.py
 ```
 

@@ -65,3 +65,17 @@ Every `GDACSEvent` and `GDACSSnapshot` includes:
 - **Technical Finding:** Mappls exposes a JavaScript map overlay (`mappls.airspaceLayer({ map, layers })`) with four named visual layers (`coastal_area_india_region_25km`, `airport_region_radius_8_to_12_km_yellow`, `airport_region_radius_5_to_8_km`, `airport_region_radius_0_to_5_km`). It does **not** expose a REST API for downloading raw polygon coordinates.
 - **Classification:** `SourceClassification.MAP_VISUALIZATION_ONLY` (`supports_polygon_export = False`, `supports_autonomous_route_clearance = False`).
 
+### 3.3 Investigation of Alternative Indian Aviation & Airspace Data Sources
+We audited publicly reachable Indian aviation and aeronautical data sources to determine whether an open, machine-readable, authoritative polygon feed exists outside DigitalSky:
+1. **Airports Authority of India (AAI) AIM India eAIP (`https://aim-india.aai.aero`)**:
+   - Publishes India's official Aeronautical Information Publication (`eAIP`), including Aerodrome (`AD`) coordinates and `ENR 5.1` Prohibited (`VIP`), Restricted (`VIR`), and Danger (`VID`) airspace tables.
+   - **Format & Limitation**: Published solely as human-readable HTML/PDF amendment packages with DMS coordinate text tables—there is **no public unauthenticated REST/GeoJSON/AIXM 5.1 API** for automated UAS polygon ingestion, and UAS Drone Rules 2021 Green/Yellow/Red airport corridors (`5 km / 8 km / 12 km` buffers) are defined exclusively on DigitalSky rather than in `ENR 5.1`.
+2. **Official Indian NOTAMs & ICAO APIs**:
+   - Official machine-readable NOTAM feeds require restricted AFTN/AMHS institutional access or paid ICAO API subscriptions; no free public unauthenticated JSON NOTAM endpoint exists for Indian FIRs (`VIDF`, `VABB`, `VECC`, `VOMF`).
+3. **OpenAIP (`https://www.openaip.net`)**:
+   - Provides community-contributed aeronautical airspace JSON/GeoJSON via a key-gated REST API (`x-openaip-api-key`), but explicitly disclaims operational or regulatory authority and lacks Indian DGCA UAS Red/Yellow drone zone boundaries.
+4. **Resulting Engineering Architecture**:
+   - Authoritative UAS corridor validation uses `DigitalSkyIntersectionChecker` (`OFFICIAL_API_VALIDATION`, full-route polyline check, honestly returning `checked = False, official_clearance = False` without a DGCA pilot `x-auth` JWT).
+   - Arbitrary external GeoJSON airspace datasets (e.g., manually digitized eAIP polygons or operator-supplied corridors) can be ingested offline via `GeoJSONFileProvider` (`airspace_provider.py`).
+   - Built-in Jaipur/Chennai airport and pop-up TFR polygons carry `SourceClassification.SYNTHETIC_FIXTURE` so synthetic test data is never misrepresented as live regulatory clearance.
+

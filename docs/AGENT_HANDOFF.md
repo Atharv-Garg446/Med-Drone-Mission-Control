@@ -1,9 +1,10 @@
 # Med-Drone Mission Control — Agent Handoff Document
 
-**Last Updated**: 2026-11-08 (Increment 2 Checkpoint — End-to-End Hexacopter SITL Verification & Controlled Experimental Suite)  
+**Last Updated**: 2026-11-08 (Increment 3 & Final Portfolio Release Complete)  
 **Workspace**: `/Users/mahigarg/Documents/Drone Shit/drone_medical_router`  
 **Python Environment**: `/Users/mahigarg/Documents/Drone Shit/.venv-sitl/bin/python` (Python 3.10.13)  
-**ArduPilot SITL Binary**: `/Users/mahigarg/Documents/Drone Shit/ardupilot/build/sitl/bin/arducopter` (ArduCopter V4.7.0-dev `arm64`)
+**ArduPilot SITL Binary**: `/Users/mahigarg/Documents/Drone Shit/ardupilot/build/sitl/bin/arducopter` (ArduCopter V4.7.0-dev `arm64`, launched with `--model hexa:med_drone_hexa_16.json`, `FRAME_CLASS=2`, `MAV_TYPE_HEXAROTOR=13`)
+**Portfolio Release Archive**: `/Users/mahigarg/Documents/Drone Shit/drone_medical_router_portfolio_release_20261108.zip`
 
 ---
 
@@ -118,12 +119,15 @@ PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl
 
 ---
 
-## 5. Remaining Work
+## 5. Remaining Work & External Blockers
 
-1. **SITL rerun with stabilised code**: Run the 2-stop `--mode auto` mission and verify the new summary fields (`measured_oa_lateral_deviation_observed`, `failed_deliveries`, `initial_mission_validated`, `gdacs_pre_mission_applied`).
-2. **Git checkpoint**: `git add -A && git commit -m "Stabilisation release"`.
-3. **ZIP deliverable**.
-4. Previous SITL evidence logs in `output/` reference `proven_obstacle_avoidance` in their JSON — these are historical and should NOT be modified. New runs will use corrected field names.
+All local engineering increments (`Increment 1: Vehicle, SITL Physics & Energy Model Integrity`, `Increment 2: End-to-End Hexacopter SITL Verification & Controlled Experimental Suite`, and `Increment 3: Documentation Reconciliation & Portfolio Release Packaging`) are **COMPLETE** and verified.
+
+### External Dependencies / Blockers (Cannot Be Resolved Locally Without Credentials or Hardware)
+1. **Live Authenticated DigitalSky API Execution**: Blocked on a registered Indian DGCA pilot/operator JWT (`DIGITALSKY_AUTH_TOKEN`). Without this token, `DigitalSkyIntersectionChecker` validates the full-route polyline request against the OpenAPI 3.0 contract and honestly reports `checked=False, official_clearance=False, status="UNAUTHORISED_NO_PILOT_TOKEN"`.
+2. **Closed-Loop 3D Visual Camera Simulation in SITL**: Blocked by the 8 GB unified memory limit on the Apple M3 host (running Gazebo Harmonic + Ogre2 + ROS 2 alongside SITL exceeds available RAM). `PerceptionPipeline` (YOLOv8n + metric depth gating) and `PrecisionLandingController` (ArUco -> `LANDING_TARGET` #149) are verified via component/acceptance tests and recorded/synthetic streams, and are explicitly marked **NOT active** in the headless `sitl_mission_demo.py` run.
+3. **Physical Recipient Handover Verification**: Requires physical airframe hardware (load-cell/optical release confirmation or recipient token); simulation always sets `recipient_handover_verified=False`.
+4. **Live Continuous Airspace Polling Provider**: `DynamicAirspaceMonitor` is implemented and unit-tested (`EXP-03`), while `sitl_mission_demo.py` triggers its 4D pop-up TFR (`TFR_POPUP_4D_01`) via a deterministic in-flight callback because no open unauthenticated real-time Indian NOTAM/TFR polygon stream exists.
 
 ---
 

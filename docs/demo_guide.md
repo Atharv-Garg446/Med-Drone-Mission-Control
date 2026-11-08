@@ -6,13 +6,28 @@ All commands below are designed to be executed from the workspace root (`/Users/
 
 ## 1. Fast Unit, Contract & Acceptance Test Suite (No SITL Required)
 
-Runs 81 unit, integration, and live-GDACS contract tests in ~3.5 seconds:
+Runs 101 flightstack, vehicle/perception, acceptance, and live-GDACS contract tests in ~4 seconds (part of the full 219-test repository suite):
 
 ```bash
 PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl/bin/python" -m unittest \
   drone_medical_router/tests/test_flightstack.py \
   drone_medical_router/tests/test_full_autonomy_acceptance.py \
-  drone_medical_router/tests/test_gdacs_and_provenance.py -v
+  drone_medical_router/tests/test_gdacs_and_provenance.py \
+  drone_medical_router/tests/test_vehicle_and_perception.py -v
+```
+
+To run the complete 219-test suite (including live hexacopter `test_sitl_integration.py`, ~100 seconds):
+
+```bash
+PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl/bin/python" \
+  -m unittest discover -s drone_medical_router/tests -p "test_*.py" -v
+```
+
+To run the 8-case controlled experimental validation suite (`output/experimental_validation_report.json`):
+
+```bash
+PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl/bin/python" \
+  drone_medical_router/experiments_validation.py
 ```
 
 ### What This Verifies:
@@ -28,14 +43,15 @@ PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl
 
 ---
 
-## 2. Full End-to-End Single-UAV SITL Demonstration (`--mode auto`)
+## 2. Full End-to-End Single-UAV Hexacopter SITL Demonstration (`--mode auto`)
 
-Launches ArduCopter V4.7.0-dev SITL (`--speedup 10`) and executes the complete `JAIPUR_SINGLE_UAV` mission (`output/sitl_run_20261106_013542.jsonl`) with:
-1. Live GDACS disaster feed query + operational mission-impact assessment + honest DigitalSky OpenAPI 3.0 check.
-2. Native C++ `AP_Proximity_SITL` (`PRX1_TYPE = 10`) raycast detection & `AP_OABendyRuler` avoidance of `OBSTACLE_TOWER_01` on Leg 1 (`max_oa_deviation_m = 10.01 m`).
-3. Automatic per-stop mode resolution (`--mode auto`): `hover` at Stop 1 (`Gopalpura Flooded Relief Camp`) with `SIM_Gripper_Servo` release (`simulated_hover_gripper_release`). Note: gripper acknowledgement is causal (waits for ArduPilot `STATUSTEXT`), not auto-acknowledged.
-4. Mid-flight 4D pop-up TFR (`TFR_POPUP_4D_01`) conflict detection, `LOITER` hold, A* detour replanning, 4-gate feasibility verification, mission upload + item-by-item readback verification, and `AUTO` resumption.
-5. Full ground landing (`NAV_LAND`), ground gripper release (`DO_GRIPPER`), 5-second ground dwell (`MAV_CMD_NAV_DELAY = 93`), automatic retakeoff (`NAV_TAKEOFF = 22`), and `RTL` to SMS Hospital depot at Stop 2 (`Jhalana Elevated Medical Post`).
+Launches ArduCopter V4.7.0-dev SITL with the 6-motor hexacopter physics profile (`--model hexa:med_drone_hexa_16.json`, `FRAME_CLASS = 2`, `mav_type = "HEXAROTOR"`, `--speedup 10`) and executes the complete `JAIPUR_SINGLE_UAV` mission (`output/sitl_run_20261108_034446.jsonl`) with:
+1. Live GDACS disaster feed query (`OK_LIVE`) + pre-mission operational impact assessment + honest full-route DigitalSky OpenAPI 3.0 check (`waypoints_checked: 4`, `official_clearance: false`).
+2. Shared pre-launch feasibility validation (`validate_initial_mission()`: `136.91 Wh <= 284.16 Wh`, payload stepping down `3.5 -> 1.5 -> 0.0 kg`).
+3. Native C++ `AP_Proximity_SITL` (`PRX1_TYPE = 10`) raycast detection & `AP_OABendyRuler` avoidance of `OBSTACLE_TOWER_01` on Leg 1 (`17` proximity frames, `50` `OA_DB` items, `max_oa_deviation_m = 34.08 m`, `min_obstacle_surface_clearance_m = 8.98 m`).
+4. Automatic per-stop mode resolution (`--mode auto`): `hover` at Stop 1 (`Gopalpura Flooded Relief Camp`) with `SIM_Gripper_Servo` release (`simulated_hover_gripper_release`, `recipient_handover_verified = false`). Gripper acknowledgement is strictly causal (waits for ArduPilot `"Gripper Released"` `STATUSTEXT`).
+5. Mid-flight 4D pop-up TFR (`TFR_POPUP_4D_01`) conflict detection, `LOITER` hold, A* detour replanning, 4-gate feasibility verification, mission upload + item-by-item readback verification (`19.2 ms`), and `AUTO` resumption.
+6. Full ground landing (`NAV_LAND`), ground gripper release (`DO_GRIPPER`), 5-second ground dwell (`MAV_CMD_NAV_DELAY = 93`, `simulated_ground_gripper_release_after_dwell`, `recipient_handover_verified = false`), automatic retakeoff (`NAV_TAKEOFF = 22`), `RTL` to SMS Hospital depot (`alt_rel_m = 0.019 m`), and 6S LiPo discharge (`25.039 V -> 21.925 V`, `9,721.0 mAh` consumed, `39%` remaining).
 
 ```bash
 PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl/bin/python" \
@@ -49,9 +65,9 @@ PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl
 
 ---
 
-## 3. Controlled Obstacle-Avoidance Comparison (Baseline vs. Obstacle-Present)
+## 3. Controlled Hexacopter Obstacle-Avoidance Comparison (Baseline vs. Obstacle-Present)
 
-To compare the 1-stop trajectory **without** an obstacle against the identical 1-stop trajectory **with** `OBSTACLE_TOWER_01` present in the simulator's C++ world (`AC_PolyFence_loader` + `AP_Proximity_SITL` `PRX1_TYPE = 10`):
+To compare the 1-stop hexacopter trajectory **without** an obstacle against the identical 1-stop hexacopter trajectory **with** `OBSTACLE_TOWER_01` present in the simulator's C++ world (`AC_PolyFence_loader` + `AP_Proximity_SITL` `PRX1_TYPE = 10`), differing **only** in `--inject-obstacle`:
 
 ```bash
 # Run A: Baseline (no obstacle)
@@ -59,24 +75,24 @@ PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl
   drone_medical_router/sitl_mission_demo.py \
   --scenario jaipur_single_uav --mode hover --max-stops 1 --speedup 10
 
-# Run B: Obstacle present in C++ world (identical scenario, stop count, mode, and speedup)
+# Run B: Obstacle present in C++ world (identical scenario, airframe, stop count, mode, and speedup)
 PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl/bin/python" \
   drone_medical_router/sitl_mission_demo.py \
   --scenario jaipur_single_uav --mode hover --max-stops 1 --inject-obstacle --speedup 10
 ```
 
-### Verified Controlled 1-Stop Comparison Metrics:
+### Verified Controlled 1-Stop Hexacopter Comparison Metrics:
 
-| Metric | Run A: Baseline (`output/sitl_run_20261106_001944.jsonl`) | Run B: Obstacle-Present (`output/sitl_run_20261106_013239.jsonl`) |
+| Metric | Run A: Baseline (`output/sitl_run_20261108_035408.jsonl`) | Run B: Obstacle-Present (`output/sitl_run_20261108_035631.jsonl`) |
 |---|---|---|
-| Scenario / Stops / Mode / Speedup | `jaipur_single_uav`, `1` stop (`[1]`), `hover`, `10x` (`6.361 km`) | `jaipur_single_uav`, `1` stop (`[1]`), `hover`, `10x` (`6.361 km`) |
+| Scenario / Airframe / Stops / Mode / Speedup | `jaipur_single_uav`, `HEXAROTOR` (`13`), `1` stop (`[1]`), `hover`, `10x` (`6.361 km`) | `jaipur_single_uav`, `HEXAROTOR` (`13`), `1` stop (`[1]`), `hover`, `10x` (`6.361 km`) |
 | `proximity_sensor_active` (`PRX1_TYPE = 10`) | `true` | `true` |
-| `obstacle_entered_proximity_range` | `false` | `true` (`min_distance_m = 0.29 m..49.12 m`, sectors `1, 2, 3`) |
-| `proximity_active_frames` (`DISTANCE_SENSOR` `< 50 m`) | `0` | `73` |
+| `obstacle_entered_proximity_range` | `false` | `true` (`min_distance_m = 4.0 m..49.84 m`, `min_obstacle_surface_clearance_m = 11.64 m`) |
+| `proximity_active_frames` (`DISTANCE_SENSOR` `< 50 m`) | `0` | `63` |
 | `ardupilot_oa_db_confirmations` (`ADSB_VEHICLE` `OA_DB`) | `0` | `50` |
-| `max_oa_deviation_m` (Lateral cross-track in `AUTO` mode) | **`0.0 m`** | **`34.50 m`** |
+| `max_oa_deviation_m` (Lateral cross-track in `AUTO` mode) | **`0.0 m`** | **`38.42 m`** |
 | `measured_oa_lateral_deviation_observed` | `false` | `true` |
-| Mission Duration / Battery Consumed | `87.715 s` / `6,646.0 mAh` (`58%` left) | `90.698 s` / `6,769.0 mAh` (`57%` left) |
+| 6S Battery End State / Consumed | `22.979 V` / `6,589.0 mAh` (`58%` left) | `22.948 V` / `6,699.0 mAh` (`+110.0 mAh` avoidance cost, `58%` left) |
 
 ---
 
