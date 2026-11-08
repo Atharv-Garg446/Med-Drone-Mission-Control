@@ -6,7 +6,7 @@ All commands below are designed to be executed from the workspace root (`/Users/
 
 ## 1. Fast Unit, Contract & Acceptance Test Suite (No SITL Required)
 
-Runs 101 flightstack, vehicle/perception, acceptance, and live-GDACS contract tests in ~4 seconds (part of the full 219-test repository suite):
+Runs 106 flightstack, vehicle/perception, acceptance, and live-GDACS contract tests in ~4 seconds (part of the full 209-test repository suite):
 
 ```bash
 PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl/bin/python" -m unittest \
@@ -16,7 +16,7 @@ PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl
   drone_medical_router/tests/test_vehicle_and_perception.py -v
 ```
 
-To run the complete 219-test suite (including live hexacopter `test_sitl_integration.py`, ~100 seconds):
+To run the complete 209-test suite (including live hexacopter `test_sitl_integration.py`, ~107 seconds):
 
 ```bash
 PYTHONPATH=drone_medical_router "/Users/mahigarg/Documents/Drone Shit/.venv-sitl/bin/python" \

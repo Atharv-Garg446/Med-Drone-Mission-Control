@@ -104,6 +104,10 @@ class SitlProcess:
         lat, lon, alt, hdg = (list(self.home) + [0, 0])[:4]
         model_arg = self.model
         if ":" in model_arg and model_arg.endswith(".json"):
+            # ArduPilot's SIM_Frame::load_frame_params() checks AP::FS().stat(json_file)
+            # relative to the SITL working directory. Staging the JSON file into self.workdir
+            # ensures SITL loads the 6-motor hexacopter & 6S battery parameters that match
+            # FRAME_CLASS=2 in sitl_delivery.parm.
             prefix, json_ref = model_arg.split(":", 1)
             params_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "params")
             cand_paths = [

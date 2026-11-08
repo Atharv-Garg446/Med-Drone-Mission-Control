@@ -1052,6 +1052,9 @@ class MissionRunner:
                 hover_time_s=self.profile.hover_hold_s if plan.stops else 0.0,
                 leg_km_list=leg_km_list,
             )
+            # vm.usable_battery_wh (284.16 Wh) already excludes the 20% reserve floor
+            # from total pack capacity (355.20 Wh). Scale across usable_span_pct (80%)
+            # rather than 100% so the reserve margin is not deducted twice.
             usable_span_pct = max(1.0, 100.0 - float(self.battery_reserve_pct))
             usable_wh_remaining = max(
                 0.0, ((current_pct - self.battery_reserve_pct) / usable_span_pct) * vm.usable_battery_wh

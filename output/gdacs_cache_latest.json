@@ -1,0 +1,3510 @@
+{
+  "provider": "gdacs_live_api",
+  "source_url": "https://www.gdacs.org/gdacsapi/api/Events/geteventlist/SEARCH?eventlist=FL%3BEQ%3BTC&fromDate=2026-10-03&toDate=2026-11-07&alertlevel=green%3Borange%3Bred",
+  "retrieved_at": "2026-11-07T22:27:56.043344+00:00",
+  "content_sha256": "06cf4b65a942fc006b80415cb0a38cb7f696ef4d7f8ef09c0578dad0ba614cc4",
+  "duplicates_removed": 0,
+  "expired_filtered": 0,
+  "events": [
+    {
+      "event_key": "TC_1001348_5",
+      "event_type": "TC",
+      "event_id": 1001348,
+      "episode_id": 5,
+      "name": "Tropical Cyclone PENA-26",
+      "description": "Tropical Cyclone PENA-26",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "",
+      "iso3": "",
+      "centroid": [
+        11.5,
+        -153.9
+      ],
+      "bbox": [
+        -153.9,
+        11.5,
+        -153.9,
+        11.5
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-06T21:00:00+00:00",
+      "to_date": "2026-11-07T21:00:00+00:00",
+      "date_modified": "2026-11-07T21:05:55+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001348&episodeid=5",
+      "severity_data": {
+        "severity": 120.3696,
+        "severitytext": "Tropical Storm (maximum wind speed of 120 km/h)",
+        "severityunit": "km/h"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1576151_1745262",
+      "event_type": "EQ",
+      "event_id": 1576151,
+      "episode_id": 1745262,
+      "name": "Earthquake in Indonesia",
+      "description": "Earthquake in Indonesia",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Indonesia",
+      "iso3": "IDN",
+      "centroid": [
+        -3.905,
+        128.5121
+      ],
+      "bbox": [
+        128.5121,
+        -3.905,
+        128.5121,
+        -3.905
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-07T20:55:38+00:00",
+      "to_date": "2026-11-07T20:55:38+00:00",
+      "date_modified": "2026-11-07T21:35:42+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1576151&episodeid=1745262",
+      "severity_data": {
+        "severity": 4.7,
+        "severitytext": "Magnitude 4.7M, Depth:136.656km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1576146_1745258",
+      "event_type": "EQ",
+      "event_id": 1576146,
+      "episode_id": 1745258,
+      "name": "Earthquake in Nicaragua",
+      "description": "Earthquake in Nicaragua",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Nicaragua",
+      "iso3": "NIC",
+      "centroid": [
+        11.526,
+        -87.0544
+      ],
+      "bbox": [
+        -87.0544,
+        11.526,
+        -87.0544,
+        11.526
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-07T19:55:10+00:00",
+      "to_date": "2026-11-07T19:55:10+00:00",
+      "date_modified": "2026-11-07T20:35:26+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1576146&episodeid=1745258",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:37.054km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "TC_1001349_3",
+      "event_type": "TC",
+      "event_id": 1001349,
+      "episode_id": 3,
+      "name": "Tropical Cyclone 02-20262027-27",
+      "description": "Tropical Cyclone 02-20262027-27",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "",
+      "iso3": "",
+      "centroid": [
+        -13.53,
+        52.61
+      ],
+      "bbox": [
+        52.61,
+        -13.53,
+        52.61,
+        -13.53
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-07T06:00:00+00:00",
+      "to_date": "2026-11-07T18:00:00+00:00",
+      "date_modified": "2026-11-07T19:20:23+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001349&episodeid=3",
+      "severity_data": {
+        "severity": 63.332928,
+        "severitytext": "Tropical Depression (maximum wind speed of 63 km/h)",
+        "severityunit": "km/h"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "TC_1001347_7",
+      "event_type": "TC",
+      "event_id": 1001347,
+      "episode_id": 7,
+      "name": "Tropical Cyclone CEMPAKA-26",
+      "description": "Tropical Cyclone CEMPAKA-26",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Japan",
+      "iso3": "JPN",
+      "centroid": [
+        21.2,
+        139.9
+      ],
+      "bbox": [
+        139.9,
+        21.2,
+        139.9,
+        21.2
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-06T06:00:00+00:00",
+      "to_date": "2026-11-07T18:00:00+00:00",
+      "date_modified": "2026-11-07T20:20:19+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001347&episodeid=7",
+      "severity_data": {
+        "severity": 185.184,
+        "severitytext": "Tropical Storm (maximum wind speed of 185 km/h)",
+        "severityunit": "km/h"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1576128_1745236",
+      "event_type": "EQ",
+      "event_id": 1576128,
+      "episode_id": 1745236,
+      "name": "Earthquake in Ecuador",
+      "description": "Earthquake in Ecuador",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Ecuador",
+      "iso3": "ECU",
+      "centroid": [
+        -1.8505,
+        -81.1439
+      ],
+      "bbox": [
+        -81.1439,
+        -1.8505,
+        -81.1439,
+        -1.8505
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-07T17:17:38+00:00",
+      "to_date": "2026-11-07T17:17:38+00:00",
+      "date_modified": "2026-11-07T17:57:42+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1576128&episodeid=1745236",
+      "severity_data": {
+        "severity": 4.7,
+        "severitytext": "Magnitude 4.7M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1576118_1745227",
+      "event_type": "EQ",
+      "event_id": 1576118,
+      "episode_id": 1745227,
+      "name": "Earthquake in Japan",
+      "description": "Earthquake in Japan",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Japan",
+      "iso3": "JPN",
+      "centroid": [
+        34.8611,
+        137.691
+      ],
+      "bbox": [
+        137.691,
+        34.8611,
+        137.691,
+        34.8611
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-07T16:04:35+00:00",
+      "to_date": "2026-11-07T16:04:35+00:00",
+      "date_modified": "2026-11-07T18:11:03+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1576118&episodeid=1745227",
+      "severity_data": {
+        "severity": 5.5,
+        "severitytext": "Magnitude 5.5M, Depth:38.081km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1576117_1745251",
+      "event_type": "EQ",
+      "event_id": 1576117,
+      "episode_id": 1745251,
+      "name": "Earthquake in Panama",
+      "description": "Earthquake in Panama",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Panama",
+      "iso3": "PAN",
+      "centroid": [
+        7.5067,
+        -79.921
+      ],
+      "bbox": [
+        -79.921,
+        7.5067,
+        -79.921,
+        7.5067
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-07T16:01:52+00:00",
+      "to_date": "2026-11-07T16:01:52+00:00",
+      "date_modified": "2026-11-07T19:55:42+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1576117&episodeid=1745251",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1576113_1745218",
+      "event_type": "EQ",
+      "event_id": 1576113,
+      "episode_id": 1745218,
+      "name": "Earthquake in Namibia",
+      "description": "Earthquake in Namibia",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Namibia",
+      "iso3": "NAM",
+      "centroid": [
+        -19.7402,
+        14.6467
+      ],
+      "bbox": [
+        14.6467,
+        -19.7402,
+        14.6467,
+        -19.7402
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-07T15:22:50+00:00",
+      "to_date": "2026-11-07T15:22:50+00:00",
+      "date_modified": "2026-11-07T16:03:10+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1576113&episodeid=1745218",
+      "severity_data": {
+        "severity": 4.9,
+        "severitytext": "Magnitude 4.9M, Depth:8.035km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1576112_1745224",
+      "event_type": "EQ",
+      "event_id": 1576112,
+      "episode_id": 1745224,
+      "name": "Earthquake in Fiji",
+      "description": "Earthquake in Fiji",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Fiji",
+      "iso3": "FJI",
+      "centroid": [
+        -20.8363,
+        -178.7119
+      ],
+      "bbox": [
+        -178.7119,
+        -20.8363,
+        -178.7119,
+        -20.8363
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-07T15:05:45+00:00",
+      "to_date": "2026-11-07T15:05:45+00:00",
+      "date_modified": "2026-11-07T16:15:43+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1576112&episodeid=1745224",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:571.898km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1576075_1745177",
+      "event_type": "EQ",
+      "event_id": 1576075,
+      "episode_id": 1745177,
+      "name": "Earthquake in Southern Mid-Atlantic Ridge",
+      "description": "Earthquake in Southern Mid-Atlantic Ridge",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Southern Mid-Atlantic Ridge",
+      "iso3": "",
+      "centroid": [
+        -18.2483,
+        -12.9445
+      ],
+      "bbox": [
+        -12.9445,
+        -18.2483,
+        -12.9445,
+        -18.2483
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-07T11:35:38+00:00",
+      "to_date": "2026-11-07T11:35:38+00:00",
+      "date_modified": "2026-11-07T11:58:22+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1576075&episodeid=1745177",
+      "severity_data": {
+        "severity": 4.9,
+        "severitytext": "Magnitude 4.9M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1576071_1745172",
+      "event_type": "EQ",
+      "event_id": 1576071,
+      "episode_id": 1745172,
+      "name": "Earthquake in Japan",
+      "description": "Earthquake in Japan",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Japan",
+      "iso3": "JPN",
+      "centroid": [
+        36.1884,
+        141.4404
+      ],
+      "bbox": [
+        141.4404,
+        36.1884,
+        141.4404,
+        36.1884
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-07T11:07:43+00:00",
+      "to_date": "2026-11-07T11:07:43+00:00",
+      "date_modified": "2026-11-07T13:13:03+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1576071&episodeid=1745172",
+      "severity_data": {
+        "severity": 5.5,
+        "severitytext": "Magnitude 5.5M, Depth:31.748km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1576068_1745185",
+      "event_type": "EQ",
+      "event_id": 1576068,
+      "episode_id": 1745185,
+      "name": "Earthquake in Chile",
+      "description": "Earthquake in Chile",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Chile",
+      "iso3": "CHL",
+      "centroid": [
+        -21.6011,
+        -68.6413
+      ],
+      "bbox": [
+        -68.6413,
+        -21.6011,
+        -68.6413,
+        -21.6011
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-07T10:53:12+00:00",
+      "to_date": "2026-11-07T10:53:12+00:00",
+      "date_modified": "2026-11-07T12:48:04+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1576068&episodeid=1745185",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:110.716km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1576059_1745184",
+      "event_type": "EQ",
+      "event_id": 1576059,
+      "episode_id": 1745184,
+      "name": "Earthquake in Northern Molucca Sea",
+      "description": "Earthquake in Northern Molucca Sea",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Northern Molucca Sea",
+      "iso3": "",
+      "centroid": [
+        0.0075,
+        125.7691
+      ],
+      "bbox": [
+        125.7691,
+        0.0075,
+        125.7691,
+        0.0075
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-07T09:47:33+00:00",
+      "to_date": "2026-11-07T09:47:33+00:00",
+      "date_modified": "2026-11-07T12:38:05+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1576059&episodeid=1745184",
+      "severity_data": {
+        "severity": 4.7,
+        "severitytext": "Magnitude 4.7M, Depth:38.531km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1576044_1745146",
+      "event_type": "EQ",
+      "event_id": 1576044,
+      "episode_id": 1745146,
+      "name": "Earthquake in South Sandwich Islands Region",
+      "description": "Earthquake in South Sandwich Islands Region",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "South Sandwich Islands Region",
+      "iso3": "",
+      "centroid": [
+        -57.9579,
+        -25.8023
+      ],
+      "bbox": [
+        -25.8023,
+        -57.9579,
+        -25.8023,
+        -57.9579
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-07T07:14:10+00:00",
+      "to_date": "2026-11-07T07:14:10+00:00",
+      "date_modified": "2026-11-07T07:54:22+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1576044&episodeid=1745146",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:103.682km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1104270_2",
+      "event_type": "FL",
+      "event_id": 1104270,
+      "episode_id": 2,
+      "name": "Flood in France",
+      "description": "Flood in France",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "France",
+      "iso3": "FRA",
+      "centroid": [
+        41.5911,
+        9.2794
+      ],
+      "bbox": [
+        9.2794,
+        41.5911,
+        9.2794,
+        41.5911
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-04T01:00:00+00:00",
+      "to_date": "2026-11-07T01:00:00+00:00",
+      "date_modified": "2026-11-07T12:15:10+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104270&episodeid=2",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1104220_17",
+      "event_type": "FL",
+      "event_id": 1104220,
+      "episode_id": 17,
+      "name": "Flood in Italy",
+      "description": "Flood in Italy",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Italy",
+      "iso3": "ITA",
+      "centroid": [
+        41.6898,
+        15.3776
+      ],
+      "bbox": [
+        15.3776,
+        41.6898,
+        15.3776,
+        41.6898
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-10-07T01:00:00+00:00",
+      "to_date": "2026-11-07T01:00:00+00:00",
+      "date_modified": "2026-11-07T12:32:35+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104220&episodeid=17",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1576038_1745137",
+      "event_type": "EQ",
+      "event_id": 1576038,
+      "episode_id": 1745137,
+      "name": "Earthquake in Guam",
+      "description": "Earthquake in Guam",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Guam",
+      "iso3": "GUM",
+      "centroid": [
+        13.5679,
+        144.9932
+      ],
+      "bbox": [
+        144.9932,
+        13.5679,
+        144.9932,
+        13.5679
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-06T22:37:54+00:00",
+      "to_date": "2026-11-06T22:37:54+00:00",
+      "date_modified": "2026-11-07T06:48:44+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1576038&episodeid=1745137",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:113.394km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575976_1745073",
+      "event_type": "EQ",
+      "event_id": 1575976,
+      "episode_id": 1745073,
+      "name": "Earthquake in Indonesia",
+      "description": "Earthquake in Indonesia",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Indonesia",
+      "iso3": "IDN",
+      "centroid": [
+        -1.2393,
+        120.4589
+      ],
+      "bbox": [
+        120.4589,
+        -1.2393,
+        120.4589,
+        -1.2393
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-06T19:07:01+00:00",
+      "to_date": "2026-11-06T19:07:01+00:00",
+      "date_modified": "2026-11-06T22:01:03+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575976&episodeid=1745073",
+      "severity_data": {
+        "severity": 4.8,
+        "severitytext": "Magnitude 4.8M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575947_1745053",
+      "event_type": "EQ",
+      "event_id": 1575947,
+      "episode_id": 1745053,
+      "name": "Earthquake in Greece",
+      "description": "Earthquake in Greece",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Greece",
+      "iso3": "GRC",
+      "centroid": [
+        34.3043,
+        26.4987
+      ],
+      "bbox": [
+        26.4987,
+        34.3043,
+        26.4987,
+        34.3043
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-06T15:26:58+00:00",
+      "to_date": "2026-11-06T15:26:58+00:00",
+      "date_modified": "2026-11-06T18:01:03+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575947&episodeid=1745053",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:40.657km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575911_1745007",
+      "event_type": "EQ",
+      "event_id": 1575911,
+      "episode_id": 1745007,
+      "name": "Earthquake in Off East Coast Of Honshu, Japan",
+      "description": "Earthquake in Off East Coast Of Honshu, Japan",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Off East Coast Of Honshu, Japan",
+      "iso3": "",
+      "centroid": [
+        34.9677,
+        142.1175
+      ],
+      "bbox": [
+        142.1175,
+        34.9677,
+        142.1175,
+        34.9677
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-06T10:39:24+00:00",
+      "to_date": "2026-11-06T10:39:24+00:00",
+      "date_modified": "2026-11-07T14:03:25+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575911&episodeid=1745007",
+      "severity_data": {
+        "severity": 6.1,
+        "severitytext": "Magnitude 6.1M, Depth:29km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575900_1744987",
+      "event_type": "EQ",
+      "event_id": 1575900,
+      "episode_id": 1744987,
+      "name": "Earthquake in Vanuatu",
+      "description": "Earthquake in Vanuatu",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Vanuatu",
+      "iso3": "VUT",
+      "centroid": [
+        -18.7543,
+        169.2644
+      ],
+      "bbox": [
+        169.2644,
+        -18.7543,
+        169.2644,
+        -18.7543
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-06T08:14:08+00:00",
+      "to_date": "2026-11-06T08:14:08+00:00",
+      "date_modified": "2026-11-06T08:54:22+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575900&episodeid=1744987",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:246.521km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575896_1744989",
+      "event_type": "EQ",
+      "event_id": 1575896,
+      "episode_id": 1744989,
+      "name": "Earthquake in Philippines",
+      "description": "Earthquake in Philippines",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Philippines",
+      "iso3": "PHL",
+      "centroid": [
+        5.2999,
+        125.0977
+      ],
+      "bbox": [
+        125.0977,
+        5.2999,
+        125.0977,
+        5.2999
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-06T06:28:26+00:00",
+      "to_date": "2026-11-06T06:28:26+00:00",
+      "date_modified": "2026-11-06T08:58:05+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575896&episodeid=1744989",
+      "severity_data": {
+        "severity": 4.9,
+        "severitytext": "Magnitude 4.9M, Depth:35km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575865_1744951",
+      "event_type": "EQ",
+      "event_id": 1575865,
+      "episode_id": 1744951,
+      "name": "Earthquake in South Of Alaska",
+      "description": "Earthquake in South Of Alaska",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "South Of Alaska",
+      "iso3": "",
+      "centroid": [
+        53.6347,
+        -162.9502
+      ],
+      "bbox": [
+        -162.9502,
+        53.6347,
+        -162.9502,
+        53.6347
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-06T02:35:25+00:00",
+      "to_date": "2026-11-06T02:35:25+00:00",
+      "date_modified": "2026-11-07T14:01:29+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575865&episodeid=1744951",
+      "severity_data": {
+        "severity": 4.7,
+        "severitytext": "Magnitude 4.7M, Depth:27.963km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575861_1744946",
+      "event_type": "EQ",
+      "event_id": 1575861,
+      "episode_id": 1744946,
+      "name": "Earthquake in Vanuatu",
+      "description": "Earthquake in Vanuatu",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Vanuatu",
+      "iso3": "VUT",
+      "centroid": [
+        -19.3647,
+        168.7529
+      ],
+      "bbox": [
+        168.7529,
+        -19.3647,
+        168.7529,
+        -19.3647
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-06T01:37:39+00:00",
+      "to_date": "2026-11-06T01:37:39+00:00",
+      "date_modified": "2026-11-06T02:17:43+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575861&episodeid=1744946",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:83.271km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1104254_7",
+      "event_type": "FL",
+      "event_id": 1104254,
+      "episode_id": 7,
+      "name": "Flood in T\u00fcrkiye",
+      "description": "Flood in T\u00fcrkiye",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "T\u00fcrkiye",
+      "iso3": "TUR",
+      "centroid": [
+        36.3451,
+        36.0748
+      ],
+      "bbox": [
+        36.0748,
+        36.3451,
+        36.0748,
+        36.3451
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-10-26T01:00:00+00:00",
+      "to_date": "2026-11-06T01:00:00+00:00",
+      "date_modified": "2026-11-07T07:24:37+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104254&episodeid=7",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1104259_5",
+      "event_type": "FL",
+      "event_id": 1104259,
+      "episode_id": 5,
+      "name": "Flood in Peru",
+      "description": "Flood in Peru",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Peru",
+      "iso3": "PER",
+      "centroid": [
+        -4.1552,
+        -81.0061
+      ],
+      "bbox": [
+        -81.0061,
+        -4.1552,
+        -81.0061,
+        -4.1552
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-10-26T01:00:00+00:00",
+      "to_date": "2026-11-06T01:00:00+00:00",
+      "date_modified": "2026-11-06T11:18:15+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104259&episodeid=5",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1103888_119",
+      "event_type": "FL",
+      "event_id": 1103888,
+      "episode_id": 119,
+      "name": "Flood in United States",
+      "description": "Flood in United States",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "United States",
+      "iso3": "USA",
+      "centroid": [
+        36.9283,
+        -108.1902
+      ],
+      "bbox": [
+        -108.1902,
+        36.9283,
+        -108.1902,
+        36.9283
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-05-19T01:00:00+00:00",
+      "to_date": "2026-11-06T01:00:00+00:00",
+      "date_modified": "2026-11-07T12:32:03+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1103888&episodeid=119",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1104216_11",
+      "event_type": "FL",
+      "event_id": 1104216,
+      "episode_id": 11,
+      "name": "Flood in Brazil",
+      "description": "Flood in Brazil",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Brazil",
+      "iso3": "BRA",
+      "centroid": [
+        -27.2163,
+        -49.6437
+      ],
+      "bbox": [
+        -49.6437,
+        -27.2163,
+        -49.6437,
+        -27.2163
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-10-01T01:00:00+00:00",
+      "to_date": "2026-11-06T01:00:00+00:00",
+      "date_modified": "2026-11-06T06:53:38+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104216&episodeid=11",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575842_1744925",
+      "event_type": "EQ",
+      "event_id": 1575842,
+      "episode_id": 1744925,
+      "name": "Earthquake in Papua New Guinea",
+      "description": "Earthquake in Papua New Guinea",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Papua New Guinea",
+      "iso3": "PNG",
+      "centroid": [
+        -5.9168,
+        146.6624
+      ],
+      "bbox": [
+        146.6624,
+        -5.9168,
+        146.6624,
+        -5.9168
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-06T00:02:25+00:00",
+      "to_date": "2026-11-06T00:02:25+00:00",
+      "date_modified": "2026-11-06T00:42:44+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575842&episodeid=1744925",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:97.804km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575830_1744912",
+      "event_type": "EQ",
+      "event_id": 1575830,
+      "episode_id": 1744912,
+      "name": "Earthquake in South Of Alaska",
+      "description": "Earthquake in South Of Alaska",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "South Of Alaska",
+      "iso3": "",
+      "centroid": [
+        53.5527,
+        -162.9503
+      ],
+      "bbox": [
+        -162.9503,
+        53.5527,
+        -162.9503,
+        53.5527
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-05T23:04:57+00:00",
+      "to_date": "2026-11-05T23:04:57+00:00",
+      "date_modified": "2026-11-07T02:03:04+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575830&episodeid=1744912",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:16.134km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575826_1744907",
+      "event_type": "EQ",
+      "event_id": 1575826,
+      "episode_id": 1744907,
+      "name": "Earthquake in South Of Fiji Islands",
+      "description": "Earthquake in South Of Fiji Islands",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "South Of Fiji Islands",
+      "iso3": "",
+      "centroid": [
+        -23.5322,
+        179.9392
+      ],
+      "bbox": [
+        179.9392,
+        -23.5322,
+        179.9392,
+        -23.5322
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-05T22:34:48+00:00",
+      "to_date": "2026-11-05T22:34:48+00:00",
+      "date_modified": "2026-11-05T22:57:23+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575826&episodeid=1744907",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:523.445km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575797_1744889",
+      "event_type": "EQ",
+      "event_id": 1575797,
+      "episode_id": 1744889,
+      "name": "Earthquake in Japan",
+      "description": "Earthquake in Japan",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Japan",
+      "iso3": "JPN",
+      "centroid": [
+        37.9934,
+        141.2636
+      ],
+      "bbox": [
+        141.2636,
+        37.9934,
+        141.2636,
+        37.9934
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-05T18:05:43+00:00",
+      "to_date": "2026-11-05T18:05:43+00:00",
+      "date_modified": "2026-11-05T21:33:42+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575797&episodeid=1744889",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:87.44km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575788_1744892",
+      "event_type": "EQ",
+      "event_id": 1575788,
+      "episode_id": 1744892,
+      "name": "Earthquake in Fiji",
+      "description": "Earthquake in Fiji",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Fiji",
+      "iso3": "FJI",
+      "centroid": [
+        -21.1984,
+        -178.7145
+      ],
+      "bbox": [
+        -178.7145,
+        -21.1984,
+        -178.7145,
+        -21.1984
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-05T17:21:45+00:00",
+      "to_date": "2026-11-05T17:21:45+00:00",
+      "date_modified": "2026-11-05T21:49:42+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575788&episodeid=1744892",
+      "severity_data": {
+        "severity": 6.1,
+        "severitytext": "Magnitude 6.1M, Depth:535km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575785_1744857",
+      "event_type": "EQ",
+      "event_id": 1575785,
+      "episode_id": 1744857,
+      "name": "Earthquake in China",
+      "description": "Earthquake in China",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "China",
+      "iso3": "CHN",
+      "centroid": [
+        35.6318,
+        77.9399
+      ],
+      "bbox": [
+        77.9399,
+        35.6318,
+        77.9399,
+        35.6318
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-05T16:56:25+00:00",
+      "to_date": "2026-11-05T16:56:25+00:00",
+      "date_modified": "2026-11-05T17:36:43+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575785&episodeid=1744857",
+      "severity_data": {
+        "severity": 5.0,
+        "severitytext": "Magnitude 5M, Depth:76.944km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575748_1744816",
+      "event_type": "EQ",
+      "event_id": 1575748,
+      "episode_id": 1744816,
+      "name": "Earthquake in Sea Of Okhotsk",
+      "description": "Earthquake in Sea Of Okhotsk",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Sea Of Okhotsk",
+      "iso3": "",
+      "centroid": [
+        49.2594,
+        147.7534
+      ],
+      "bbox": [
+        147.7534,
+        49.2594,
+        147.7534,
+        49.2594
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-05T10:09:33+00:00",
+      "to_date": "2026-11-05T10:09:33+00:00",
+      "date_modified": "2026-11-05T10:27:02+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575748&episodeid=1744816",
+      "severity_data": {
+        "severity": 4.8,
+        "severitytext": "Magnitude 4.8M, Depth:554.419km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575745_1744812",
+      "event_type": "EQ",
+      "event_id": 1575745,
+      "episode_id": 1744812,
+      "name": "Earthquake in Tanzania",
+      "description": "Earthquake in Tanzania",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Tanzania",
+      "iso3": "TZA",
+      "centroid": [
+        -3.4641,
+        32.149
+      ],
+      "bbox": [
+        32.149,
+        -3.4641,
+        32.149,
+        -3.4641
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-05T09:22:32+00:00",
+      "to_date": "2026-11-05T09:22:32+00:00",
+      "date_modified": "2026-11-05T21:01:43+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575745&episodeid=1744812",
+      "severity_data": {
+        "severity": 5.1,
+        "severitytext": "Magnitude 5.1M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "TC_1001343_52",
+      "event_type": "TC",
+      "event_id": 1001343,
+      "episode_id": 52,
+      "name": "Tropical Cyclone IN-FA-26",
+      "description": "Tropical Cyclone IN-FA-26",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Japan, Marshall Islands",
+      "iso3": "MHL",
+      "centroid": [
+        29.4,
+        141.5
+      ],
+      "bbox": [
+        141.5,
+        29.4,
+        141.5,
+        29.4
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-10-25T06:00:00+00:00",
+      "to_date": "2026-11-05T06:00:00+00:00",
+      "date_modified": "2026-11-05T08:06:09+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001343&episodeid=52",
+      "severity_data": {
+        "severity": 240.7392,
+        "severitytext": "Tropical Storm (maximum wind speed of 241 km/h)",
+        "severityunit": "km/h"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575724_1744822",
+      "event_type": "EQ",
+      "event_id": 1575724,
+      "episode_id": 1744822,
+      "name": "Earthquake in United States",
+      "description": "Earthquake in United States",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "United States",
+      "iso3": "USA",
+      "centroid": [
+        40.4073,
+        -125.5853
+      ],
+      "bbox": [
+        -125.5853,
+        40.4073,
+        -125.5853,
+        40.4073
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-05T04:56:01+00:00",
+      "to_date": "2026-11-05T04:56:01+00:00",
+      "date_modified": "2026-11-05T14:00:43+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575724&episodeid=1744822",
+      "severity_data": {
+        "severity": 4.96,
+        "severitytext": "Magnitude 4.96M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575928_1745077",
+      "event_type": "EQ",
+      "event_id": 1575928,
+      "episode_id": 1745077,
+      "name": "Earthquake in West Chile Rise",
+      "description": "Earthquake in West Chile Rise",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "West Chile Rise",
+      "iso3": "",
+      "centroid": [
+        -40.6911,
+        -87.6046
+      ],
+      "bbox": [
+        -87.6046,
+        -40.6911,
+        -87.6046,
+        -40.6911
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-05T01:35:51+00:00",
+      "to_date": "2026-11-05T01:35:51+00:00",
+      "date_modified": "2026-11-06T22:18:34+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575928&episodeid=1745077",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575666_1744747",
+      "event_type": "EQ",
+      "event_id": 1575666,
+      "episode_id": 1744747,
+      "name": "Earthquake in South Of Fiji Islands",
+      "description": "Earthquake in South Of Fiji Islands",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "South Of Fiji Islands",
+      "iso3": "",
+      "centroid": [
+        -25.2286,
+        179.8797
+      ],
+      "bbox": [
+        179.8797,
+        -25.2286,
+        179.8797,
+        -25.2286
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-04T21:24:24+00:00",
+      "to_date": "2026-11-04T21:24:24+00:00",
+      "date_modified": "2026-11-05T00:36:22+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575666&episodeid=1744747",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:502.294km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575739_1744852",
+      "event_type": "EQ",
+      "event_id": 1575739,
+      "episode_id": 1744852,
+      "name": "Earthquake in South Indian Ocean",
+      "description": "Earthquake in South Indian Ocean",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "South Indian Ocean",
+      "iso3": "",
+      "centroid": [
+        -1.4064,
+        88.0827
+      ],
+      "bbox": [
+        88.0827,
+        -1.4064,
+        88.0827,
+        -1.4064
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-04T20:06:06+00:00",
+      "to_date": "2026-11-04T20:06:06+00:00",
+      "date_modified": "2026-11-05T16:33:03+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575739&episodeid=1744852",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575661_1744724",
+      "event_type": "EQ",
+      "event_id": 1575661,
+      "episode_id": 1744724,
+      "name": "Earthquake in Nicaragua",
+      "description": "Earthquake in Nicaragua",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Nicaragua",
+      "iso3": "NIC",
+      "centroid": [
+        12.6311,
+        -87.1544
+      ],
+      "bbox": [
+        -87.1544,
+        12.6311,
+        -87.1544,
+        12.6311
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-04T19:55:26+00:00",
+      "to_date": "2026-11-04T19:55:26+00:00",
+      "date_modified": "2026-11-04T20:35:48+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575661&episodeid=1744724",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:159.022km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575927_1745078",
+      "event_type": "EQ",
+      "event_id": 1575927,
+      "episode_id": 1745078,
+      "name": "Earthquake in Micronesia",
+      "description": "Earthquake in Micronesia",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Micronesia",
+      "iso3": "FSM",
+      "centroid": [
+        8.684,
+        137.61
+      ],
+      "bbox": [
+        137.61,
+        8.684,
+        137.61,
+        8.684
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-04T14:56:15+00:00",
+      "to_date": "2026-11-04T14:56:15+00:00",
+      "date_modified": "2026-11-06T22:19:35+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575927&episodeid=1745078",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575585_1744638",
+      "event_type": "EQ",
+      "event_id": 1575585,
+      "episode_id": 1744638,
+      "name": "Earthquake in Indonesia",
+      "description": "Earthquake in Indonesia",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Indonesia",
+      "iso3": "IDN",
+      "centroid": [
+        4.3895,
+        127.0325
+      ],
+      "bbox": [
+        127.0325,
+        4.3895,
+        127.0325,
+        4.3895
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-04T07:40:12+00:00",
+      "to_date": "2026-11-04T07:40:12+00:00",
+      "date_modified": "2026-11-04T08:20:23+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575585&episodeid=1744638",
+      "severity_data": {
+        "severity": 5.0,
+        "severitytext": "Magnitude 5M, Depth:49.074km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1104267_1",
+      "event_type": "FL",
+      "event_id": 1104267,
+      "episode_id": 1,
+      "name": "Flood in Bulgaria",
+      "description": "Flood in Bulgaria",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Bulgaria",
+      "iso3": "BGR",
+      "centroid": [
+        43.4049,
+        28.1681
+      ],
+      "bbox": [
+        28.1681,
+        43.4049,
+        28.1681,
+        43.4049
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T01:00:00+00:00",
+      "to_date": "2026-11-04T01:00:00+00:00",
+      "date_modified": "2026-11-03T10:19:06+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104267&episodeid=1",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1104239_4",
+      "event_type": "FL",
+      "event_id": 1104239,
+      "episode_id": 4,
+      "name": "Flood in Malaysia",
+      "description": "Flood in Malaysia",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Malaysia",
+      "iso3": "MYS",
+      "centroid": [
+        3.2083,
+        101.3041
+      ],
+      "bbox": [
+        101.3041,
+        3.2083,
+        101.3041,
+        3.2083
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-10-15T01:00:00+00:00",
+      "to_date": "2026-11-04T01:00:00+00:00",
+      "date_modified": "2026-11-04T09:48:46+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104239&episodeid=4",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1104248_4",
+      "event_type": "FL",
+      "event_id": 1104248,
+      "episode_id": 4,
+      "name": "Flood in India",
+      "description": "Flood in India",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "India",
+      "iso3": "IND",
+      "centroid": [
+        15.446,
+        80.1661
+      ],
+      "bbox": [
+        80.1661,
+        15.446,
+        80.1661,
+        15.446
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-10-20T01:00:00+00:00",
+      "to_date": "2026-11-04T01:00:00+00:00",
+      "date_modified": "2026-11-04T09:48:15+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104248&episodeid=4",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1104253_6",
+      "event_type": "FL",
+      "event_id": 1104253,
+      "episode_id": 6,
+      "name": "Flood in Indonesia",
+      "description": "Flood in Indonesia",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Indonesia",
+      "iso3": "IDN",
+      "centroid": [
+        4.3685,
+        97.0253
+      ],
+      "bbox": [
+        97.0253,
+        4.3685,
+        97.0253,
+        4.3685
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-10-24T01:00:00+00:00",
+      "to_date": "2026-11-04T01:00:00+00:00",
+      "date_modified": "2026-11-07T12:29:32+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104253&episodeid=6",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575532_1744591",
+      "event_type": "EQ",
+      "event_id": 1575532,
+      "episode_id": 1744591,
+      "name": "Earthquake in Fiji",
+      "description": "Earthquake in Fiji",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Fiji",
+      "iso3": "FJI",
+      "centroid": [
+        -19.2691,
+        -177.5052
+      ],
+      "bbox": [
+        -177.5052,
+        -19.2691,
+        -177.5052,
+        -19.2691
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-04T00:32:59+00:00",
+      "to_date": "2026-11-04T00:32:59+00:00",
+      "date_modified": "2026-11-04T01:25:06+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575532&episodeid=1744591",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:556.459km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575519_1744580",
+      "event_type": "EQ",
+      "event_id": 1575519,
+      "episode_id": 1744580,
+      "name": "Earthquake in Tajikistan",
+      "description": "Earthquake in Tajikistan",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": true,
+      "country": "Tajikistan",
+      "iso3": "TJK",
+      "centroid": [
+        39.294,
+        73.3725
+      ],
+      "bbox": [
+        73.3725,
+        39.294,
+        73.3725,
+        39.294
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T22:50:33+00:00",
+      "to_date": "2026-11-03T22:50:33+00:00",
+      "date_modified": "2026-11-04T00:34:14+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575519&episodeid=1744580",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575507_1744561",
+      "event_type": "EQ",
+      "event_id": 1575507,
+      "episode_id": 1744561,
+      "name": "Earthquake in Tajikistan",
+      "description": "Earthquake in Tajikistan",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Tajikistan",
+      "iso3": "TJK",
+      "centroid": [
+        39.3619,
+        73.3023
+      ],
+      "bbox": [
+        73.3023,
+        39.3619,
+        73.3023,
+        39.3619
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T21:34:08+00:00",
+      "to_date": "2026-11-03T21:34:08+00:00",
+      "date_modified": "2026-11-03T22:15:02+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575507&episodeid=1744561",
+      "severity_data": {
+        "severity": 5.2,
+        "severitytext": "Magnitude 5.2M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575475_1744538",
+      "event_type": "EQ",
+      "event_id": 1575475,
+      "episode_id": 1744538,
+      "name": "Earthquake in M\u00e9xico",
+      "description": "Earthquake in M\u00e9xico",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "M\u00e9xico",
+      "iso3": "MEX",
+      "centroid": [
+        32.4308,
+        -115.1797
+      ],
+      "bbox": [
+        -115.1797,
+        32.4308,
+        -115.1797,
+        32.4308
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T18:27:31+00:00",
+      "to_date": "2026-11-03T18:27:31+00:00",
+      "date_modified": "2026-11-06T02:04:56+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575475&episodeid=1744538",
+      "severity_data": {
+        "severity": 4.89,
+        "severitytext": "Magnitude 4.89M, Depth:15.59km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575476_1744524",
+      "event_type": "EQ",
+      "event_id": 1575476,
+      "episode_id": 1744524,
+      "name": "Earthquake in Mid-Indian Ridge",
+      "description": "Earthquake in Mid-Indian Ridge",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Mid-Indian Ridge",
+      "iso3": "",
+      "centroid": [
+        -35.5195,
+        78.3027
+      ],
+      "bbox": [
+        78.3027,
+        -35.5195,
+        78.3027,
+        -35.5195
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T18:21:13+00:00",
+      "to_date": "2026-11-03T18:21:13+00:00",
+      "date_modified": "2026-11-03T18:48:42+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575476&episodeid=1744524",
+      "severity_data": {
+        "severity": 5.2,
+        "severitytext": "Magnitude 5.2M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575464_1744505",
+      "event_type": "EQ",
+      "event_id": 1575464,
+      "episode_id": 1744505,
+      "name": "Earthquake in Japan",
+      "description": "Earthquake in Japan",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Japan",
+      "iso3": "JPN",
+      "centroid": [
+        24.1441,
+        141.6725
+      ],
+      "bbox": [
+        141.6725,
+        24.1441,
+        141.6725,
+        24.1441
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T16:48:13+00:00",
+      "to_date": "2026-11-03T16:48:13+00:00",
+      "date_modified": "2026-11-03T17:28:22+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575464&episodeid=1744505",
+      "severity_data": {
+        "severity": 5.2,
+        "severitytext": "Magnitude 5.2M, Depth:139.456km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575458_1744501",
+      "event_type": "EQ",
+      "event_id": 1575458,
+      "episode_id": 1744501,
+      "name": "Earthquake in Indonesia",
+      "description": "Earthquake in Indonesia",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Indonesia",
+      "iso3": "IDN",
+      "centroid": [
+        -0.2295,
+        123.1532
+      ],
+      "bbox": [
+        123.1532,
+        -0.2295,
+        123.1532,
+        -0.2295
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T15:37:51+00:00",
+      "to_date": "2026-11-03T15:37:51+00:00",
+      "date_modified": "2026-11-03T16:57:05+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575458&episodeid=1744501",
+      "severity_data": {
+        "severity": 4.8,
+        "severitytext": "Magnitude 4.8M, Depth:136.685km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575432_1744899",
+      "event_type": "EQ",
+      "event_id": 1575432,
+      "episode_id": 1744899,
+      "name": "Earthquake in South Sandwich Islands Region",
+      "description": "Earthquake in South Sandwich Islands Region",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "South Sandwich Islands Region",
+      "iso3": "",
+      "centroid": [
+        -58.7979,
+        -26.2903
+      ],
+      "bbox": [
+        -26.2903,
+        -58.7979,
+        -26.2903,
+        -58.7979
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T13:34:04+00:00",
+      "to_date": "2026-11-03T13:34:04+00:00",
+      "date_modified": "2026-11-05T22:19:25+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575432&episodeid=1744899",
+      "severity_data": {
+        "severity": 5.0,
+        "severitytext": "Magnitude 5M, Depth:133.113km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575420_1744459",
+      "event_type": "EQ",
+      "event_id": 1575420,
+      "episode_id": 1744459,
+      "name": "Earthquake in Greece",
+      "description": "Earthquake in Greece",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Greece",
+      "iso3": "GRC",
+      "centroid": [
+        34.3254,
+        26.5713
+      ],
+      "bbox": [
+        26.5713,
+        34.3254,
+        26.5713,
+        34.3254
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T11:03:47+00:00",
+      "to_date": "2026-11-03T11:03:47+00:00",
+      "date_modified": "2026-11-03T12:04:22+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575420&episodeid=1744459",
+      "severity_data": {
+        "severity": 4.9,
+        "severitytext": "Magnitude 4.9M, Depth:45.662km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575413_1744448",
+      "event_type": "EQ",
+      "event_id": 1575413,
+      "episode_id": 1744448,
+      "name": "Earthquake in Colombia",
+      "description": "Earthquake in Colombia",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Colombia",
+      "iso3": "COL",
+      "centroid": [
+        3.7386,
+        -75.7198
+      ],
+      "bbox": [
+        -75.7198,
+        3.7386,
+        -75.7198,
+        3.7386
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T09:13:14+00:00",
+      "to_date": "2026-11-03T09:13:14+00:00",
+      "date_modified": "2026-11-04T14:01:28+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575413&episodeid=1744448",
+      "severity_data": {
+        "severity": 5.4,
+        "severitytext": "Magnitude 5.4M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575671_1744900",
+      "event_type": "EQ",
+      "event_id": 1575671,
+      "episode_id": 1744900,
+      "name": "Earthquake in Papua New Guinea",
+      "description": "Earthquake in Papua New Guinea",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Papua New Guinea",
+      "iso3": "PNG",
+      "centroid": [
+        -6.1411,
+        147.5576
+      ],
+      "bbox": [
+        147.5576,
+        -6.1411,
+        147.5576,
+        -6.1411
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T07:43:53+00:00",
+      "to_date": "2026-11-03T07:43:53+00:00",
+      "date_modified": "2026-11-05T22:19:52+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575671&episodeid=1744900",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:67.39km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575921_1745079",
+      "event_type": "EQ",
+      "event_id": 1575921,
+      "episode_id": 1745079,
+      "name": "Earthquake in Mauritius - Reunion Region",
+      "description": "Earthquake in Mauritius - Reunion Region",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Mauritius - Reunion Region",
+      "iso3": "",
+      "centroid": [
+        -20.0071,
+        65.8888
+      ],
+      "bbox": [
+        65.8888,
+        -20.0071,
+        65.8888,
+        -20.0071
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T06:02:38+00:00",
+      "to_date": "2026-11-03T06:02:38+00:00",
+      "date_modified": "2026-11-06T22:21:27+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575921&episodeid=1745079",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "TC_1001346_10",
+      "event_type": "TC",
+      "event_id": 1001346,
+      "episode_id": 10,
+      "name": "Tropical Cyclone MURASU-26",
+      "description": "Tropical Cyclone MURASU-26",
+      "alert_level": "Red",
+      "alert_score": 3.0,
+      "is_current": false,
+      "country": "India",
+      "iso3": "IND",
+      "centroid": [
+        15.8,
+        80.2
+      ],
+      "bbox": [
+        80.2,
+        15.8,
+        80.2,
+        15.8
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T00:00:00+00:00",
+      "to_date": "2026-11-03T06:00:00+00:00",
+      "date_modified": "2026-11-04T06:01:20+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001346&episodeid=10",
+      "severity_data": {
+        "severity": 157.4064,
+        "severitytext": "Hurricane/Typhoon > 74 mph (maximum wind speed of 157 km/h)",
+        "severityunit": "km/h"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575395_1744449",
+      "event_type": "EQ",
+      "event_id": 1575395,
+      "episode_id": 1744449,
+      "name": "Earthquake in Japan",
+      "description": "Earthquake in Japan",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Japan",
+      "iso3": "JPN",
+      "centroid": [
+        35.6591,
+        140.648
+      ],
+      "bbox": [
+        140.648,
+        35.6591,
+        140.648,
+        35.6591
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T05:40:18+00:00",
+      "to_date": "2026-11-03T05:40:18+00:00",
+      "date_modified": "2026-11-03T09:46:43+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575395&episodeid=1744449",
+      "severity_data": {
+        "severity": 4.8,
+        "severitytext": "Magnitude 4.8M, Depth:52.267km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575396_1744450",
+      "event_type": "EQ",
+      "event_id": 1575396,
+      "episode_id": 1744450,
+      "name": "Earthquake in Myanmar",
+      "description": "Earthquake in Myanmar",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Myanmar",
+      "iso3": "MMR",
+      "centroid": [
+        23.6023,
+        94.7089
+      ],
+      "bbox": [
+        94.7089,
+        23.6023,
+        94.7089,
+        23.6023
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T05:23:44+00:00",
+      "to_date": "2026-11-03T05:23:44+00:00",
+      "date_modified": "2026-11-03T09:53:43+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575396&episodeid=1744450",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:116.353km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575382_1744416",
+      "event_type": "EQ",
+      "event_id": 1575382,
+      "episode_id": 1744416,
+      "name": "Earthquake in Russia",
+      "description": "Earthquake in Russia",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Russia",
+      "iso3": "RUS",
+      "centroid": [
+        53.0409,
+        159.7384
+      ],
+      "bbox": [
+        159.7384,
+        53.0409,
+        159.7384,
+        53.0409
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-03T03:13:12+00:00",
+      "to_date": "2026-11-03T03:13:12+00:00",
+      "date_modified": "2026-11-03T04:29:03+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575382&episodeid=1744416",
+      "severity_data": {
+        "severity": 4.7,
+        "severitytext": "Magnitude 4.7M, Depth:75.58km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1104266_2",
+      "event_type": "FL",
+      "event_id": 1104266,
+      "episode_id": 2,
+      "name": "Flood in Philippines",
+      "description": "Flood in Philippines",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Philippines",
+      "iso3": "PHL",
+      "centroid": [
+        6.5647,
+        124.484
+      ],
+      "bbox": [
+        124.484,
+        6.5647,
+        124.484,
+        6.5647
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-10-29T01:00:00+00:00",
+      "to_date": "2026-11-03T01:00:00+00:00",
+      "date_modified": "2026-11-03T06:49:41+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104266&episodeid=2",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1104268_1",
+      "event_type": "FL",
+      "event_id": 1104268,
+      "episode_id": 1,
+      "name": "Flood in Spain",
+      "description": "Flood in Spain",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Spain",
+      "iso3": "ESP",
+      "centroid": [
+        28.2936,
+        -16.6214
+      ],
+      "bbox": [
+        -16.6214,
+        28.2936,
+        -16.6214,
+        28.2936
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T01:00:00+00:00",
+      "to_date": "2026-11-03T01:00:00+00:00",
+      "date_modified": "2026-11-03T10:19:19+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104268&episodeid=1",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1104269_1",
+      "event_type": "FL",
+      "event_id": 1104269,
+      "episode_id": 1,
+      "name": "Flood in Democratic Republic of Congo",
+      "description": "Flood in Democratic Republic of Congo",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Democratic Republic of Congo",
+      "iso3": "COD",
+      "centroid": [
+        -2.9494,
+        25.9184
+      ],
+      "bbox": [
+        25.9184,
+        -2.9494,
+        25.9184,
+        -2.9494
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T01:00:00+00:00",
+      "to_date": "2026-11-03T01:00:00+00:00",
+      "date_modified": "2026-11-05T10:23:17+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104269&episodeid=1",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "FL_1104167_14",
+      "event_type": "FL",
+      "event_id": 1104167,
+      "episode_id": 14,
+      "name": "Flood in Ecuador",
+      "description": "Flood in Ecuador",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Ecuador",
+      "iso3": "ECU",
+      "centroid": [
+        -0.8328,
+        -89.4322
+      ],
+      "bbox": [
+        -89.4322,
+        -0.8328,
+        -89.4322,
+        -0.8328
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-09-15T01:00:00+00:00",
+      "to_date": "2026-11-03T01:00:00+00:00",
+      "date_modified": "2026-11-07T12:32:28+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104167&episodeid=14",
+      "severity_data": {
+        "severity": 0.0,
+        "severitytext": "Magnitude 0 ",
+        "severityunit": ""
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575324_1744901",
+      "event_type": "EQ",
+      "event_id": 1575324,
+      "episode_id": 1744901,
+      "name": "Earthquake in China",
+      "description": "Earthquake in China",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "China",
+      "iso3": "CHN",
+      "centroid": [
+        32.2855,
+        93.7833
+      ],
+      "bbox": [
+        93.7833,
+        32.2855,
+        93.7833,
+        32.2855
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T20:54:53+00:00",
+      "to_date": "2026-11-02T20:54:53+00:00",
+      "date_modified": "2026-11-05T22:21:23+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575324&episodeid=1744901",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575326_1744353",
+      "event_type": "EQ",
+      "event_id": 1575326,
+      "episode_id": 1744353,
+      "name": "Earthquake in Vanuatu Islands",
+      "description": "Earthquake in Vanuatu Islands",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Vanuatu Islands",
+      "iso3": "",
+      "centroid": [
+        -13.8072,
+        165.3938
+      ],
+      "bbox": [
+        165.3938,
+        -13.8072,
+        165.3938,
+        -13.8072
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T20:54:25+00:00",
+      "to_date": "2026-11-02T20:54:25+00:00",
+      "date_modified": "2026-11-02T21:13:46+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575326&episodeid=1744353",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575318_1744344",
+      "event_type": "EQ",
+      "event_id": 1575318,
+      "episode_id": 1744344,
+      "name": "Earthquake in South Of Mariana Islands",
+      "description": "Earthquake in South Of Mariana Islands",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "South Of Mariana Islands",
+      "iso3": "",
+      "centroid": [
+        13.795,
+        146.6114
+      ],
+      "bbox": [
+        146.6114,
+        13.795,
+        146.6114,
+        13.795
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T19:59:04+00:00",
+      "to_date": "2026-11-02T19:59:04+00:00",
+      "date_modified": "2026-11-02T20:20:45+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575318&episodeid=1744344",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575297_1744902",
+      "event_type": "EQ",
+      "event_id": 1575297,
+      "episode_id": 1744902,
+      "name": "Earthquake in China",
+      "description": "Earthquake in China",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "China",
+      "iso3": "CHN",
+      "centroid": [
+        32.4467,
+        93.9955
+      ],
+      "bbox": [
+        93.9955,
+        32.4467,
+        93.9955,
+        32.4467
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T18:33:10+00:00",
+      "to_date": "2026-11-02T18:33:10+00:00",
+      "date_modified": "2026-11-05T22:21:50+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575297&episodeid=1744902",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575283_1744311",
+      "event_type": "EQ",
+      "event_id": 1575283,
+      "episode_id": 1744311,
+      "name": "Earthquake in Greece",
+      "description": "Earthquake in Greece",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Greece",
+      "iso3": "GRC",
+      "centroid": [
+        34.4807,
+        26.4694
+      ],
+      "bbox": [
+        26.4694,
+        34.4807,
+        26.4694,
+        34.4807
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T16:49:17+00:00",
+      "to_date": "2026-11-02T16:49:17+00:00",
+      "date_modified": "2026-11-02T17:29:23+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575283&episodeid=1744311",
+      "severity_data": {
+        "severity": 5.3,
+        "severitytext": "Magnitude 5.3M, Depth:48.525km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575276_1744304",
+      "event_type": "EQ",
+      "event_id": 1575276,
+      "episode_id": 1744304,
+      "name": "Earthquake in China",
+      "description": "Earthquake in China",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "China",
+      "iso3": "CHN",
+      "centroid": [
+        32.3376,
+        93.831
+      ],
+      "bbox": [
+        93.831,
+        32.3376,
+        93.831,
+        32.3376
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T15:35:12+00:00",
+      "to_date": "2026-11-02T15:35:12+00:00",
+      "date_modified": "2026-11-02T16:27:45+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575276&episodeid=1744304",
+      "severity_data": {
+        "severity": 4.7,
+        "severitytext": "Magnitude 4.7M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575275_1744300",
+      "event_type": "EQ",
+      "event_id": 1575275,
+      "episode_id": 1744300,
+      "name": "Earthquake in Peru",
+      "description": "Earthquake in Peru",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Peru",
+      "iso3": "PER",
+      "centroid": [
+        -10.1699,
+        -78.5994
+      ],
+      "bbox": [
+        -78.5994,
+        -10.1699,
+        -78.5994,
+        -10.1699
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T15:28:13+00:00",
+      "to_date": "2026-11-02T15:28:13+00:00",
+      "date_modified": "2026-11-02T16:08:23+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575275&episodeid=1744300",
+      "severity_data": {
+        "severity": 5.1,
+        "severitytext": "Magnitude 5.1M, Depth:67.239km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575265_1744289",
+      "event_type": "EQ",
+      "event_id": 1575265,
+      "episode_id": 1744289,
+      "name": "Earthquake in South Of Fiji Islands",
+      "description": "Earthquake in South Of Fiji Islands",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "South Of Fiji Islands",
+      "iso3": "",
+      "centroid": [
+        -25.6182,
+        179.6708
+      ],
+      "bbox": [
+        179.6708,
+        -25.6182,
+        179.6708,
+        -25.6182
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T14:05:23+00:00",
+      "to_date": "2026-11-02T14:05:23+00:00",
+      "date_modified": "2026-11-02T14:33:06+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575265&episodeid=1744289",
+      "severity_data": {
+        "severity": 4.7,
+        "severitytext": "Magnitude 4.7M, Depth:502.364km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575228_1744256",
+      "event_type": "EQ",
+      "event_id": 1575228,
+      "episode_id": 1744256,
+      "name": "Earthquake in Greece",
+      "description": "Earthquake in Greece",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Greece",
+      "iso3": "GRC",
+      "centroid": [
+        34.3232,
+        26.528
+      ],
+      "bbox": [
+        26.528,
+        34.3232,
+        26.528,
+        34.3232
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T08:59:22+00:00",
+      "to_date": "2026-11-02T08:59:22+00:00",
+      "date_modified": "2026-11-02T11:24:07+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575228&episodeid=1744256",
+      "severity_data": {
+        "severity": 4.7,
+        "severitytext": "Magnitude 4.7M, Depth:40.168km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575227_1744248",
+      "event_type": "EQ",
+      "event_id": 1575227,
+      "episode_id": 1744248,
+      "name": "Earthquake in Philippines",
+      "description": "Earthquake in Philippines",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Philippines",
+      "iso3": "PHL",
+      "centroid": [
+        19.8007,
+        121.1252
+      ],
+      "bbox": [
+        121.1252,
+        19.8007,
+        121.1252,
+        19.8007
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T08:42:47+00:00",
+      "to_date": "2026-11-02T08:42:47+00:00",
+      "date_modified": "2026-11-02T09:37:49+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575227&episodeid=1744248",
+      "severity_data": {
+        "severity": 4.7,
+        "severitytext": "Magnitude 4.7M, Depth:35km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575222_1744242",
+      "event_type": "EQ",
+      "event_id": 1575222,
+      "episode_id": 1744242,
+      "name": "Earthquake in Indonesia",
+      "description": "Earthquake in Indonesia",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Indonesia",
+      "iso3": "IDN",
+      "centroid": [
+        1.392,
+        124.6476
+      ],
+      "bbox": [
+        124.6476,
+        1.392,
+        124.6476,
+        1.392
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T08:13:14+00:00",
+      "to_date": "2026-11-02T08:13:14+00:00",
+      "date_modified": "2026-11-02T08:53:23+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575222&episodeid=1744242",
+      "severity_data": {
+        "severity": 5.1,
+        "severitytext": "Magnitude 5.1M, Depth:196.646km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575203_1744219",
+      "event_type": "EQ",
+      "event_id": 1575203,
+      "episode_id": 1744219,
+      "name": "Earthquake in Papua New Guinea",
+      "description": "Earthquake in Papua New Guinea",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Papua New Guinea",
+      "iso3": "PNG",
+      "centroid": [
+        -5.5626,
+        154.088
+      ],
+      "bbox": [
+        154.088,
+        -5.5626,
+        154.088,
+        -5.5626
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T05:19:50+00:00",
+      "to_date": "2026-11-02T05:19:50+00:00",
+      "date_modified": "2026-11-02T06:00:08+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575203&episodeid=1744219",
+      "severity_data": {
+        "severity": 4.9,
+        "severitytext": "Magnitude 4.9M, Depth:87.891km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575202_1744217",
+      "event_type": "EQ",
+      "event_id": 1575202,
+      "episode_id": 1744217,
+      "name": "Earthquake in Russia",
+      "description": "Earthquake in Russia",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Russia",
+      "iso3": "RUS",
+      "centroid": [
+        46.6019,
+        149.5786
+      ],
+      "bbox": [
+        149.5786,
+        46.6019,
+        149.5786,
+        46.6019
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T04:45:48+00:00",
+      "to_date": "2026-11-02T04:45:48+00:00",
+      "date_modified": "2026-11-02T05:26:04+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575202&episodeid=1744217",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575198_1744222",
+      "event_type": "EQ",
+      "event_id": 1575198,
+      "episode_id": 1744222,
+      "name": "Earthquake in Mid-Indian Ridge",
+      "description": "Earthquake in Mid-Indian Ridge",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Mid-Indian Ridge",
+      "iso3": "",
+      "centroid": [
+        -35.9577,
+        78.0792
+      ],
+      "bbox": [
+        78.0792,
+        -35.9577,
+        78.0792,
+        -35.9577
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T02:43:47+00:00",
+      "to_date": "2026-11-02T02:43:47+00:00",
+      "date_modified": "2026-11-02T06:32:08+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575198&episodeid=1744222",
+      "severity_data": {
+        "severity": 4.7,
+        "severitytext": "Magnitude 4.7M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575192_1744206",
+      "event_type": "EQ",
+      "event_id": 1575192,
+      "episode_id": 1744206,
+      "name": "Earthquake in Papua New Guinea",
+      "description": "Earthquake in Papua New Guinea",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Papua New Guinea",
+      "iso3": "PNG",
+      "centroid": [
+        -2.9446,
+        146.4573
+      ],
+      "bbox": [
+        146.4573,
+        -2.9446,
+        146.4573,
+        -2.9446
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T02:24:03+00:00",
+      "to_date": "2026-11-02T02:24:03+00:00",
+      "date_modified": "2026-11-02T03:40:28+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575192&episodeid=1744206",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575190_1744203",
+      "event_type": "EQ",
+      "event_id": 1575190,
+      "episode_id": 1744203,
+      "name": "Earthquake in Taiwan",
+      "description": "Earthquake in Taiwan",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Taiwan",
+      "iso3": "TWN",
+      "centroid": [
+        24.322,
+        122.1775
+      ],
+      "bbox": [
+        122.1775,
+        24.322,
+        122.1775,
+        24.322
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T02:23:08+00:00",
+      "to_date": "2026-11-02T02:23:08+00:00",
+      "date_modified": "2026-11-02T03:25:23+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575190&episodeid=1744203",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:55.087km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575173_1744184",
+      "event_type": "EQ",
+      "event_id": 1575173,
+      "episode_id": 1744184,
+      "name": "Earthquake in Southeast Of Shikoku, Japan",
+      "description": "Earthquake in Southeast Of Shikoku, Japan",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Southeast Of Shikoku, Japan",
+      "iso3": "",
+      "centroid": [
+        30.8406,
+        135.1987
+      ],
+      "bbox": [
+        135.1987,
+        30.8406,
+        135.1987,
+        30.8406
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T01:54:55+00:00",
+      "to_date": "2026-11-02T01:54:55+00:00",
+      "date_modified": "2026-11-02T02:18:23+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575173&episodeid=1744184",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:510.072km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575171_1744181",
+      "event_type": "EQ",
+      "event_id": 1575171,
+      "episode_id": 1744181,
+      "name": "Earthquake in Kermadec Islands Region",
+      "description": "Earthquake in Kermadec Islands Region",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Kermadec Islands Region",
+      "iso3": "",
+      "centroid": [
+        -31.2244,
+        -177.7236
+      ],
+      "bbox": [
+        -177.7236,
+        -31.2244,
+        -177.7236,
+        -31.2244
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T01:18:16+00:00",
+      "to_date": "2026-11-02T01:18:16+00:00",
+      "date_modified": "2026-11-02T01:38:23+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575171&episodeid=1744181",
+      "severity_data": {
+        "severity": 5.1,
+        "severitytext": "Magnitude 5.1M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575167_1744180",
+      "event_type": "EQ",
+      "event_id": 1575167,
+      "episode_id": 1744180,
+      "name": "Earthquake in Indonesia",
+      "description": "Earthquake in Indonesia",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Indonesia",
+      "iso3": "IDN",
+      "centroid": [
+        -6.9205,
+        129.9514
+      ],
+      "bbox": [
+        129.9514,
+        -6.9205,
+        129.9514,
+        -6.9205
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-02T00:53:09+00:00",
+      "to_date": "2026-11-02T00:53:09+00:00",
+      "date_modified": "2026-11-02T01:34:06+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575167&episodeid=1744180",
+      "severity_data": {
+        "severity": 5.1,
+        "severitytext": "Magnitude 5.1M, Depth:93.548km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575157_1744167",
+      "event_type": "EQ",
+      "event_id": 1575157,
+      "episode_id": 1744167,
+      "name": "Earthquake in Argentina",
+      "description": "Earthquake in Argentina",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Argentina",
+      "iso3": "ARG",
+      "centroid": [
+        -22.5661,
+        -66.523
+      ],
+      "bbox": [
+        -66.523,
+        -22.5661,
+        -66.523,
+        -22.5661
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T23:18:05+00:00",
+      "to_date": "2026-11-01T23:18:05+00:00",
+      "date_modified": "2026-11-01T23:58:28+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575157&episodeid=1744167",
+      "severity_data": {
+        "severity": 4.5,
+        "severitytext": "Magnitude 4.5M, Depth:243.598km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575153_1744158",
+      "event_type": "EQ",
+      "event_id": 1575153,
+      "episode_id": 1744158,
+      "name": "Earthquake in Mid-Indian Ridge",
+      "description": "Earthquake in Mid-Indian Ridge",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Mid-Indian Ridge",
+      "iso3": "",
+      "centroid": [
+        -35.403,
+        78.404
+      ],
+      "bbox": [
+        78.404,
+        -35.403,
+        78.404,
+        -35.403
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T22:22:44+00:00",
+      "to_date": "2026-11-01T22:22:44+00:00",
+      "date_modified": "2026-11-01T22:40:06+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575153&episodeid=1744158",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575147_1744149",
+      "event_type": "EQ",
+      "event_id": 1575147,
+      "episode_id": 1744149,
+      "name": "Earthquake in Kermadec Islands Region",
+      "description": "Earthquake in Kermadec Islands Region",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Kermadec Islands Region",
+      "iso3": "",
+      "centroid": [
+        -27.291,
+        -177.8708
+      ],
+      "bbox": [
+        -177.8708,
+        -27.291,
+        -177.8708,
+        -27.291
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T21:26:57+00:00",
+      "to_date": "2026-11-01T21:26:57+00:00",
+      "date_modified": "2026-11-01T22:01:46+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575147&episodeid=1744149",
+      "severity_data": {
+        "severity": 4.7,
+        "severitytext": "Magnitude 4.7M, Depth:150.95km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575123_1744123",
+      "event_type": "EQ",
+      "event_id": 1575123,
+      "episode_id": 1744123,
+      "name": "Earthquake in Mid-Indian Ridge",
+      "description": "Earthquake in Mid-Indian Ridge",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Mid-Indian Ridge",
+      "iso3": "",
+      "centroid": [
+        -35.441,
+        78.4169
+      ],
+      "bbox": [
+        78.4169,
+        -35.441,
+        78.4169,
+        -35.441
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T18:53:57+00:00",
+      "to_date": "2026-11-01T18:53:57+00:00",
+      "date_modified": "2026-11-01T19:14:47+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575123&episodeid=1744123",
+      "severity_data": {
+        "severity": 4.8,
+        "severitytext": "Magnitude 4.8M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575121_1744128",
+      "event_type": "EQ",
+      "event_id": 1575121,
+      "episode_id": 1744128,
+      "name": "Earthquake in Philippines",
+      "description": "Earthquake in Philippines",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Philippines",
+      "iso3": "PHL",
+      "centroid": [
+        19.7626,
+        121.328
+      ],
+      "bbox": [
+        121.328,
+        19.7626,
+        121.328,
+        19.7626
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T18:42:57+00:00",
+      "to_date": "2026-11-01T18:42:57+00:00",
+      "date_modified": "2026-11-01T19:45:06+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575121&episodeid=1744128",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:38.488km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575119_1744117",
+      "event_type": "EQ",
+      "event_id": 1575119,
+      "episode_id": 1744117,
+      "name": "Earthquake in Mid-Indian Ridge",
+      "description": "Earthquake in Mid-Indian Ridge",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Mid-Indian Ridge",
+      "iso3": "",
+      "centroid": [
+        -23.8735,
+        69.5217
+      ],
+      "bbox": [
+        69.5217,
+        -23.8735,
+        69.5217,
+        -23.8735
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T18:34:39+00:00",
+      "to_date": "2026-11-01T18:34:39+00:00",
+      "date_modified": "2026-11-01T18:56:44+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575119&episodeid=1744117",
+      "severity_data": {
+        "severity": 5.0,
+        "severitytext": "Magnitude 5M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575120_1744119",
+      "event_type": "EQ",
+      "event_id": 1575120,
+      "episode_id": 1744119,
+      "name": "Earthquake in Mid-Indian Ridge",
+      "description": "Earthquake in Mid-Indian Ridge",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Mid-Indian Ridge",
+      "iso3": "",
+      "centroid": [
+        -23.9496,
+        69.5065
+      ],
+      "bbox": [
+        69.5065,
+        -23.9496,
+        69.5065,
+        -23.9496
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T18:30:23+00:00",
+      "to_date": "2026-11-01T18:30:23+00:00",
+      "date_modified": "2026-11-01T18:57:45+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575120&episodeid=1744119",
+      "severity_data": {
+        "severity": 4.6,
+        "severitytext": "Magnitude 4.6M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575107_1744104",
+      "event_type": "EQ",
+      "event_id": 1575107,
+      "episode_id": 1744104,
+      "name": "Earthquake in South Sandwich Islands Region",
+      "description": "Earthquake in South Sandwich Islands Region",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "South Sandwich Islands Region",
+      "iso3": "",
+      "centroid": [
+        -56.2566,
+        -27.1985
+      ],
+      "bbox": [
+        -27.1985,
+        -56.2566,
+        -27.1985,
+        -56.2566
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T17:11:56+00:00",
+      "to_date": "2026-11-01T17:11:56+00:00",
+      "date_modified": "2026-11-01T17:52:03+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575107&episodeid=1744104",
+      "severity_data": {
+        "severity": 5.1,
+        "severitytext": "Magnitude 5.1M, Depth:108.234km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575108_1744105",
+      "event_type": "EQ",
+      "event_id": 1575108,
+      "episode_id": 1744105,
+      "name": "Earthquake in Japan",
+      "description": "Earthquake in Japan",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Japan",
+      "iso3": "JPN",
+      "centroid": [
+        23.8055,
+        123.2705
+      ],
+      "bbox": [
+        123.2705,
+        23.8055,
+        123.2705,
+        23.8055
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T17:01:18+00:00",
+      "to_date": "2026-11-01T17:01:18+00:00",
+      "date_modified": "2026-11-01T17:44:30+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575108&episodeid=1744105",
+      "severity_data": {
+        "severity": 4.7,
+        "severitytext": "Magnitude 4.7M, Depth:18.483km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575070_1744065",
+      "event_type": "EQ",
+      "event_id": 1575070,
+      "episode_id": 1744065,
+      "name": "Earthquake in Vanuatu Islands",
+      "description": "Earthquake in Vanuatu Islands",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Vanuatu Islands",
+      "iso3": "",
+      "centroid": [
+        -13.8667,
+        165.6199
+      ],
+      "bbox": [
+        165.6199,
+        -13.8667,
+        165.6199,
+        -13.8667
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T12:08:30+00:00",
+      "to_date": "2026-11-01T12:08:30+00:00",
+      "date_modified": "2026-11-01T12:28:25+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575070&episodeid=1744065",
+      "severity_data": {
+        "severity": 4.8,
+        "severitytext": "Magnitude 4.8M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575069_1744063",
+      "event_type": "EQ",
+      "event_id": 1575069,
+      "episode_id": 1744063,
+      "name": "Earthquake in Vanuatu",
+      "description": "Earthquake in Vanuatu",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Vanuatu",
+      "iso3": "VUT",
+      "centroid": [
+        -14.0776,
+        165.767
+      ],
+      "bbox": [
+        165.767,
+        -14.0776,
+        165.767,
+        -14.0776
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T11:56:51+00:00",
+      "to_date": "2026-11-01T11:56:51+00:00",
+      "date_modified": "2026-11-01T12:18:05+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575069&episodeid=1744063",
+      "severity_data": {
+        "severity": 4.8,
+        "severitytext": "Magnitude 4.8M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    },
+    {
+      "event_key": "EQ_1575068_1744061",
+      "event_type": "EQ",
+      "event_id": 1575068,
+      "episode_id": 1744061,
+      "name": "Earthquake in Vanuatu",
+      "description": "Earthquake in Vanuatu",
+      "alert_level": "Green",
+      "alert_score": 1.0,
+      "is_current": false,
+      "country": "Vanuatu",
+      "iso3": "VUT",
+      "centroid": [
+        -14.1689,
+        165.8242
+      ],
+      "bbox": [
+        165.8242,
+        -14.1689,
+        165.8242,
+        -14.1689
+      ],
+      "polygon_count": 0,
+      "from_date": "2026-11-01T11:47:03+00:00",
+      "to_date": "2026-11-01T11:47:03+00:00",
+      "date_modified": "2026-11-02T14:02:23+00:00",
+      "geometry_url": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1575068&episodeid=1744061",
+      "severity_data": {
+        "severity": 6.0,
+        "severitytext": "Magnitude 6M, Depth:10km",
+        "severityunit": "M"
+      },
+      "provenance": "LIVE_EXTERNAL",
+      "attribution": "Global Disaster Awareness and Coordination System, GDACS."
+    }
+  ]
+}

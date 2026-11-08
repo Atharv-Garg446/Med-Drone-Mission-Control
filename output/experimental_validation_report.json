@@ -1,0 +1,537 @@
+{
+  "generated_at_utc": "2026-11-08T12:46:09.147808+00:00",
+  "total_experiments": 8,
+  "passed_experiments": 8,
+  "all_passed": true,
+  "experiments": [
+    {
+      "experiment": "EXP-01_Route_Planning_With_vs_Without_Restricted_Areas",
+      "passed": true,
+      "unrestricted_planned_km": 8.828,
+      "restricted_planned_km": 9.002,
+      "detour_distance_delta_km": 0.174,
+      "leg1_unrestricted_km": 3.181,
+      "leg1_restricted_km": 3.355,
+      "unrestricted_mission_items": 13,
+      "restricted_mission_items": 14,
+      "detour_waypoints_inserted": 1,
+      "safety_margin_enforced_m": 50.0,
+      "min_measured_clearance_m": 65.97
+    },
+    {
+      "experiment": "EXP-02_Mission_Feasibility_Gates_MTOW_Battery_ColdChain_Deadline",
+      "passed": true,
+      "cases": {
+        "nominal_3_5kg_100pct_soc": {
+          "feasible": true,
+          "total_energy_wh": 136.91,
+          "usable_energy_wh": 284.16,
+          "leg_payloads_kg": [
+            3.5,
+            1.5,
+            0.0
+          ],
+          "leg_cruise_powers_w": [
+            696.3,
+            525.0,
+            416.6
+          ]
+        },
+        "payload_capacity_breach_9kg": {
+          "rejected": true,
+          "error": "INITIAL_MISSION_INFEASIBLE: Payload mass 9.00kg exceeds max_payload_kg 8.00kg"
+        },
+        "mtow_breach": {
+          "rejected": true,
+          "error": "INITIAL_MISSION_INFEASIBLE: Total takeoff weight 15.70kg exceeds certified MTOW 15.00kg"
+        },
+        "low_battery_21pct_soc": {
+          "rejected": true,
+          "error": "INITIAL_MISSION_INFEASIBLE: Required energy 136.9Wh exceeds usable remaining 3.6Wh (current SoC: 21.0%, reserve floor: 20%)"
+        },
+        "missing_battery_telemetry": {
+          "rejected": true,
+          "error": "INITIAL_MISSION_INFEASIBLE: Battery telemetry missing or unknown (cannot assume 100% SoC)"
+        },
+        "cold_chain_limit_breach": {
+          "rejected": true,
+          "error": "INITIAL_MISSION_INFEASIBLE: Stop 1 ETA 9.9m breaches time-based cold-chain limit 2.0m"
+        },
+        "delivery_window_breach": {
+          "rejected": true,
+          "error": "INITIAL_MISSION_INFEASIBLE: Stop 1 ETA 9.9m breaches delivery window 2.0m"
+        }
+      }
+    },
+    {
+      "experiment": "EXP-03_SITL_Obstacle_Avoidance_and_Mission_Log_Evidence",
+      "passed": true,
+      "sitl_runs_analyzed": 14,
+      "runs": [
+        {
+          "log_file": "sitl_run_20261026_174133.jsonl",
+          "sitl_model": "+",
+          "mav_type": null,
+          "initial_voltage_v": 12.6,
+          "success": true,
+          "delivered": [
+            6,
+            4
+          ],
+          "failed_deliveries": [],
+          "requested_delivery_mode": null,
+          "delivery_modes_executed": null,
+          "proximity_sensor_active": null,
+          "proximity_active_frames": 0,
+          "ardupilot_oa_db_confirmations": 0,
+          "max_oa_deviation_m": 0.0,
+          "measured_oa_lateral_deviation_observed": null,
+          "final_battery": {
+            "voltage_v": 12.6,
+            "current_a": 0.0,
+            "remaining_pct": 0,
+            "consumed_mah": 13312.0
+          },
+          "planned_km": 13.342
+        },
+        {
+          "log_file": "sitl_run_20261026_175105.jsonl",
+          "sitl_model": "+",
+          "mav_type": null,
+          "initial_voltage_v": 12.6,
+          "success": false,
+          "delivered": [],
+          "failed_deliveries": [],
+          "requested_delivery_mode": null,
+          "delivery_modes_executed": null,
+          "proximity_sensor_active": null,
+          "proximity_active_frames": 0,
+          "ardupilot_oa_db_confirmations": 0,
+          "max_oa_deviation_m": 0.0,
+          "measured_oa_lateral_deviation_observed": null,
+          "final_battery": {
+            "voltage_v": 12.6,
+            "current_a": 0.0,
+            "remaining_pct": 66,
+            "consumed_mah": 3392.0
+          },
+          "planned_km": 6.361
+        },
+        {
+          "log_file": "sitl_run_20261026_175605.jsonl",
+          "sitl_model": "+",
+          "mav_type": null,
+          "initial_voltage_v": 12.6,
+          "success": true,
+          "delivered": [
+            8
+          ],
+          "failed_deliveries": [],
+          "requested_delivery_mode": null,
+          "delivery_modes_executed": null,
+          "proximity_sensor_active": null,
+          "proximity_active_frames": 0,
+          "ardupilot_oa_db_confirmations": 0,
+          "max_oa_deviation_m": 0.0,
+          "measured_oa_lateral_deviation_observed": null,
+          "final_battery": {
+            "voltage_v": 12.6,
+            "current_a": 0.0,
+            "remaining_pct": 31,
+            "consumed_mah": 6820.0
+          },
+          "planned_km": 6.361
+        },
+        {
+          "log_file": "sitl_run_20261028_160005.jsonl",
+          "sitl_model": "+",
+          "mav_type": null,
+          "initial_voltage_v": 12.6,
+          "success": true,
+          "delivered": [
+            6,
+            4
+          ],
+          "failed_deliveries": [],
+          "requested_delivery_mode": null,
+          "delivery_modes_executed": null,
+          "proximity_sensor_active": null,
+          "proximity_active_frames": 0,
+          "ardupilot_oa_db_confirmations": 0,
+          "max_oa_deviation_m": 0.0,
+          "measured_oa_lateral_deviation_observed": null,
+          "final_battery": {
+            "voltage_v": 12.6,
+            "current_a": 0.0,
+            "remaining_pct": 0,
+            "consumed_mah": 12931.0
+          },
+          "planned_km": 13.342
+        },
+        {
+          "log_file": "sitl_run_20261028_181106.jsonl",
+          "sitl_model": "+",
+          "mav_type": null,
+          "initial_voltage_v": 12.6,
+          "success": true,
+          "delivered": [
+            6
+          ],
+          "failed_deliveries": [],
+          "requested_delivery_mode": null,
+          "delivery_modes_executed": null,
+          "proximity_sensor_active": null,
+          "proximity_active_frames": 0,
+          "ardupilot_oa_db_confirmations": 0,
+          "max_oa_deviation_m": 0.0,
+          "measured_oa_lateral_deviation_observed": null,
+          "final_battery": {
+            "voltage_v": 12.6,
+            "current_a": 0.0,
+            "remaining_pct": 0,
+            "consumed_mah": 10730.0
+          },
+          "planned_km": 11.258
+        },
+        {
+          "log_file": "sitl_run_20261028_213904.jsonl",
+          "sitl_model": "+",
+          "mav_type": null,
+          "initial_voltage_v": 12.6,
+          "success": false,
+          "delivered": [],
+          "failed_deliveries": [],
+          "requested_delivery_mode": null,
+          "delivery_modes_executed": null,
+          "proximity_sensor_active": null,
+          "proximity_active_frames": 0,
+          "ardupilot_oa_db_confirmations": 0,
+          "max_oa_deviation_m": 0.0,
+          "measured_oa_lateral_deviation_observed": null,
+          "final_battery": {
+            "voltage_v": 12.6,
+            "current_a": 0.0,
+            "remaining_pct": 45,
+            "consumed_mah": 5452.0
+          },
+          "planned_km": 11.258
+        },
+        {
+          "log_file": "sitl_run_20261105_235539.jsonl",
+          "sitl_model": "+",
+          "mav_type": null,
+          "initial_voltage_v": 12.6,
+          "success": true,
+          "delivered": [
+            1,
+            2
+          ],
+          "failed_deliveries": [],
+          "requested_delivery_mode": null,
+          "delivery_modes_executed": null,
+          "proximity_sensor_active": true,
+          "proximity_active_frames": 980,
+          "ardupilot_oa_db_confirmations": 50,
+          "max_oa_deviation_m": 9.39,
+          "measured_oa_lateral_deviation_observed": true,
+          "final_battery": {
+            "voltage_v": 12.6,
+            "current_a": 0.0,
+            "remaining_pct": 40,
+            "consumed_mah": 9599.0
+          },
+          "planned_km": 8.828
+        },
+        {
+          "log_file": "sitl_run_20261106_001944.jsonl",
+          "sitl_model": "+",
+          "mav_type": null,
+          "initial_voltage_v": 12.6,
+          "success": true,
+          "delivered": [
+            1
+          ],
+          "failed_deliveries": [],
+          "requested_delivery_mode": null,
+          "delivery_modes_executed": null,
+          "proximity_sensor_active": true,
+          "proximity_active_frames": 0,
+          "ardupilot_oa_db_confirmations": 0,
+          "max_oa_deviation_m": 0.0,
+          "measured_oa_lateral_deviation_observed": false,
+          "final_battery": {
+            "voltage_v": 12.6,
+            "current_a": 0.0,
+            "remaining_pct": 58,
+            "consumed_mah": 6646.0
+          },
+          "planned_km": 6.361
+        },
+        {
+          "log_file": "sitl_run_20261106_013239.jsonl",
+          "sitl_model": "+",
+          "mav_type": null,
+          "initial_voltage_v": 12.6,
+          "success": true,
+          "delivered": [
+            1
+          ],
+          "failed_deliveries": [],
+          "requested_delivery_mode": "hover",
+          "delivery_modes_executed": {
+            "1": "hover"
+          },
+          "proximity_sensor_active": true,
+          "proximity_active_frames": 73,
+          "ardupilot_oa_db_confirmations": 50,
+          "max_oa_deviation_m": 34.5,
+          "measured_oa_lateral_deviation_observed": true,
+          "final_battery": {
+            "voltage_v": 12.6,
+            "current_a": 0.0,
+            "remaining_pct": 57,
+            "consumed_mah": 6769.0
+          },
+          "planned_km": 6.361
+        },
+        {
+          "log_file": "sitl_run_20261106_013542.jsonl",
+          "sitl_model": "+",
+          "mav_type": null,
+          "initial_voltage_v": 12.6,
+          "success": true,
+          "delivered": [
+            1,
+            2
+          ],
+          "failed_deliveries": [],
+          "requested_delivery_mode": "auto",
+          "delivery_modes_executed": {
+            "1": "hover",
+            "2": "land"
+          },
+          "proximity_sensor_active": true,
+          "proximity_active_frames": 27,
+          "ardupilot_oa_db_confirmations": 50,
+          "max_oa_deviation_m": 10.01,
+          "measured_oa_lateral_deviation_observed": true,
+          "final_battery": {
+            "voltage_v": 12.6,
+            "current_a": 0.0,
+            "remaining_pct": 39,
+            "consumed_mah": 9604.0
+          },
+          "planned_km": 8.828
+        },
+        {
+          "log_file": "sitl_run_20261106_150306.jsonl",
+          "sitl_model": "+",
+          "mav_type": null,
+          "initial_voltage_v": 12.6,
+          "success": true,
+          "delivered": [
+            1,
+            2
+          ],
+          "failed_deliveries": [],
+          "requested_delivery_mode": "auto",
+          "delivery_modes_executed": {
+            "1": "hover",
+            "2": "land"
+          },
+          "proximity_sensor_active": true,
+          "proximity_active_frames": 18,
+          "ardupilot_oa_db_confirmations": 50,
+          "max_oa_deviation_m": 33.06,
+          "measured_oa_lateral_deviation_observed": true,
+          "final_battery": {
+            "voltage_v": 12.6,
+            "current_a": 0.0,
+            "remaining_pct": 40,
+            "consumed_mah": 9592.0
+          },
+          "planned_km": 5.888
+        },
+        {
+          "log_file": "sitl_run_20261108_034446.jsonl",
+          "sitl_model": "hexa:med_drone_hexa_16.json",
+          "mav_type": "HEXAROTOR",
+          "initial_voltage_v": 25.039,
+          "success": true,
+          "delivered": [
+            1,
+            2
+          ],
+          "failed_deliveries": [],
+          "requested_delivery_mode": "auto",
+          "delivery_modes_executed": {
+            "1": "hover",
+            "2": "land"
+          },
+          "proximity_sensor_active": true,
+          "proximity_active_frames": 17,
+          "ardupilot_oa_db_confirmations": 50,
+          "max_oa_deviation_m": 34.08,
+          "measured_oa_lateral_deviation_observed": true,
+          "final_battery": {
+            "voltage_v": 21.925,
+            "current_a": 0.0,
+            "remaining_pct": 39,
+            "consumed_mah": 9721.0
+          },
+          "planned_km": 5.888
+        },
+        {
+          "log_file": "sitl_run_20261108_035408.jsonl",
+          "sitl_model": "hexa:med_drone_hexa_16.json",
+          "mav_type": "HEXAROTOR",
+          "initial_voltage_v": 25.039,
+          "success": true,
+          "delivered": [
+            1
+          ],
+          "failed_deliveries": [],
+          "requested_delivery_mode": "hover",
+          "delivery_modes_executed": {
+            "1": "hover"
+          },
+          "proximity_sensor_active": false,
+          "proximity_active_frames": 0,
+          "ardupilot_oa_db_confirmations": 0,
+          "max_oa_deviation_m": 0.0,
+          "measured_oa_lateral_deviation_observed": false,
+          "final_battery": {
+            "voltage_v": 22.979,
+            "current_a": 0.0,
+            "remaining_pct": 58,
+            "consumed_mah": 6589.0
+          },
+          "planned_km": 6.361
+        },
+        {
+          "log_file": "sitl_run_20261108_035631.jsonl",
+          "sitl_model": "hexa:med_drone_hexa_16.json",
+          "mav_type": "HEXAROTOR",
+          "initial_voltage_v": 25.039,
+          "success": true,
+          "delivered": [
+            1
+          ],
+          "failed_deliveries": [],
+          "requested_delivery_mode": "hover",
+          "delivery_modes_executed": {
+            "1": "hover"
+          },
+          "proximity_sensor_active": true,
+          "proximity_active_frames": 63,
+          "ardupilot_oa_db_confirmations": 50,
+          "max_oa_deviation_m": 38.42,
+          "measured_oa_lateral_deviation_observed": true,
+          "final_battery": {
+            "voltage_v": 22.948,
+            "current_a": 0.0,
+            "remaining_pct": 58,
+            "consumed_mah": 6699.0
+          },
+          "planned_km": 6.361
+        }
+      ]
+    },
+    {
+      "experiment": "EXP-04_Changing_4D_Restriction_and_InFlight_Replanning",
+      "passed": true,
+      "high_altitude_zone_triggered_replan": false,
+      "active_4d_tfr_triggered_replan": true,
+      "new_mission_version": 2,
+      "replan_record": {
+        "reason": "active_4d_tfr",
+        "plan_ms": 14.9,
+        "total_ms": 15.1,
+        "old_planned_km": 8.828,
+        "new_planned_km": 5.888,
+        "dropped_unreachable": [],
+        "selected_modes": {
+          "2": "land"
+        },
+        "version": 2
+      },
+      "mode_sequence": [
+        "AUTO",
+        "LOITER",
+        "AUTO"
+      ]
+    },
+    {
+      "experiment": "EXP-05_Hover_vs_Landing_vs_Abort_Site_Suitability",
+      "passed": true,
+      "stop1_flooded_auto": {
+        "ok": true,
+        "mode": "hover",
+        "reason": "Auto-selected hover from site recommended_mode (surface=flooded, slope=4.0 deg, clearance=12.0m, provenance=SYNTHETIC_FIXTURE)"
+      },
+      "stop1_flooded_explicit_land_downgraded": {
+        "ok": true,
+        "mode": "hover",
+        "reason": "Degraded from land to hover: ground surface is flooded"
+      },
+      "stop2_clear_auto": {
+        "ok": true,
+        "mode": "land",
+        "reason": "Auto-selected land from site recommended_mode (surface=clear, slope=2.0 deg, clearance=18.0m, provenance=SYNTHETIC_FIXTURE)"
+      },
+      "stop3_slope_9_5deg_downgraded": {
+        "ok": true,
+        "mode": "hover",
+        "reason": "Degraded from land to hover: ground slope is 9.5 deg"
+      },
+      "stop4_clearance_6m_rejected_abort": {
+        "ok": false,
+        "mode": "abort",
+        "reason": "Site unsuitable: ground is debris and clearance (6.0m) < 10m minimum"
+      },
+      "planned_stop_ids": [
+        1,
+        2,
+        3
+      ],
+      "unreachable_stop_ids": [
+        4
+      ]
+    },
+    {
+      "experiment": "EXP-06_Failed_and_Missing_Actuator_Feedback",
+      "passed": true,
+      "causal_ack_case": {
+        "state_before_statustext": "RELEASE_COMMANDED",
+        "final_state": "DELIVERY_COMPLETE",
+        "release_provenance": "simulated_hover_gripper_release",
+        "duplicate_feedback_count": 1,
+        "recipient_handover_verified": false
+      },
+      "missing_feedback_case": {
+        "confirm_without_ack_allowed": false,
+        "final_state": "FAILED",
+        "failure_reason": "MISSING_ACTUATOR_FEEDBACK"
+      },
+      "fault_statustext_case": {
+        "final_state": "FAILED",
+        "failure_reason": "ACTUATOR_FEEDBACK_FAULT: Gripper fault: servo jammed"
+      }
+    },
+    {
+      "experiment": "EXP-07_Stale_or_Unavailable_External_Data_and_GDACS_Semantics",
+      "passed": true,
+      "airspace_outage_retains_active_restrictions": true,
+      "safe_to_clear_on_outage": false,
+      "gdacs_point_only_classification": "ADVISORY_REGIONAL_AWARENESS",
+      "gdacs_polygon_stop2_downgraded_to": "hover"
+    },
+    {
+      "experiment": "EXP-08_Mission_Recovery_Battery_Reserve_Failsafe_and_Disarm",
+      "passed": true,
+      "battery_reserve_breach_detected": true,
+      "emergency_rtl_commanded": true,
+      "mission_finished_on_disarm": true
+    }
+  ]
+}

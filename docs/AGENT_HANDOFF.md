@@ -67,10 +67,14 @@ The following corrections were applied in the stabilisation pass:
   - Fixed double-reserve battery bug in `_validate_plan_feasibility` using `usable_span_pct = max(1.0, 100.0 - self.battery_reserve_pct)`.
   - Updated `EnergyEstimator.evaluate_route` aggregate overload to accept `leg_km_list`, step down carried payload mass after each delivery stop (`3.5 kg -> 1.5 kg -> 0.0 kg` on RTL), and catch MTOW/payload violations cleanly (`mtow_ok=False`).
 
-### 1.4 Test & Live Hexacopter SITL Evidence (Increment 2 — COMPLETE)
+### 1.4 Test & Live Hexacopter SITL Evidence (Increment 2 & Final Release Correction — COMPLETE)
 
-- **Full test suite**: 219 tests, 0 failures, 1 skipped (exit code 0, including live hexacopter `test_sitl_integration.py`).
-- **Controlled Experimental Validation Suite (`experiments_validation.py`)**: 8/8 controlled experiments passed (`output/experimental_validation_report.json`).
+- **Weather Module Deferred & Removed from Active Release**: `flightstack/weather_provider.py` and `tests/test_weather_provider.py` (`10` tests) had zero production imports and were removed from the active branch via `git rm` (preserved in Git history).
+- **Full test suite**: **209 tests executed, 209 passed, 0 skipped, 0 failures, 0 errors** in the full local development environment (`.venv-sitl` + compiled `arducopter` SITL binary + network, `106.7 s` runtime including live hexacopter `test_sitl_integration.py`). In minimal/offline environments without `arducopter` or network, `test_sitl_integration.py` (`1` test) and `test_live_gdacs_api_fetch_and_cache` (`1` test) skip via explicit guards (`2` skipped).
+- **Controlled Experimental Validation Suite (`experiments_validation.py`)**: **8/8 controlled experiments passed** (`output/experimental_validation_report.json`):
+  - `EXP-01`: Full 2-stop route `8.828 km -> 9.002 km` (`+0.174 km`, `13 -> 14` items, `1` detour waypoint; Leg 1 `3.181 km -> 3.355 km`; `min_measured_clearance_m = 65.97 m >= 50.0 m`).
+  - `EXP-02`: Nominal `3.5 kg` passes (`136.91 Wh <= 284.16 Wh`); rejects `9.0 kg > 8.0 kg` payload, `15.70 kg > 15.00 kg` MTOW, `21%` SoC (`3.6 Wh` usable < `136.9 Wh`), missing battery telemetry (`remaining_pct=None`), cold-chain breach (`ETA 9.9m > 2.0m`), and deadline breach (`ETA 9.9m > 2.0m`).
+  - `EXP-03` through `EXP-08`: SITL log audit, 4D restriction replanning (`version=2`, `5.888 km`), hover/land/abort site suitability, causal/missing/fault gripper feedback, airspace outage (`safe_to_clear_on_outage=False`) & GDACS semantics, and battery reserve `RTL` failsafe (`18% < 20%`).
 - **Complete 2-Stop End-to-End Hexacopter SITL Reference Mission**:
   - Log: [`output/sitl_run_20261108_034446.jsonl`](file:///Users/mahigarg/Documents/Drone%20Shit/drone_medical_router/output/sitl_run_20261108_034446.jsonl)
   - Verified: `model="hexa:med_drone_hexa_16.json"`, `mav_type="HEXAROTOR"` (`13`), 6S battery discharge `25.039 V -> 21.925 V` (`39%` remaining, `9,721.0 mAh` consumed), live GDACS pre-mission assessment (`OK_LIVE`, `100` active events), DigitalSky full-route validation (`4` waypoints), C++ `AP_Proximity_SITL` + `AP_OABendyRuler` avoidance (`17` frames, `50` `OA_DB` items, `max_oa_deviation_m = 34.08 m`), Stop 1 `hover` (`simulated_hover_gripper_release`), mid-flight `TFR_POPUP_4D_01` replan, Stop 2 `land` + `MAV_CMD_NAV_DELAY` (`93`) 5 s ground dwell + retakeoff (`simulated_ground_gripper_release_after_dwell`, `recipient_handover_verified=False`), RTL touchdown (`alt_rel_m = 0.019 m`) & disarm (`success: true`, `delivered: [1, 2]`, `failed_deliveries: []`).

@@ -197,7 +197,7 @@ Implemented across [`flightstack/vehicle_model.py`](file:///Users/mahigarg/Docum
 ## 12. Perception Pipeline & ArUco Precision Landing
 
 1. **YOLOv8n Streaming Detector (`flightstack/perception_pipeline.py`)**:
-   - Runs Ultralytics YOLOv8n on Apple Silicon MPS GPU (`21.4–63.2 FPS` measured in `perception/evaluation_results.json`).
+   - Runs Ultralytics YOLOv8n on Apple Silicon MPS GPU (benchmarked via `perception/evaluate_model.py`).
    - **Strict Monocular vs. Metric Depth Gating**: `SpatialProjector.project_detection()` always computes 2D bearing rays (`azimuth_rad`, `elevation_rad`), but only computes metric 3D `position_ned` when a valid depth frame (`depth_m > 0`) is supplied. `ObstacleTracker.ingest_observations()` explicitly rejects depthless monocular detections so the planner never invents 3D obstacle coordinates from a 2D bounding box.
 2. **ArUco Precision Landing (`flightstack/precision_landing.py`)**:
    - Detects OpenCV `DICT_4X4_50` markers, computes the optical-to-body NED transformation, and transmits MAVLink `LANDING_TARGET` (#149) in `MAV_FRAME_BODY_NED`. Commands a `LOITER` abort if the marker is lost below `5.0 m` AGL.
@@ -250,7 +250,7 @@ Both runs use `--scenario jaipur_single_uav --max-stops 1 --mode hover --speedup
 | Causal gripper feedback (waits for STATUSTEXT; missing/failed -> FAILED; duplicate tracking) | **Implemented & Tested** | `flightstack/payload.py`, `flightstack/mission_runner.py`, `TestPayloadRunnerIntegrationAndDwell`, `experiments_validation.py` (`EXP-06`) |
 | Mid-flight 4D TFR replanning under shared feasibility gates (MTOW, fresh battery Wh, time-based cold-chain limits, deadlines) | **Implemented, Tested & Verified in SITL** | `flightstack/mission_runner.py`, `TestMissionVerificationAndReplanConstraints`, `output/sitl_run_20261108_034446.jsonl` |
 | Native C++ proximity raycasting (`AP_Proximity_SITL`) & BendyRuler avoidance (`AP_OABendyRuler`) | **Implemented, Tested & Verified in Controlled SITL Pair** | `output/sitl_run_20261108_035408.jsonl` (`0.0 m`) vs. `output/sitl_run_20261108_035631.jsonl` (`38.42 m`). Summary uses `measured_oa_lateral_deviation_observed`. |
-| YOLOv8n Apple Silicon MPS inference & depth-gated 3D projection + ArUco `LANDING_TARGET` (#149) | **Implemented & Component/Acceptance-Tested** (NOT active in SITL demo — perception pipeline and precision landing controllers are not constructed/passed into `MissionRunner` in `sitl_mission_demo.py`) | `flightstack/perception_pipeline.py`, `flightstack/precision_landing.py`, `perception/evaluation_results.json` |
+| YOLOv8n Apple Silicon MPS inference & depth-gated 3D projection + ArUco `LANDING_TARGET` (#149) | **Implemented & Component/Acceptance-Tested** (NOT active in SITL demo — perception pipeline and precision landing controllers are not constructed/passed into `MissionRunner` in `sitl_mission_demo.py`) | `flightstack/perception_pipeline.py`, `flightstack/precision_landing.py`, `perception/evaluate_model.py`, `tests/test_full_autonomy_acceptance.py` |
 | Physical UAV flight, certified NPNT hardware flight permission, or physical human handover sensor | **Not Claimed (Out of Prototype Scope)** | Explicitly flagged via `recipient_handover_verified=False` and `official_clearance=False` |
 
 ---

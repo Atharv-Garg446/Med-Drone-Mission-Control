@@ -1,281 +1,216 @@
 # Med-Drone Mission Control
 
-**Single-UAV Autonomous Medical Delivery & Disaster Logistics Testbed**
+Med-Drone Mission Control is a work-in-progress Python and MAVLink autonomy prototype for single-UAV medical supply delivery in disaster-affected areas. The current milestone demonstrates a closed-loop mission workflow against ArduPilot's ArduCopter Software-In-The-Loop (SITL) simulator (`ArduCopter V4.7.0-dev`), combining A* route planning around restricted airspace, pre-launch and in-flight feasibility checks, proximity-based obstacle avoidance, and per-stop hover or ground-landing delivery sequences.
 
-An autonomous mission control prototype and operations-research testbed for emergency medical drone delivery in disaster-affected areas. When catastrophic flooding, earthquakes, or infrastructure collapses sever surface road networks, the primary operational system plans, validates, executes, and supervises a **single autonomous multi-rotor UAV** over MAVLink in **ArduPilot SITL**—transporting critical medical supplies (vaccines, blood units, antivenom, and insulin) under 4D airspace restrictions, first-principles battery energy budgets, time-based cold-chain limits, proximity-based obstacle avoidance, and site-suitability-aware delivery protocols.
-
-### System Scope & Architecture Tiers
-
-1. **Primary Operational System — Single-UAV Autonomy & ArduPilot SITL Flight Stack (`flightstack/`, `sitl_mission_demo.py`, `gdacs_provider.py`, `airspace_provider.py`)**:
-   - Reference aircraft (`MedDrone-Hexa-16` in `JAIPUR_SINGLE_UAV`: 6-motor hexacopter, `MAV_TYPE_HEXAROTOR=13`, 8.0 kg max payload, 17.5 kg MTOW, 6S 16 Ah / 284.16 Wh usable battery with 20% reserve floor, 10 m/s cruise, 18.0 km physics-grounded nominal range) coupled via `--model hexa:med_drone_hexa_16.json` + `FRAME_CLASS=2` to real ArduCopter V4.7.0-dev SITL firmware over MAVLink v2.
-   - End-to-end closed loop: live external GDACS disaster alert ingestion (`LIVE_EXTERNAL` / `CACHED` with mandatory attribution), official DigitalSky OpenAPI 3.0 full-route flight-plan validation contract (`OFFICIAL_API_VALIDATION`, honestly gated when pilot JWT credentials are absent), 4D (altitude- and time-bounded) NFZ/TFR route validation, item-by-item MAVLink mission upload/readback verification, native ArduPilot C++ proximity-sensor raycasting (`AP_Proximity_SITL` `PRX1_TYPE=10` + `OA_TYPE=1` BendyRuler + `AP_OADatabase` telemetry feedback), shared pre-launch and in-flight feasibility enforcement (MTOW, fresh battery Wh without 100% fallback and with leg-by-leg payload mass step-down, time-based cold-chain limits, and delivery time windows), site-suitability-aware hover vs. landing delivery state machine (`MAV_CMD_NAV_DELAY = 93` `ContinueAfterLand`), and battery reserve failsafe supervision.
-2. **Optional Logistics-Planning & Research Component — Multi-Drone CVRP & Fleet Simulator (`vrp_scratch.py`, `simulate_fleet.py`, `replan.py`)**:
-   - From-scratch multi-heuristic Capacitated Vehicle Routing Problem (CVRP) solver and discrete-event multi-drone fleet simulator retained for logistics research and algorithm benchmarking.
-3. **Future Extension — Simultaneous Multi-UAV Autonomous Control**:
-   - Simultaneous multi-aircraft MAVLink control and deconfliction in SITL is **not** a current implementation requirement and remains scoped as future work.
-
-<p align="center">
-  <img src="assets/routes_map.png" alt="Optimized drone routes with obstacle avoidance" width="550"/>
-</p>
-<p align="center">
-  <em>Multi-drone fleet routing across flooded Jaipur with A* detours around restricted airspace.</em>
-</p>
+The repository also retains an earlier multi-drone Capacitated Vehicle Routing Problem (CVRP) solver and discrete-event fleet simulator used for logistics research.
 
 ---
 
-## Core Technical Highlights
+## 1. Problem and Motivation
 
-The platform integrates operations research, computational geometry, discrete-event simulation, and computer vision into an integrated mission architecture:
+Flooding and infrastructure damage can cut off road access to clinics and relief camps while creating changing hazards for low-altitude aircraft. A medical delivery UAV operating in this environment cannot rely on a static waypoint list alone:
 
-- **From-Scratch Multi-Heuristic CVRP Solver**: Implements three independent construction heuristics (Nearest Neighbor, Urgency-Weighted Nearest Neighbor, and Clarke-Wright Savings) with intra-route 2-opt and inter-route Or-opt relocate operators. Evaluates all candidates and selects the best feasible solution found across multiple construction heuristics and local-search passes.
-- **Simultaneous Multi-Constraint Routing**: Jointly enforces vehicle payload capacity, flight range energy budgets (with reserve margins), cumulative time-based cold-chain exposure limits (`cold_chain_limit_minutes`), and strict delivery deadline time windows.
-- **NFZ/TFR-Aware A\* Pathfinding**: Automatically routes around polygon no-fly zones and pop-up Temporary Flight Restrictions. Uses conservative axis-aligned bounding box (AABB) pre-filtering, 8-connected grid search, corner-cutting prevention, and bidirectional string-pulling path smoothing.
-- **50 m Safety-Clearance Enforcement**: Enforces a configured 50-meter safety margin around all obstacle edges. Automatically scales cell diagonal compensation when large search areas trigger grid coarsening under `MAX_CELLS = 120`.
-- **Sub-Second Dynamic Replanning**: Injects mid-mission disruptions (pop-up TFRs, urgent medical requests, drone motor failures) and re-solves remaining stops from live airborne GPS positions and remaining cargo/range budgets in approximately **0.20–0.26 s** (8 stops) to **0.61–0.79 s** (15 stops) on the tested machine.
-- **Physical Infeasibility Diagnosis**: Immediately catches and diagnoses physically impossible missions (e.g. destinations exceeding round-trip battery range or locations trapped inside restricted airspace) before dispatch.
-- **Multi-Drone Discrete-Event Fleet Simulator**: Simulates time-stepped fleet execution with realistic vehicle state machines (`IDLE`, `DISPATCHED`, `TRANSIT`, `DELIVERING`, `RETURNING`, `CHARGING`, `HOLD`), physical depot departures, and live telemetry logging.
-- **MAVLink / QGroundControl WPL 110 Export**: Generates industry-standard mission files compatible with ArduPilot and PX4 autopilots, embedding intermediate detour waypoints and payload delivery hover/dwell times.
-- **Computer Vision Landing Zone Screening (Component-Tested)**: Integrates YOLOv8 obstruction screening (`yolo_safety.py`, `flightstack/perception_pipeline.py`) and ArUco `LANDING_TARGET` transformation (`flightstack/precision_landing.py`) verified against recorded/synthetic streams (not active in the headless SITL demo).
-- **Autopilot Flight Stack & Hexacopter SITL Integration**: End-to-end integration with 6-motor hexacopter ArduPilot SITL (`--model hexa:med_drone_hexa_16.json`, `FRAME_CLASS=2`, 6S 16 Ah LiPo curve) over MAVLink (`flightstack/`). Supports deterministic `--mode auto` hover-and-release vs. land-and-deliver selection, live EKF/battery telemetry ingestion with staleness rejection, 4D (altitude- and time-bounded) airspace conflict detection triggering automated `LOITER` and re-planning, and native ArduPilot C++ proximity-sensor obstacle avoidance (`AP_Proximity_SITL` `PRX1_TYPE=10` + `OA_TYPE=1` BendyRuler) alongside unit-tested 3D CPA collision supervision.
-- **Exhaustive Automated Testing & Controlled Experiments**: Includes **219 automated tests** (`218` passed, `1` skipped) plus an **8-experiment controlled validation suite (`experiments_validation.py`)** covering geometry, routing heuristics, constraints, simulation mechanics, export formats, MAVLink telemetry, item-by-item mission readback, separated payload delivery state machine, site suitability assessment, 4D NFZ/TFR validation, live/cached GDACS & DigitalSky OpenAPI 3.0 contracts, 6-motor hexacopter & 6S battery coupling, streaming YOLO perception, ArUco precision landing, and dynamic collision avoidance.
+- Airspace restrictions can change while the aircraft is already airborne.
+- Ground conditions at a relief camp (such as standing water, debris, or steep terrain) may make landing unsafe and require a low-altitude hover drop instead, or force the stop to be skipped if lateral clearance is inadequate.
+- Any mid-flight detour must still respect the aircraft's maximum takeoff weight (MTOW), remaining battery energy above a reserve floor, cargo cold-chain time limits, and delivery deadlines before a new mission is uploaded to the autopilot.
 
-<p align="center">
-  <img src="assets/heuristic_comparison.png" alt="Solver benchmark comparison" width="700"/>
-</p>
-<p align="center">
-  <em>Heuristic benchmark comparison — the multi-start pipeline balances route quality and computational overhead.</em>
-</p>
+This project explores how to connect route planning, external hazard and airspace data contracts, feasibility gating, and autopilot execution into a single verifiable software loop.
 
 ---
 
-## Dynamic Replanning & Measured Performance
+## 2. What the Current Prototype Does
 
-Traditional routing systems treat pre-flight plans as static commitments. When unexpected disruptions occur mid-flight, Med-Drone Mission Control replans dynamically:
+Capabilities in the repository fall into four distinct maturity levels:
 
-1. **Airborne State Propagation**: Active drones do not reset to depot; they are treated as dynamic moving origins initialized with their live GPS coordinates, remaining battery range budget, and onboard payload.
-2. **Emergency Cargo Dispatch**: Newly injected urgent requests originate physically from the depot; idle drones dispatch immediately, or requests queue until a vehicle returns.
-3. **Pop-Up TFR Handling**: If a flight corridor is abruptly closed by an emergency airspace restriction, affected drones immediately compute an A* escape vector and reroute around the perimeter.
-4. **Failure Redistribution**: If a drone suffers motor failure, its undelivered stops are reassigned across the remaining healthy fleet.
+### A. Demonstrated in the Integrated SITL Mission (`sitl_mission_demo.py`)
+- **Single-UAV Two-Stop Mission (`JAIPUR_SINGLE_UAV`)**: Plans and flies a sortie from SMS Hospital Depot (`26.9127, 75.8060`) to Stop 1 (`Gopalpura Flooded Relief Camp`, `2.0 kg`) and Stop 2 (`Jhalana Elevated Medical Post`, `1.5 kg`), then returns to launch (`RTL`).
+- **Unified Six-Motor Hexacopter Configuration**: Pairs Python's `MedDrone-Hexa-16` vehicle model (`flightstack/vehicle_model.py`) with a custom 6-motor ArduPilot SITL physics frame (`flightstack/params/med_drone_hexa_16.json`, `--model hexa:med_drone_hexa_16.json`) and ArduCopter parameters (`FRAME_CLASS=2`, `FRAME_TYPE=0`, `MAV_TYPE_HEXAROTOR=13` in `flightstack/params/sitl_delivery.parm`) on a 6S 16 Ah LiPo discharge curve (`25.04 V` full to `19.8 V` minimum).
+- **A* Pathfinding Around Restricted Polygons**: Routes each leg around polygon no-fly zones with a 50 m horizontal safety buffer (`nofly_astar.py`, `flightstack/mission.py`).
+- **Shared Feasibility Gating**: Uses a single validator (`MissionRunner._validate_plan_feasibility`) before launch and before any mid-flight replan upload to check payload capacity (`<= 8.0 kg`), MTOW (`<= 17.5 kg`), fresh battery telemetry and remaining usable Watt-hours above a 20% reserve floor (stepping carried cargo mass down after each stop: `3.5 kg -> 1.5 kg -> 0.0 kg`), time-based cold-chain limits (`cold_chain_limit_minutes`), and delivery time windows (`window_minutes`).
+- **MAVLink Upload and Readback Verification**: Uploads missions over MAVLink TCP and reads back every item from the autopilot (`verify_mission_readback`) to confirm command IDs, coordinates, and altitudes before arming or resuming `AUTO`.
+- **ArduPilot C++ Proximity Raycasting and BendyRuler Avoidance**: Uploads cylindrical world obstacles to ArduPilot's fence loader (`MAV_MISSION_TYPE_FENCE=1`, `FENCE_ENABLE=0`). ArduCopter's built-in C++ sensor (`AP_Proximity_SITL`, `PRX1_TYPE=10`) raycasts 8 horizontal sectors against the obstacle, populates `AP_OADatabase` (`ADSB_VEHICLE` `OA_DB` telemetry), and steers around the obstacle in `AUTO` mode using `AP_OABendyRuler` (`OA_TYPE=1`).
+- **Mid-Flight 4D Airspace Conflict and Replanning**: Detects when a time- and altitude-bounded restriction (`AirspaceZone`) blocks the remaining path, switches the autopilot to `LOITER`, computes an A* detour from the live EKF position estimate (`include_takeoff=False`), re-validates feasibility, uploads and verifies the updated mission, and resumes `AUTO`.
+- **Per-Stop Delivery Selection, Gripper Feedback, and Landing Continuation**: Resolves each stop deterministically (`resolve_stop_delivery_mode`): executes a `15 m` hover release at flooded Stop 1 and a full ground landing (`MAV_CMD_NAV_LAND`), gripper release (`MAV_CMD_DO_GRIPPER`), 5-second ground dwell (`MAV_CMD_NAV_DELAY=93` with `MIS_OPTIONS=4` `ContinueAfterLand`), and retakeoff (`MAV_CMD_NAV_TAKEOFF=22`) at clear Stop 2. Release acknowledgement waits causally for ArduPilot's `"Gripper Released"` `STATUSTEXT` message.
+- **RTL, Touchdown, and Disarm**: Flies back to home, lands (`alt_rel_m < 0.5 m`), and confirms motor disarm.
 
-### Measured Empirical Benchmarks
+### B. Live External Data and API Contract Validation
+- **GDACS Disaster Feed (`gdacs_provider.py`)**: Fetches live flood (`FL`), earthquake (`EQ`), and tropical cyclone (`TC`) GeoJSON alerts and polygon footprints from `https://www.gdacs.org/gdacsapi`, deduplicates episodes, filters expired alerts, caches snapshots to `output/gdacs_cache_latest.json` (`stale=True` on outage), and includes required GDACS attribution. Point-only alerts are kept as regional awareness (`ADVISORY_REGIONAL_AWARENESS`) rather than converted into circular no-fly zones; validated flood/cyclone polygons intersecting a planned landing stop downgrade that stop from `land` to `hover`.
+- **DigitalSky OpenAPI 3.0 Contract (`airspace_provider.py`)**: Builds and validates full-route corridor payloads against the official DigitalSky specification (`docs/external_specs/digitalsky_interactive_maps_api_v1.0.yml`, `POST /flightplan/validate/airspace`, `X-API-VERSION: 1`, `maxAltitude <= 400 ft`) and parses HTTP 400 HAL `ValidationError` and HTTP 500 `Error` schemas. Live HTTP execution requires a registered DGCA pilot/operator JWT (`DIGITALSKY_AUTH_TOKEN`); without it, the checker reports `checked=False, official_clearance=False, status="UNAUTHORISED_NO_PILOT_TOKEN"`.
+- **Mappls Airspace Layer Metadata**: Documented as `MAP_VISUALIZATION_ONLY` because the Mappls Web SDK provides browser vector-tile overlays without a polygon-export REST API.
 
-These timings represent measured benchmark results on the tested machine (Apple Silicon Mac, M-series, Python 3.10+) across the specified scenarios, demonstrating sub-second response across cold-cache and warm-cache runs:
-
-- **8-Stop Replan** (Jaipur Disaster): approximately **0.20–0.26 s** (~201 ms warm cache, ~254 ms cold cache)
-- **15-Stop Replan** (Multi-obstacle random clusters): approximately **0.61–0.79 s** (~617 ms warm cache, ~801 ms cold cache)
-- **Distance Matrix Construction**: ~200–258 ms (Jaipur, 18 detours), ~206–280 ms (Chennai, 12 detours)
-
-| Operation | Scenario / Scale | Cold Cache (Mean) | Warm Cache (Mean) |
-| :--- | :--- | :---: | :---: |
-| **Flight Distance Matrix** | Jaipur Disaster (9 locs, 18 detours) | ~258 ms | ~202 ms (min: ~200 ms) |
-| **Flight Distance Matrix** | Chennai Flood (8 locs, 12 detours) | ~280 ms | ~206 ms (min: ~205 ms) |
-| **8-Stop Dynamic Replan** | Jaipur Disaster (8 deliveries, 2 NFZs) | ~254 ms | ~201 ms (min: ~200 ms) |
-| **15-Stop Dynamic Replan** | Multi-Obstacle Clusters (5 seeds) | ~801 ms | ~617 ms (min: ~91 ms) |
-
-For the tested 8–15-stop scenarios, full replanning remains sub-second to low-second (~0.20–0.26 s for 8 stops, ~0.61–0.79 s for 15 stops on the tested machine), using full replanning rather than partial-graph repair heuristics.
-
-To reproduce these benchmarks on your machine:
-```bash
-python3 benchmarks/benchmark_replanning.py
-```
+### C. Component-Tested Only (Not Active in the Headless SITL Demo)
+- **YOLOv8n Perception and Metric-Depth Gating (`flightstack/perception_pipeline.py`, `yolo_safety.py`)**: Tested on recorded/synthetic frames and Apple Silicon MPS (`perception/evaluate_model.py`). Strictly separates 2D monocular bearing rays from 3D metric coordinates and rejects depthless detections in `ObstacleTracker`. Not wired into `sitl_mission_demo.py` because headless ArduPilot SITL does not render a 3D camera world.
+- **3D CPA Obstacle Tracker (`flightstack/obstacle_tracker.py`)**: Closest-point-of-approach conflict detection and 72-bin `OBSTACLE_DISTANCE` encoding, verified in unit tests (`tests/test_vehicle_and_perception.py`, `tests/test_flightstack.py`).
+- **ArUco Precision Landing (`flightstack/precision_landing.py`)**: OpenCV ArUco marker detection, camera-to-body NED coordinate transform, and MAVLink `LANDING_TARGET` (#149) message generation with low-altitude target-loss abort (`LOITER`), verified in unit and acceptance tests.
+- **Dynamic Airspace Polling Monitor (`DynamicAirspaceMonitor` in `airspace_provider.py`)**: Tracks 4D zone additions, expirations, and fail-safe upstream outages (`safe_to_clear_restrictions=False`) in unit tests and `EXP-04`/`EXP-07`. In `sitl_mission_demo.py`, the mid-flight 4D restriction (`TFR_POPUP_4D_01`) is injected via a deterministic callback after Stop 1.
+- **Multi-Drone CVRP Solver and Fleet Simulator (`vrp_scratch.py`, `vrp_ortools.py`, `simulate_fleet.py`, `replan.py`)**: Standalone operations-research modules for multi-depot/multi-drone routing comparisons (`main.py`, `run_simulation.py`).
 
 ---
 
-## Architecture
+## 3. Repository Structure
 
-```
-config.py              → Scenario definition: depot, delivery stops, polygon NFZs, drone parameters
-   ↓
-distance_matrix.py     → Flight distance matrix (straight-line + A* detour paths)
-+ nofly_astar.py       → 8-connected grid A* with AABB filtering, corner-cutting blocks, string-pulling
-   ↓
-vrp_scratch.py         → Clarke-Wright + Nearest-Neighbor + Urgency-NN → 2-opt → Or-opt
-   ↓
-cold_chain.py          → Cumulative refrigeration exposure verification
-time_windows.py        → Urgent and scheduled delivery deadline evaluation
-yolo_safety.py         → Landing site visual obstruction screening (YOLOv8)
-   ↓
-waypoint_export.py     → MAVLink QGroundControl WPL 110 mission export for ArduPilot/PX4
-```
-
-**Primary Single-UAV Flight Stack & ArduPilot SITL Layer:**
-```
-config.py (JAIPUR_SINGLE_UAV) + airspace_provider.py (4D AirspaceZone / Scenario / GeoJSON)
-   ↓
-flightstack/mission.py       → 4D NFZ/TFR A* pathfinding, SiteSuitability mode selection, MAVLink items
-   ↓
-flightstack/mavlink_link.py  → MAVLink upload + item-by-item readback verification + world fence obstacle upload (PRX1_TYPE=10)
-   ↓
-flightstack/mission_runner.py → Closed-loop AUTO execution, 4D conflict detection & LOITER replanning,
-                                native ArduPilot OA supervision, separated payload delivery state machine
-```
-
-**Optional Multi-Drone Logistics Simulator Layer (`simulate_fleet.py`):**
-```
-simulate_fleet.py      → Discrete-event fleet engine with vehicle state machines
-   ↓
-replan.py              → Dynamic mid-flight re-solver from live GPS coordinates
-   ↓
-build_interactive_sim.py → Standalone Leaflet.js mission replay visualizer
+```text
+drone_medical_router/
+├── sitl_mission_demo.py          # Main single-UAV ArduCopter SITL demonstration entry point
+├── experiments_validation.py     # 8-case controlled validation suite -> output/experimental_validation_report.json
+├── config.py                     # Scenarios (JAIPUR_SINGLE_UAV, JAIPUR_DISASTER, CHENNAI_FLOOD), specs, locations
+├── geo_utils.py                  # Haversine distance, point-in-polygon, segment-polygon clearance helpers
+├── nofly_astar.py                # 8-connected grid A* pathfinder with 50 m polygon buffer and string-pulling
+├── airspace_provider.py          # SourceClassification, 4D AirspaceZone, DigitalSky OpenAPI client, DynamicAirspaceMonitor
+├── gdacs_provider.py             # Live/cached GDACS client and GDACSMissionImpactAssessor
+├── flightstack/
+│   ├── sitl.py                   # ArduCopter SITL process launcher (defaults to --model hexa:med_drone_hexa_16.json)
+│   ├── mavlink_link.py           # MAVLink TCP connection, mission upload/readback, fence obstacle upload
+│   ├── telemetry.py              # Timestamped MAVLink state (position, EKF, GNSS, 6S battery, OA_DB, DISTANCE_SENSOR)
+│   ├── mission.py                # MissionPlan builder, 4D polyline validator, QGC WPL 110 exporter
+│   ├── mission_runner.py         # Closed-loop execution, shared 4-gate feasibility validator, replanning, RTL failsafe
+│   ├── payload.py                # SiteSuitability, resolve_stop_delivery_mode, causal PayloadManager state machine
+│   ├── vehicle_model.py          # First-principles rotorcraft hover/cruise power, MTOW, and leg-by-leg energy model
+│   ├── perception_pipeline.py    # Component-tested YOLOv8n detector and 2D/3D spatial projector
+│   ├── obstacle_tracker.py       # Component-tested 3D CPA tracker and OBSTACLE_DISTANCE encoder
+│   ├── precision_landing.py      # Component-tested ArUco detector and MAVLink LANDING_TARGET controller
+│   └── params/
+│       ├── med_drone_hexa_16.json # 6-motor hexacopter physics & 6S 16 Ah LiPo parameters for ArduPilot SIM_Frame
+│       └── sitl_delivery.parm    # ArduCopter SITL parameters (FRAME_CLASS=2, PRX1_TYPE=10, OA_TYPE=1, MIS_OPTIONS=4)
+├── vrp_scratch.py                # Multi-heuristic CVRP solver (Nearest Neighbor, Urgency-NN, Clarke-Wright + 2-opt/Or-opt)
+├── simulate_fleet.py             # Discrete-event multi-drone fleet simulator (research module)
+├── visualize_sitl.py             # Generates output/sitl_flight_replay.html from SITL JSONL logs
+├── tests/                        # 209 automated unit, contract, acceptance, and live SITL tests
+└── docs/                         # Architecture, simulation setup, data provenance, and limitation notes
 ```
 
 ---
 
-## Quick Start
+## 4. Demonstrated Mission Workflow
 
-The core engine is built entirely with the Python standard library—**zero third-party dependencies required** to run the routing pipeline, replanner, test suite, and benchmarks.
+When `sitl_mission_demo.py` runs with `--scenario jaipur_single_uav --mode auto --airspace-change --inject-obstacle --speedup 10`:
 
-```bash
-git clone https://github.com/Atharv-Garg446/Med-Drone-Mission-Control.git
-cd Med-Drone-Mission-Control
-
-# 1. Check and prepare the real environment (Apple Silicon, dependencies, SITL, cameras)
-python3 check_env.py
-./setup_env.sh
-
-# 2. Run the core routing pipeline (pure standard library)
-python3 main.py --no-osmnx
-
-# 3. Run discrete-event fleet simulation with disruptions
-python3 run_simulation.py --events 5
-# Open the generated interactive playback: http://localhost:8080/output/interactive_sim.html
-
-# 4. Run reproducible benchmarks, controlled experiments, and all 219 automated unit & acceptance tests
-python3 benchmarks/benchmark_replanning.py
-python3 experiments_validation.py
-python3 -m unittest discover -s tests -p "test_*.py" -v
-```
-
-### Optional Dependencies
-
-For expanded visualization, benchmarking, and vision screening:
-
-```bash
-pip install -r requirements.txt
-```
-
-For the real ArduPilot SITL flight stack:
-```bash
-pip install -r requirements-sitl.txt
-```
-
-| Dependency | Purpose |
-|---|---|
-| `pymavlink` | MAVLink communication with ArduPilot / PX4 (`flightstack/mavlink_link.py`) |
-| `folium` | Generates interactive browser route maps (`visualize_map.py`) |
-| `ortools` | Google OR-Tools comparative routing baseline (`vrp_ortools.py`) |
-| `ultralytics` | YOLOv8 landing zone obstruction detection (`yolo_safety.py`) |
-| `matplotlib` | Static publication-grade route and convergence plots (`plots.py`) |
-| `streamlit` | Interactive web dashboard (`dashboard.py`) |
-| `osmnx` | Optional surface road network distance comparison (`distance_matrix.py`) |
+1. **External Data & Pre-Mission Assessment**: Queries the live GDACS API (falling back to `output/gdacs_cache_latest.json` if offline) and applies any intersecting flood/cyclone polygon updates to stop suitability before building the initial route. Validates the full route corridor against the DigitalSky OpenAPI 3.0 request schema.
+2. **Initial Route & Feasibility Gate**: Builds the 2-stop route around scenario no-fly zones (`nofly_astar.py`) and resolves per-stop modes (`Stop 1 -> hover`, `Stop 2 -> land`). Verifies MTOW (`12.2 kg <= 17.5 kg`), payload (`3.5 kg <= 8.0 kg`), required energy (`136.91 Wh <= 284.16 Wh` usable), cold-chain limits, and delivery windows.
+3. **SITL Launch & Mission Upload**: Starts `arducopter` with `--model hexa:med_drone_hexa_16.json` and `sitl_delivery.parm` (`FRAME_CLASS=2`, `HEXAROTOR`), waits for 3D GNSS fix and healthy EKF3, re-validates feasibility against live battery telemetry (`25.039 V`, `100%` SoC), uploads the 13-item mission, verifies item-by-item readback, and uploads `OBSTACLE_TOWER_01` to `AC_PolyFence_loader`.
+4. **Leg 1 & C++ Obstacle Avoidance**: Arms in `GUIDED`, enters `AUTO`, climbs to `60 m AGL`, and flies toward Stop 1. `AP_Proximity_SITL` (`PRX1_TYPE=10`) detects the cylindrical obstacle along Leg 1, streams `DISTANCE_SENSOR` and `ADSB_VEHICLE` (`OA_DB`) telemetry, and `AP_OABendyRuler` bends the trajectory laterally around the obstacle (`34.08 m` max lateral deviation in the 2-stop run).
+5. **Stop 1 Hover Delivery**: Arrives at `Gopalpura Flooded Relief Camp`, descends to `15 m AGL`, triggers `MAV_CMD_DO_GRIPPER`, waits for `"Gripper Released"` `STATUSTEXT` confirmation (`simulated_hover_gripper_release`, `recipient_handover_verified=False`), and climbs back to `60 m`.
+6. **Mid-Flight 4D Restriction & Replanning**: After Stop 1 is served, a 4D restriction (`TFR_POPUP_4D_01`, `0–120 m AGL`) is injected across Leg 2. `MissionRunner` detects the conflict, commands `LOITER`, computes an A* detour from the live EKF position, checks all feasibility gates on the detoured route (`version=2`, `9` items), uploads and verifies readback, and resumes `AUTO`.
+7. **Stop 2 Ground Landing, Dwell, and Retakeoff**: Arrives at `Jhalana Elevated Medical Post`, lands (`MAV_CMD_NAV_LAND`), releases the second package (`MAV_CMD_DO_GRIPPER`), completes the 5-second ground dwell (`MAV_CMD_NAV_DELAY=93` under `MIS_OPTIONS=4` `ContinueAfterLand`), records `simulated_ground_gripper_release_after_dwell`, and automatically takes off (`MAV_CMD_NAV_TAKEOFF=22`) to `60 m`.
+8. **Return to Launch & Disarm**: Executes `MAV_CMD_NAV_RETURN_TO_LAUNCH` back to SMS Hospital Depot, touches down (`alt_rel_m = 0.019 m`), and disarms (`21.925 V`, `39%` remaining, `9,721.0 mAh` consumed).
 
 ---
 
-## Built-in Operational Scenarios
+## 5. Simulation and Validation Evidence
 
-The system ships with calibrated disaster scenarios modeled after real-world events:
+### 5.1 Automated Test Suite (`209` Tests)
+Running `unittest discover -s drone_medical_router/tests -p "test_*.py"` in the project's `.venv-sitl` environment executes **209 tests**:
+- **In the full local development environment** (with compiled `arducopter` SITL binary, `pymavlink`, `opencv-contrib-python`, and network access to GDACS): **`209` passed, `0` skipped, `0` failed, `0` errors** (`106.7 s` total runtime, including the live hexacopter SITL flight in `tests/test_sitl_integration.py`).
+- **Conditional skip guards in minimal/offline environments**:
+  - `tests/test_sitl_integration.py` (`1` test): skipped if `pymavlink` or the compiled `arducopter` SITL binary is absent.
+  - `tests/test_gdacs_and_provenance.py::TestLiveGDACSExternalAPI.test_live_gdacs_api_fetch_and_cache` (`1` test): skipped if `https://www.gdacs.org/gdacsapi` is unreachable due to no internet/sandbox restrictions.
+  - `tests/test_full_autonomy_acceptance.py::TestPrecisionLandingIntegration` (`2` tests): skipped if `cv2.aruco` (`opencv-contrib-python`) is not installed.
 
-- **Jaipur Flood Disaster Response**: Monsoon flooding along the Dravyavati River basin. SMS Hospital serves as the central elevated depot; 8 delivery locations distribute antivenom, blood, and emergency packs across flooded relief camps around Jaipur Airport and Secretariat no-fly zones.
-- **Chennai Cyclone Response**: Modeled after historic South Indian coastal flooding. Rajiv Gandhi Government General Hospital acts as depot, distributing medical supplies across 7 submerged southern medical posts while navigating Chennai Airport and Guindy National Park airspace.
-- **Jaipur Hospital Network (Routine)**: Demonstrates system versatility on routine daily restock operations under normal flight conditions.
-
-### Arbitrary Geographies
-
-Any GPS location can be targeted dynamically:
-```bash
-python3 main.py --random-at 40.7580 -73.9855      # Manhattan, NY
-python3 main.py --random-at 35.6586 139.7454       # Tokyo, Japan
-python3 main.py --from-json custom_mission.json    # User-defined mission JSON
-```
-
----
-
-## Autopilot & Flight Stack Integration (ArduPilot SITL)
-
-In addition to static mission export, Med-Drone Mission Control integrates directly with **ArduPilot SITL** over MAVLink:
-
-1. **One-Command SITL Mission Execution**:
-   ```bash
-   python3 sitl_mission_demo.py --speedup 5
-   ```
-2. **Deterministic Mid-Flight Airspace Update**:
-   ```bash
-   python3 sitl_mission_demo.py --airspace-change --speedup 5
-   ```
-   Injects an airspace restriction mid-air; the mission runner detects the conflict (evaluating 2D polygon + altitude floor/ceiling + validity time window), commands `LOITER`, re-plans the remaining stops from the autopilot's live position estimate, re-validates energy/cold-chain/time-window constraints, uploads the updated mission, and resumes in `AUTO` mode.
-3. **In-Flight Sensor-Driven Obstacle Avoidance (`AP_Proximity_SITL` C++ Raycaster)**:
-   ```bash
-   python3 sitl_mission_demo.py --inject-obstacle --speedup 10
-   ```
-   Uploads cylindrical world obstacles into ArduPilot's `AC_PolyFence_loader` (`MAV_MISSION_TYPE_FENCE = 1`, `FENCE_ENABLE = 0`) where ArduCopter's native C++ proximity driver (`AP_Proximity_SITL`, `PRX1_TYPE = 10`) casts 8 horizontal rays in real time, populates `AP_OADatabase` (`OA_DB`), streams `DISTANCE_SENSOR` and `ADSB_VEHICLE` telemetry over MAVLink, and steers the aircraft smoothly around the obstacle via `AP_OABendyRuler` (`OA_TYPE = 1`).
-4. **Delivery Modes & Site Suitability Assessment**:
-   - Separates the delivery lifecycle into distinct state transitions: `LOADED → ARRIVED → SITE_ASSESSED → METHOD_SELECTED → RELEASE_COMMANDED → RELEASE_ACKNOWLEDGED → CUSTODY_CONFIRMED → DELIVERY_COMPLETE`.
-   - `hover`: Descends to release altitude, triggers simulated gripper (`MAV_CMD_DO_GRIPPER`), waits for causal ArduPilot `STATUSTEXT` acknowledgement (`simulated_hover_gripper_release`), climbs and proceeds. Note: `recipient_handover_verified=False` in simulation — actuator release is not custody confirmation.
-   - `land`: Evaluates `SiteSuitability` (surface condition, `slope_deg <= 7.0°`, `obstacle_clearance_m >= 10.0 m`); automatically downgrades flooded/sloped sites to `hover` delivery (`resolve_stop_delivery_mode`), rejects unsafe sites (`clearance < 10.0 m`) into `plan.unreachable`, or executes `MAV_CMD_NAV_LAND`, `MAV_CMD_DO_GRIPPER`, `MAV_CMD_NAV_DELAY` (`93`) 5-second ground dwell (`simulated_ground_gripper_release_after_dwell`, `recipient_handover_verified=False`), and resumes via `MAV_CMD_NAV_TAKEOFF` (`MIS_OPTIONS = 4` `ContinueAfterLand`).
-
-### Engineering & Architecture Documentation (`docs/`)
-- [docs/architecture.md](docs/architecture.md) — End-to-end system architecture, control boundaries, and single-UAV vs. fleet separation.
-- [docs/data_sources_and_provenance.md](docs/data_sources_and_provenance.md) — Live GDACS API contract, DigitalSky OpenAPI 3.0 specification, Mappls layer classification, and `SourceClassification` taxonomy.
-- [docs/simulation_setup.md](docs/simulation_setup.md) — Apple M3 (8 GB RAM, macOS 26.2) feasibility analysis and C++ `AP_Proximity_SITL` (`PRX1_TYPE = 10`) sensor architecture.
-- [docs/mission_execution.md](docs/mission_execution.md) — 4-gate replan feasibility checks, delivery state machine, and `MAV_CMD_NAV_DELAY = 93` landing continuation mechanics.
-- [docs/known_limitations.md](docs/known_limitations.md) — Honest scope boundaries and prototype limitations.
-- [docs/demo_guide.md](docs/demo_guide.md) — Exact commands to reproduce all unit tests, controlled OA comparisons, and SITL missions.
-- [docs/interview_technical_notes.md](docs/interview_technical_notes.md) — University application and technical interview defence guide.
-- [docs/engineering_decisions/](docs/engineering_decisions/) — Architecture Decision Records (`ADR-001` through `ADR-004`).
-
----
-
-## Disaster-Response Operational Parameters & Future Development Roadmap
-
-While the current prototype models 4D airspace restrictions, time-based cold-chain limits, urgent time windows, first-principles battery discharge, proximity-based obstacle avoidance, and landing-site suitability, real-world disaster-response logistics involve additional environmental and infrastructure variables. The table below distinguishes what is implemented in the current simulation baseline from planned future development:
-
-| Disaster Parameter | Operational Impact on Medical Drone Logistics | Current Prototype Status | Planned Future Development |
+### 5.2 Live Hexacopter SITL Logs (`output/`)
+| Run Description | Log File | Airframe / Battery | Key Measured Metrics |
 | :--- | :--- | :--- | :--- |
-| **Flood Extent & Inundation Depth** | Submerges ground handoff points, shifts displaced populations to high ground, and invalidates ground-landing pads. | Scenario stops represent flood-isolated relief camps; `SiteSuitability` downgrades `land` to `hover` when surface is marked `flooded`. | Ingest dynamic SAR/optical flood-extent rasters (e.g., Sentinel-1 / ISRO Bhuvan) to auto-update delivery coordinates and site surface states. |
-| **Damaged Infrastructure & Vertical Hazards** | Toppled cranes, downed transmission lines, and collapsed towers create low-altitude collision hazards below published airspace floors. | Simulated in live SITL via `AC_PolyFence_loader` world obstacles + C++ `AP_Proximity_SITL` (`PRX1_TYPE=10`) + `AP_OABendyRuler` (`OA_TYPE=1`), alongside unit-tested `ObstacleTracker` 3D CPA tracks and A* exclusion polygons. | Integrate onboard stereo/LiDAR 3D occupancy mapping (OctoMap) in Gazebo/ROS 2 for real-time wire and tower detection. |
-| **Surface Road Accessibility** | Determines whether a clinic truly requires aerial resupply or can be reached by ground ambulance/truck, and constrains mobile depot repositioning. | Optional `osmnx` road-distance comparison against aerial Haversine/A* routes in `distance_matrix.py`. | Joint truck-drone (tandem VRP) routing where ground vehicles carry mobile launch pads up to flood/debris roadblocks. |
-| **Ground Debris & Surface Slope** | Rubble, mud, fallen trees, and pitched roofs cause tip-over on touchdown. | Modeled in `SiteSuitability` (`surface_condition`, `slope_deg <= 7.0°`, `obstacle_clearance_m >= 10.0 m`) and component-tested YOLOv8 visual pad screening (`yolo_safety.py`). | Real-time downward point-cloud plane fitting (RANSAC slope/roughness estimation) prior to committing to `MAV_CMD_NAV_LAND`. |
-| **Smoke, Heavy Rain & Visibility Degradation** | Degrades optical camera detectors (YOLOv8, ArUco fiducials) and attenuates LiDAR rangefinders. | Perception pipeline (`flightstack/perception_pipeline.py`) enforces confidence thresholds and rejects uncalibrated/missing depth rather than hallucinating range. | Multi-modal sensor fusion (thermal IR + millimeter-wave radar proximity) and visibility-based minimum altitude/speed derating. |
-| **Communications Degradation & Link Loss** | Cellular/RF blackouts in disaster zones interrupt GCS-to-UAV telemetry and in-flight replan uploads. | `TelemetryState` enforces strict staleness limits (`StaleTelemetryError`), suspends planner commands during link dropouts, and relies on onboard ArduPilot `AUTO`/failsafe execution. | Delay-tolerant networking (DTN), LoRa/mesh heartbeat fallback, and pre-uploaded onboard contingency loiter/recovery corrals. |
-| **GNSS Integrity & Multipath / Spoofing** | Urban canyons, ionospheric disturbances, or interference degrade position fixes and EKF innovation gates. | Ingests `GPS_RAW_INT` (`fix_type`, `eph`, `satellites_visible`) and `EKF_STATUS_REPORT` flags in `flightstack/telemetry.py`; blocks arming until 3D fix + EKF healthy. | Visual-inertial odometry (VIO) dead-reckoning fallback when GNSS HDOP/innovation breaches safety thresholds. |
-| **Vehicle Health & Actuator Degradation** | Motor/ESC overheating, cell imbalance, vibration spikes, or jammed release mechanisms require immediate mission abortion or fleet reassignment. | Tracks battery SoC reserve floor (`battery_reserve_pct` -> `RTL`), MTOW/power curves (`vehicle_model.py`), gripper STATUSTEXT feedback, and fleet motor-failure reassignment (`replan.py`). | Real-time MAVLink `VIBRATION` and ESC telemetry monitoring with predictive remaining-useful-energy estimation under headwind/degraded-propulsion states. |
-| **Medicine-Specific Cargo Constraints** | Blood products, vaccines, and antivenom have distinct thermal decay tolerances, shock/g-load limits, and custody verification requirements. | Per-stop `cold_chain_limit_minutes`, `window_minutes` urgency deadlines, mass accounting, and separated `RELEASE_ACKNOWLEDGED` vs. `CUSTODY_CONFIRMED` states (`payload.py`). | Active insulated-compartment temperature telemetry logging (`TEMP` sensor stream) and cryptographic recipient handoff token verification. |
-| **Delivery-Site Suitability & Handoff Protocol** | Crowd encroachment around relief camps makes ground landing hazardous even on flat terrain. | `SiteSuitability` assessment at arrival waypoint plus YOLOv8 person/vehicle detection and simulated gripper hover-release fallback (`SIM_GRIPPER_HOVER_RELEASE`). Note: `recipient_handover_verified=False` in simulation. | Automated acoustic/visual crowd-warning annunciation and closed-loop load-cell/optical handover verification for recipient custody confirmation. |
+| **2-Stop Reference Mission** (`--mode auto --airspace-change --inject-obstacle --speedup 10`) | [`output/sitl_run_20261108_034446.jsonl`](output/sitl_run_20261108_034446.jsonl) | `hexa:med_drone_hexa_16.json`, `HEXAROTOR` (`13`), `25.039 V -> 21.925 V` (`39%` left, `9,721 mAh`) | `delivered: [1, 2]`, `1` in-flight 4D replan (`v2`), `17` proximity frames, `50` `OA_DB`, `max_oa_deviation_m = 34.08 m`, `min_obstacle_surface_clearance_m = 8.98 m`, `success: true` |
+| **1-Stop Controlled OA Baseline** (`--max-stops 1 --mode hover --speedup 10`, no obstacle) | [`output/sitl_run_20261108_035408.jsonl`](output/sitl_run_20261108_035408.jsonl) | `hexa:med_drone_hexa_16.json`, `HEXAROTOR` (`13`), `25.039 V -> 22.979 V` (`58%` left, `6,589 mAh`) | `delivered: [1]`, `0` proximity frames, `0` `OA_DB`, `max_oa_deviation_m = 0.0 m`, `planned_km = 6.361 km`, `success: true` |
+| **1-Stop Controlled OA Obstacle-Present** (`--max-stops 1 --mode hover --inject-obstacle --speedup 10`) | [`output/sitl_run_20261108_035631.jsonl`](output/sitl_run_20261108_035631.jsonl) | `hexa:med_drone_hexa_16.json`, `HEXAROTOR` (`13`), `25.039 V -> 22.948 V` (`58%` left, `6,699 mAh`) | `delivered: [1]`, `63` proximity frames, `50` `OA_DB`, `max_oa_deviation_m = 38.42 m`, `min_obstacle_surface_clearance_m = 11.64 m`, `+110 mAh` avoidance cost, `success: true` |
+
+### 5.3 Controlled 8-Experiment Validation Suite (`experiments_validation.py`)
+Running `python3 experiments_validation.py` generates [`output/experimental_validation_report.json`](output/experimental_validation_report.json) (`8/8` passing). Seven of these (`EXP-01`, `EXP-02`, `EXP-04` through `EXP-08`) are deterministic in-process subsystem experiments using `MissionRunner`, `PayloadManager`, and `_StubLink`; `EXP-03` audits the recorded SITL JSONL logs on disk:
+- **`EXP-01` (Route Planning With vs. Without Restricted Areas)**: Full 2-stop round-trip route increases from `8.828 km` (`13` items) unrestricted to `9.002 km` (`14` items, `+0.174 km`, `1` detour waypoint) when a blocking zone is placed across Leg 1 (`Leg 1`: `3.181 km -> 3.355 km`), maintaining `min_measured_clearance_m = 65.97 m >= 50.0 m` (`safety_margin_enforced_m`).
+- **`EXP-02` (Mission Feasibility Gates)**: Nominal `3.5 kg` mission passes (`136.91 Wh <= 284.16 Wh`, leg payloads `[3.5, 1.5, 0.0] kg`, cruise powers `[696.3, 525.0, 416.6] W`); deterministically rejects payload overload (`9.0 kg > 8.0 kg`), MTOW overload (`15.70 kg > 15.00 kg`), low battery (`21%` SoC = `3.6 Wh` usable above 20% floor < `136.9 Wh`), missing battery telemetry (`remaining_pct=None`), cold-chain breach (`ETA 9.9 min > 2.0 min`), and deadline breach (`ETA 9.9 min > 2.0 min`).
+- **`EXP-03` (SITL Obstacle Avoidance & Log Audit)**: Audits all recorded `output/sitl_run_*.jsonl` files, verifying the hexacopter 2-stop run and 1-stop controlled OA comparison pair.
+- **`EXP-04` (4D Restriction & In-Flight Replanning)**: Verifies that a high-altitude zone (`150–300 m AGL`) above the `60 m` cruise altitude does not trigger a replan, while an active `0–120 m AGL` TFR across Leg 2 triggers `AUTO -> LOITER -> AUTO` (`version=2`, remaining distance `5.888 km`).
+- **`EXP-05` (Hover vs. Landing vs. Abort Site Suitability)**: Verifies `flooded -> hover` (both `auto` and forced `land`), `clear -> land`, `slope 9.5° > 7.0° -> hover`, and `clearance 6.0 m < 10.0 m -> abort` (`unreachable_stop_ids = [4]`).
+- **`EXP-06` (Failed and Missing Actuator Feedback)**: Verifies causal `"Gripper Released"` confirmation (`duplicate_feedback_count = 1`, `recipient_handover_verified = False`), blocks completion when `STATUSTEXT` is missing (`MISSING_ACTUATOR_FEEDBACK -> FAILED`), and transitions to `FAILED` on `"Gripper fault: servo jammed"`.
+- **`EXP-07` (External Data Outage & GDACS Semantics)**: Verifies `DynamicAirspaceMonitor` retains active zones on upstream outage (`safe_to_clear_on_outage = False`) and `GDACSMissionImpactAssessor` keeps point alerts as `ADVISORY_REGIONAL_AWARENESS` while downgrading Stop 2 to `hover` under a flood polygon.
+- **`EXP-08` (Mission Recovery & Battery Reserve Failsafe)**: Verifies that `18%` SoC (`< 20%` reserve floor) logs `battery_reserve_breached`, commands `RTL`, and marks `mission_finished_on_disarm = True` after touchdown at home.
 
 ---
 
-## Engineering Boundaries & Operational Scope
+## 6. Current Limitations
 
-Med-Drone Mission Control is an algorithmic testbed and simulation prototype. Operational deployment requires noting specific scope boundaries:
-
-- **Range Energy Model**: Employs first-principles momentum theory and parasitic drag curves (`flightstack/vehicle_model.py`, stepping carried payload mass down leg-by-leg) coupled with a 6-motor hexacopter 6S 16 Ah `SIM_Battery` cell-discharge curve (`flightstack/params/med_drone_hexa_16.json`, `25.04 V -> 19.8 V`) in SITL.
-- **Airspace Regulation**: Ingests GeoJSON layers with temporal validity windows and cache fallback (`airspace_provider.py`). Official DigitalSky OpenAPI 3.0 full-route validation (`POST /flightplan/validate/airspace`) requires a DGCA pilot JWT (`x-auth`) for live legal clearance.
-- **OR-Tools Baseline Scope**: Serves as a comparative baseline for capacity- and range-constrained routing; it does not model the custom cumulative time-based cold-chain exposure limits or time-window urgency discounts implemented in the primary solver.
-- **Landing Vision Verification (Component-Tested)**: Pretrained YOLOv8 provides aerial scene screening and ArUco fiducial target estimation (`flightstack/precision_landing.py`) maps optical coordinates to MAVLink `LANDING_TARGET` Body-NED frames on recorded/synthetic streams; neither vision module is active in the headless SITL mission demo.
+1. **No Live DigitalSky Authentication Token**: Without a registered DGCA pilot/operator JWT (`DIGITALSKY_AUTH_TOKEN`), `DigitalSkyIntersectionChecker` validates request payloads against the local OpenAPI 3.0 schema and reports `checked=False, official_clearance=False`.
+2. **No Open Real-Time Indian Airspace/NOTAM Polygon Feed**: Official AAI AIM India eAIP data (`aim-india.aai.aero`) is published as HTML/PDF coordinate tables rather than an unauthenticated GeoJSON REST API, and Mappls airspace layers are browser vector tiles only. Consequently, scenario no-fly zones and the mid-flight 4D TFR carry `SYNTHETIC_FIXTURE` provenance.
+3. **Headless Simulation Without a 3D Visual World**: Running Gazebo Harmonic (`gz-sim8` + Ogre2 + ROS 2) alongside ArduPilot SITL exceeds the available memory on the 8 GB Apple M3 development host. As a result, `PerceptionPipeline` (YOLOv8n) and `PrecisionLandingController` (ArUco) are component-tested on recorded/synthetic frames and are not active during `sitl_mission_demo.py`.
+4. **2D Bisection Raycaster Geometry**: ArduPilot's `AP_Proximity_SITL` (`PRX1_TYPE=10`) casts 8 horizontal rays and performs a binary search on `[0, 200 m]` whose first probe is at `100 m`. Small obstacles whose chord along the ray does not span `100 m` can be missed by the C++ bisection loop unless sized appropriately (such as the `80 m` radius world obstacle used in the demo).
+5. **Simulated Gripper Mass vs. Python Cargo Mass**: ArduPilot's C++ `SIM_Gripper_Servo` adds a fixed `1.0 kg` external load in SITL physics and drops it on release, whereas Python's `EnergyEstimator` and `PayloadManager` track the exact per-stop medical package masses (`2.0 kg` at Stop 1, `1.5 kg` at Stop 2).
+6. **No Physical Recipient Handover Sensor**: Simulated actuator release confirms only that the autopilot executed the gripper command (`recipient_handover_verified=False`).
+7. **Time-Based Cold-Chain Check**: Cold-chain enforcement compares elapsed mission ETA against `cold_chain_limit_minutes`; it does not model internal container thermodynamics or ambient temperature.
 
 ---
 
-## Testing & Quality Assurance
+## 7. Future Work
 
+- Run ArduPilot SITL with Gazebo Harmonic and `ros_gz_bridge` on a 16 GB+ Ubuntu workstation so `PerceptionPipeline` and `PrecisionLandingController` operate in closed loop against rendered 3D camera and depth streams.
+- Test authenticated DigitalSky flight-plan validation using a registered pilot/operator token (`DIGITALSKY_AUTH_TOKEN`).
+- Ingest digitized eAIP / NOTAM polygons through `GeoJSONFileProvider` and wire a live polling source into `DynamicAirspaceMonitor`.
+- Add weather- and wind-field-aware groundspeed and energy adjustments to mission feasibility checks.
+- Integrate hardware payload release sensing and flight-controller testing on a physical hexacopter platform.
+- Extend the MAVLink flight stack from single-UAV execution to multi-UAV SITL deconfliction.
+
+---
+
+## 8. Setup and Reproduction Instructions
+
+### 8.1 Environment Setup
 ```bash
-python3 -m unittest discover -s tests -p "test_*.py" -v
+# 1. Create or activate a Python 3.10+ virtual environment and install dependencies
+pip install -r requirements.txt
+pip install -r requirements-sitl.txt
+
+# 2. Verify environment, Python packages, and ArduCopter SITL binary path
+python3 check_env.py
+```
+To run live SITL flights, compile ArduCopter SITL (`./waf configure --board sitl && ./waf copter`) in a sibling `../ardupilot` checkout or set `ARDUPILOT_HOME` / `ARDUCOPTER_SITL_BIN` (see [`docs/simulation_setup.md`](docs/simulation_setup.md)).
+
+Optional environment variable for live DigitalSky HTTP calls:
+```bash
+export DIGITALSKY_AUTH_TOKEN="<your-dgca-pilot-jwt>"
 ```
 
-The test suite consists of **219 automated tests using Python's standard-library unittest framework** (`218` passed, `1` skipped when optional hardware/env conditions apply, including live hexacopter SITL integration in `tests/test_sitl_integration.py`) plus **8 controlled validation experiments** (`experiments_validation.py`):
-- **Geometry & Spherical Math**: Haversine distances, ray-casting point-in-polygon parity, segment-to-polygon distance, AABB pre-filtering equivalence.
-- **A\* Pathfinding & Airspace Safety**: Obstacle avoidance, corner-cutting block enforcement, 50 m safety-clearance enforcement, `MAX_CELLS` coarsened grid handling, pop-up TFR escape vectors, dead-edge detection.
-- **Routing Heuristics & Local Search**: Nearest-Neighbor, Clarke-Wright Savings, Urgency NN, 2-opt segment reversals, Or-opt relocate operators.
-- **Hard Operational Constraints**: Cumulative cold-chain exposure, delivery deadline windows, payload capacity, return-to-base range bounds, infeasibility validation.
-- **Fleet Simulation & Replanning**: Discrete-event mission execution, state transitions, dynamic mid-air replanning, disruption response.
-- **Flight Stack & MAVLink Protocols**: Telemetry decoding, staleness and validity filtering, mission upload/readback protocols, command ACK validation.
-- **Airspace Providers**: GeoJSON parsing, category policy enforcement, temporal filtering, cached fallback with stale flagging, and credential gating.
-- **Vehicle Physics & Energy**: Mass accounting, MTOW enforcement, hover and cruise power curves, payload-dependent discharge.
-- **Perception & Collision Kinematics**: Optical to Body-NED transforms, ArUco detection fallbacks, 3D relative kinematics, CPA conflict prediction.
+### 8.2 Run the Automated Test Suite and Controlled Experiments
+```bash
+# Run all 209 automated unit, contract, acceptance, and SITL integration tests
+python3 -m unittest discover -s tests -p "test_*.py" -v
 
-All commits are continuously validated on GitHub Actions across Python 3.10, 3.11, and 3.12.
+# Run the 8-case controlled validation suite (writes output/experimental_validation_report.json)
+python3 experiments_validation.py
+```
+
+### 8.3 Run the Single-UAV Hexacopter SITL Demonstration
+```bash
+# Full 2-stop mission (--mode auto, mid-flight 4D TFR replan, C++ obstacle avoidance)
+python3 sitl_mission_demo.py \
+  --scenario jaipur_single_uav \
+  --mode auto \
+  --airspace-change \
+  --inject-obstacle \
+  --speedup 10
+
+# Controlled 1-stop obstacle-avoidance comparison pair
+python3 sitl_mission_demo.py --scenario jaipur_single_uav --max-stops 1 --mode hover --speedup 10
+python3 sitl_mission_demo.py --scenario jaipur_single_uav --max-stops 1 --mode hover --inject-obstacle --speedup 10
+
+# Regenerate interactive HTML flight replay (output/sitl_flight_replay.html)
+python3 visualize_sitl.py
+```
+
+---
+
+## 9. Technical Documentation
+
+- [`AGENTS.md`](AGENTS.md) — Engineering rules, data provenance classifications, and delivery mode invariants.
+- [`docs/PROJECT_MASTER_CONTEXT.md`](docs/PROJECT_MASTER_CONTEXT.md) — Project scope, system architecture, requirements traceability matrix, and verified evidence.
+- [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) — Capability verification ledger and maturity classifications.
+- [`docs/architecture.md`](docs/architecture.md) — Data/control boundaries between SITL physics, autopilot telemetry, and planner state.
+- [`docs/simulation_setup.md`](docs/simulation_setup.md) — Apple M3 hardware constraints, 6-motor hexacopter SITL config, and `AP_Proximity_SITL` C++ raycasting details.
+- [`docs/mission_execution.md`](docs/mission_execution.md) — Feasibility gates, delivery state machine, and `MAV_CMD_NAV_DELAY=93` landing continuation mechanics.
+- [`docs/data_sources_and_provenance.md`](docs/data_sources_and_provenance.md) — GDACS, DigitalSky OpenAPI 3.0, Mappls, and Indian aeronautical data source findings.
+- [`docs/known_limitations.md`](docs/known_limitations.md) — Detailed technical limitations and scope boundaries.
+- [`docs/demo_guide.md`](docs/demo_guide.md) — Step-by-step commands and expected log outputs.
+- [`docs/interview_technical_notes.md`](docs/interview_technical_notes.md) & [`docs/PROJECT_INTERVIEW_MASTER.md`](docs/PROJECT_INTERVIEW_MASTER.md) — Technical reference and study notes.
 
 ---
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT License. See [`LICENSE`](LICENSE) for details.

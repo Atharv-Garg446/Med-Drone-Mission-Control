@@ -13,7 +13,7 @@ This file defines the mandatory architectural, engineering, and scientific-hones
    - Preserve [`simulate_fleet.py`](file:///Users/mahigarg/Documents/Drone%20Shit/drone_medical_router/simulate_fleet.py), [`vrp_scratch.py`](file:///Users/mahigarg/Documents/Drone%20Shit/drone_medical_router/vrp_scratch.py), [`vrp_ortools.py`](file:///Users/mahigarg/Documents/Drone%20Shit/drone_medical_router/vrp_ortools.py), and [`replan.py`](file:///Users/mahigarg/Documents/Drone%20Shit/drone_medical_router/replan.py) intact as an optional multi-UAV logistics research module.
    - Never globally force `fleet_size = 1` across multi-drone scenarios (`JAIPUR_DISASTER`, `JAIPUR_HOSPITAL`, `CHENNAI_FLOOD`), and never delete fleet routing tests.
 3. **Deferred Scope (Do Not Reintroduce):**
-   - Comprehensive weather integration and wind-field subsystems are explicitly deferred for this sprint. Do not spend engineering time adding weather APIs.
+   - Comprehensive weather integration and wind-field subsystems are explicitly deferred for this release. `flightstack/weather_provider.py` and `tests/test_weather_provider.py` were removed from the active release branch (`git rm`) because they were not integrated into mission planning or flight execution. Do not reintroduce standalone weather modules unless fully integrated into route feasibility and SITL execution.
 
 ---
 

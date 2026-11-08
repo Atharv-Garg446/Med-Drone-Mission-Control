@@ -68,6 +68,7 @@ from gdacs_provider import (
     GDACSSnapshot,
     GDACSUnavailable,
 )
+from geo_utils import point_to_segment_distance_km
 from sitl_mission_demo import blocking_zone_across
 
 
@@ -149,6 +150,23 @@ def exp1_route_planning_with_and_without_restricted_areas() -> Dict[str, Any]:
         zones_with_block,
         profile.safety_margin_m,
     )
+    route_pts = plan_restricted.full_route_polyline(home)
+    min_clearance_km = float("inf")
+    for i in range(len(route_pts) - 1):
+        a, b = route_pts[i], route_pts[i + 1]
+        for poly in zones_with_block:
+            n = len(poly)
+            for j in range(n):
+                v1, v2 = poly[j], poly[(j + 1) % n]
+                min_clearance_km = min(
+                    min_clearance_km,
+                    point_to_segment_distance_km(v1, a, b),
+                    point_to_segment_distance_km(a, v1, v2),
+                    point_to_segment_distance_km(b, v1, v2),
+                )
+    min_clearance_m = round(min_clearance_km * 1000.0, 2)
+    leg1_free_km = round(_polyline_km(plan_free.leg_paths[0]), 3)
+    leg1_restricted_km = round(_polyline_km(plan_restricted.leg_paths[0]), 3)
     detour_items = [it for it in plan_restricted.items if it.role in ("detour", "detour_home")]
     return {
         "experiment": "EXP-01_Route_Planning_With_vs_Without_Restricted_Areas",
@@ -156,14 +174,18 @@ def exp1_route_planning_with_and_without_restricted_areas() -> Dict[str, Any]:
             plan_restricted.planned_km > plan_free.planned_km
             and len(detour_items) > 0
             and len(plan_restricted.unreachable) == 0
+            and min_clearance_m >= profile.safety_margin_m
         ),
         "unrestricted_planned_km": round(plan_free.planned_km, 3),
         "restricted_planned_km": round(plan_restricted.planned_km, 3),
         "detour_distance_delta_km": round(plan_restricted.planned_km - plan_free.planned_km, 3),
+        "leg1_unrestricted_km": leg1_free_km,
+        "leg1_restricted_km": leg1_restricted_km,
         "unrestricted_mission_items": len(plan_free.items),
         "restricted_mission_items": len(plan_restricted.items),
         "detour_waypoints_inserted": len(detour_items),
         "safety_margin_enforced_m": profile.safety_margin_m,
+        "min_measured_clearance_m": min_clearance_m,
     }
 
 
