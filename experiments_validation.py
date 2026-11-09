@@ -291,29 +291,40 @@ def exp2_mission_feasibility_gates() -> Dict[str, Any]:
 
 def exp3_sitl_obstacle_avoidance_and_reference_logs() -> Dict[str, Any]:
     out_dir = os.path.join(HERE, "output")
+    required_files = (
+        "sitl_run_20261108_034446.jsonl",  # Two-stop reference mission
+        "sitl_run_20261108_035408.jsonl",  # One-stop controlled OA baseline
+        "sitl_run_20261108_035631.jsonl",  # One-stop controlled OA obstacle-present
+    )
     logs = sorted(glob.glob(os.path.join(out_dir, "sitl_run_*.jsonl")))
     summaries = []
+    by_filename: Dict[str, Dict[str, Any]] = {}
+
     for path in logs:
         fname = os.path.basename(path)
         summary_evt = None
         autopilot_evt = None
         sitl_evt = None
-        with open(path, "r") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                obj = json.loads(line)
-                if obj.get("event") == "summary":
-                    summary_evt = obj
-                elif obj.get("event") == "autopilot_ready":
-                    autopilot_evt = obj
-                elif obj.get("event") == "sitl_started":
-                    sitl_evt = obj
+        try:
+            with open(path, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    obj = json.loads(line)
+                    if obj.get("event") == "summary":
+                        summary_evt = obj
+                    elif obj.get("event") == "autopilot_ready":
+                        autopilot_evt = obj
+                    elif obj.get("event") == "sitl_started":
+                        sitl_evt = obj
+        except (OSError, json.JSONDecodeError):
+            summary_evt = None
+
         if summary_evt is not None:
             tel = (autopilot_evt or {}).get("telemetry", {})
             bat_init = ((tel.get("battery") or {}).get("value") or {}).get("voltage_v")
-            summaries.append({
+            rec = {
                 "log_file": fname,
                 "sitl_model": (sitl_evt or {}).get("model", "+"),
                 "mav_type": summary_evt.get("mav_type") or tel.get("mav_type"),
@@ -333,12 +344,70 @@ def exp3_sitl_obstacle_avoidance_and_reference_logs() -> Dict[str, Any]:
                 ),
                 "final_battery": summary_evt.get("final_battery"),
                 "planned_km": summary_evt.get("planned_km"),
-            })
+            }
+            summaries.append(rec)
+            by_filename[fname] = rec
+
+    ref_2stop = by_filename.get("sitl_run_20261108_034446.jsonl")
+    base_1stop = by_filename.get("sitl_run_20261108_035408.jsonl")
+    obs_1stop = by_filename.get("sitl_run_20261108_035631.jsonl")
+
+    ref_2stop_ok = (
+        ref_2stop is not None
+        and ref_2stop.get("sitl_model") == "hexa:med_drone_hexa_16.json"
+        and ref_2stop.get("mav_type") == "HEXAROTOR"
+        and ref_2stop.get("success") is True
+        and ref_2stop.get("delivered") == [1, 2]
+        and ref_2stop.get("failed_deliveries") == []
+        and ref_2stop.get("requested_delivery_mode") == "auto"
+        and ref_2stop.get("delivery_modes_executed") == {"1": "hover", "2": "land"}
+        and ref_2stop.get("proximity_sensor_active") is True
+        and ref_2stop.get("proximity_active_frames", 0) > 0
+        and ref_2stop.get("ardupilot_oa_db_confirmations", 0) > 0
+        and float(ref_2stop.get("max_oa_deviation_m", 0.0)) > 10.0
+        and ref_2stop.get("measured_oa_lateral_deviation_observed") is True
+    )
+
+    base_1stop_ok = (
+        base_1stop is not None
+        and base_1stop.get("sitl_model") == "hexa:med_drone_hexa_16.json"
+        and base_1stop.get("mav_type") == "HEXAROTOR"
+        and base_1stop.get("success") is True
+        and base_1stop.get("delivered") == [1]
+        and base_1stop.get("failed_deliveries") == []
+        and base_1stop.get("proximity_sensor_active") is False
+        and base_1stop.get("proximity_active_frames", -1) == 0
+        and base_1stop.get("ardupilot_oa_db_confirmations", -1) == 0
+        and float(base_1stop.get("max_oa_deviation_m", -1.0)) == 0.0
+        and base_1stop.get("measured_oa_lateral_deviation_observed") is False
+    )
+
+    obs_1stop_ok = (
+        obs_1stop is not None
+        and obs_1stop.get("sitl_model") == "hexa:med_drone_hexa_16.json"
+        and obs_1stop.get("mav_type") == "HEXAROTOR"
+        and obs_1stop.get("success") is True
+        and obs_1stop.get("delivered") == [1]
+        and obs_1stop.get("failed_deliveries") == []
+        and obs_1stop.get("proximity_sensor_active") is True
+        and obs_1stop.get("proximity_active_frames", 0) > 0
+        and obs_1stop.get("ardupilot_oa_db_confirmations", 0) > 0
+        and float(obs_1stop.get("max_oa_deviation_m", 0.0)) > 10.0
+        and obs_1stop.get("measured_oa_lateral_deviation_observed") is True
+    )
+
+    all_required_present = all(fn in by_filename for fn in required_files)
+    passed = all_required_present and ref_2stop_ok and base_1stop_ok and obs_1stop_ok
+
     return {
         "experiment": "EXP-03_SITL_Obstacle_Avoidance_and_Mission_Log_Evidence",
-        "passed": any(
-            s.get("success") and s.get("measured_oa_lateral_deviation_observed") for s in summaries
-        ),
+        "passed": passed,
+        "required_logs_present": all_required_present,
+        "individual_checks": {
+            "two_stop_reference_mission_034446": ref_2stop_ok,
+            "one_stop_baseline_035408": base_1stop_ok,
+            "one_stop_obstacle_present_035631": obs_1stop_ok,
+        },
         "sitl_runs_analyzed": len(summaries),
         "runs": summaries,
     }

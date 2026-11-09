@@ -33,18 +33,20 @@
 
 ---
 
-## 2. Environment Realities & Boundary Clarifications
+## 2. Environment Capabilities and Scope Boundaries
 
-### What is 100% Possible and Verified on this Machine:
-1. **Core Routing & Replanning**: Pure Python standard library from-scratch multi-heuristic CVRP solver, A* polygon avoidance, 50m clearance compensation, time-based cold-chain limits (`cold_chain_limit_minutes`), and deadline windows.
-2. **Native 6-Motor Hexacopter ArduPilot SITL Simulation**: Launching real ArduCopter V4.7.0-dev SITL firmware (`--model hexa:med_drone_hexa_16.json`, `FRAME_CLASS=2`, `HEXAROTOR`) on Apple Silicon Darwin arm64 with 6S 16 Ah LiPo discharge, communicating bidirectionally over MAVLink TCP socket 5760.
-3. **Item-by-Item Mission Readback**: Uploading complex waypoint missions to ArduPilot SRAM and verifying coordinates, altitudes, and command codes item-by-item.
-4. **Medical Cargo State Tracking**: Explicit payload lifecycle management, mechanical jam fault injection, and live `STATUSTEXT` actuator confirmation.
-5. **GPU-Accelerated Vision Inference**: Ultralytics YOLOv8n running natively on Apple Silicon Metal Performance Shaders (MPS) GPU at 21–63 FPS across multiple input resolutions.
-6. **ArUco Precision Landing**: Computer vision detection, 3D optical-to-body NED transformation, and rate-controlled MAVLink `LANDING_TARGET` transmission.
-7. **Interactive HUD Replay**: Leaflet.js browser dashboard rendering real flown SITL trajectories and synchronized flight events.
+### 2.1 Integrated SITL vs. Component-Level Local Validation
+1. **Integrated Closed-Loop Hexacopter SITL Capabilities**:
+   - **Core Routing & Feasibility Gating**: Pure Python standard-library A* polygon avoidance (`50 m` clearance buffer), shared 4-gate pre-launch and in-flight feasibility validation, time-based cold-chain limits (`cold_chain_limit_minutes`), and delivery deadline windows.
+   - **Native 6-Motor Hexacopter ArduPilot SITL Simulation**: Real ArduCopter V4.7.0-dev SITL firmware (`--model hexa:med_drone_hexa_16.json`, `FRAME_CLASS=2`, `HEXAROTOR`) on Apple Silicon Darwin `arm64` with 6S 16 Ah LiPo discharge, communicating bidirectionally over MAVLink TCP port 5760.
+   - **Item-by-Item Mission Readback & C++ Proximity Avoidance**: Uploading waypoint missions to ArduPilot SRAM with item-by-item coordinate/altitude/command readback verification, and C++ `AP_Proximity_SITL` (`PRX1_TYPE=10`) + `AP_OABendyRuler` obstacle avoidance (`measured_oa_lateral_deviation_observed`).
+   - **Medical Cargo Lifecycle & Replay**: Causal `STATUSTEXT` gripper confirmation, intermediate ground dwell continuation (`MAV_CMD_NAV_DELAY=93`, `MIS_OPTIONS=4`), and Leaflet.js flight replay (`output/sitl_flight_replay.html`).
+2. **Component-Level Validated Subsystems (Not Active in Headless SITL Mission)**:
+   - **GPU-Accelerated Vision Inference**: Ultralytics YOLOv8n running on Apple Silicon Metal Performance Shaders (MPS) at `21–63 FPS` (`perception/evaluate_model.py`), with strict 2D bearing vs. 3D metric depth gating (`flightstack/perception_pipeline.py`).
+   - **ArUco Precision Landing & 3D CPA Tracker**: OpenCV ArUco marker detection, 3D optical-to-body NED transformation, MAVLink `LANDING_TARGET` (#149) transmission (`flightstack/precision_landing.py`), and 3D CPA conflict prediction (`flightstack/obstacle_tracker.py`).
+   - **Supporting Multi-UAV CVRP & Fleet Simulation**: Multi-heuristic CVRP solver (`vrp_scratch.py`) and discrete-event fleet simulator (`simulate_fleet.py`).
 
-### What is NOT Possible Locally and What is Required to Enable It:
+### 2.2 External Dependencies and Out-of-Scope Capabilities
 1. **Gazebo / ROS 2 3D Camera Simulation**:
    - *Limitation*: Gazebo Garden/Harmonic with realistic physics and simulated RGBD depth cameras requires an Ubuntu Linux environment (typically x86_64 or dedicated Linux ARM VM with 16+ GB RAM). On macOS Apple Silicon with 8 GB RAM (1.3 GB free), running ArduPilot SITL alongside Gazebo 3D rendering causes immediate memory exhaustion (OOM).
    - *Requirement*: An Ubuntu 22.04 LTS workstation or cloud instance with 16 GB+ RAM, GPU, and ROS 2 Humble + `ros_gz_bridge`.

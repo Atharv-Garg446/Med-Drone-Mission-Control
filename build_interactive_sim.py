@@ -111,7 +111,7 @@ def _generate_html(depot_lat, depot_lon, locations, frames, events,
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drone Medical Router — Interactive Simulation</title>
+<title>Med-Drone Mission Control — Supporting Multi-UAV Fleet Simulation</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""/>
@@ -169,7 +169,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:#0d1117;color:#c9d1d9;o
 <div id="map"></div>
 <div id="sidebar">
   <div class="hdr">
-    <h1>🚁 DRONE MEDICAL ROUTER</h1>
+    <h1>🚁 MED-DRONE MISSION CONTROL</h1>
+    <div class="sc">Supporting Multi-UAV Fleet Simulation Component</div>
     <div class="sc" id="sc"></div>
   </div>
   <div class="ctrl">

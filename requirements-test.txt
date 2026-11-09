@@ -1,0 +1,6 @@
+# Reproducible test dependencies for the automated unit, contract, and acceptance test suite
+# (tests/test_*.py and experiments_validation.py).
+# Compatible with Python 3.10, 3.11, and 3.12 on Linux and macOS.
+numpy>=1.24,<3.0
+opencv-contrib-python-headless>=4.8
+pymavlink>=2.4.40

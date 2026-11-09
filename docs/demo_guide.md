@@ -7,7 +7,7 @@ All commands below assume the working directory is the repository root (`drone_m
 ## 1. Automated Test Suite and Controlled Experiments
 
 ### 1.1 Fast Unit, Contract, and Acceptance Tests (No SITL Binary Required)
-Runs 106 flight-stack, vehicle/perception, acceptance, and GDACS/DigitalSky contract tests in ~4 seconds:
+Runs 114 flight-stack (`41`), acceptance (`33`), GDACS/DigitalSky contract (`16`), and vehicle/perception (`24`) test methods in ~4 seconds:
 ```bash
 python3 -m unittest \
   tests/test_flightstack.py \

@@ -577,6 +577,8 @@ class TestLiveGDACSExternalAPI(unittest.TestCase):
     """Live external API verification against https://www.gdacs.org/gdacsapi."""
 
     def test_live_gdacs_api_fetch(self):
+        if os.environ.get("SKIP_LIVE_EXTERNAL_TESTS") == "1":
+            self.skipTest("SKIP_LIVE_EXTERNAL_TESTS=1: skipping live network call to GDACS in CI")
         provider = GDACSProvider(
             event_types=("FL", "EQ", "TC"),
             lookback_days=35,

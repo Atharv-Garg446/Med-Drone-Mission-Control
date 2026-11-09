@@ -35,7 +35,7 @@ flowchart TD
         EKF["EKF3 State Estimator + DCM / GNSS"]
         PRX["AP_Proximity_SITL (PRX1_TYPE = 10)\nC++ 8-Sector Raycaster against AC_PolyFence_loader"]
         OADB["AP_OADatabase + AP_OABendyRuler (OA_TYPE = 1)\nHorizontal Reactive Avoidance in AUTO Mode"]
-        GRIP["SIM_Gripper_Servo (SERVO9)\nPhysical Actuation & STATUSTEXT Feedback"]
+        GRIP["SIM_Gripper_Servo (SERVO9)\nSimulated Actuation & STATUSTEXT Feedback"]
     end
 
     GDACS --> WM

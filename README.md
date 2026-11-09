@@ -112,13 +112,13 @@ To maintain consistency across the Python energy model (`flightstack/vehicle_mod
 ### 1. Automated Test Suite (`209` Tests)
 Running `unittest discover -s tests -p "test_*.py"` in the configured `.venv-sitl` environment executes **209 automated tests**:
 - **Full local development environment** (with compiled `arducopter` SITL binary, `pymavlink`, `opencv-contrib-python`, and network access to GDACS): **`209` passed, `0` skipped, `0` failed, `0` errors** (`106.7 s` total runtime, including the live hexacopter SITL flight in `tests/test_sitl_integration.py`).
-- **Test breakdown by module**:
-  - `tests/test_core_logic.py` (`102` tests): Spherical geometry, A* clearance, CVRP heuristics, 2-opt/Or-opt, cold-chain and deadline constraints, and fleet simulation.
-  - `tests/test_flightstack.py` (`33` tests): Telemetry freshness, 4D airspace validation, MAVLink upload/readback, and native proximity sensor configuration.
+- **Test breakdown by module (`94 + 41 + 33 + 24 + 16 + 1 = 209`)**:
+  - `tests/test_core_logic.py` (`94` tests): Spherical geometry, A* clearance, CVRP heuristics, 2-opt/Or-opt, cold-chain and deadline constraints, and fleet simulation.
+  - `tests/test_flightstack.py` (`41` tests): Telemetry freshness, 4D airspace validation, MAVLink upload/readback, and native proximity sensor configuration.
   - `tests/test_full_autonomy_acceptance.py` (`33` tests): Pre-mission and in-flight feasibility gates, deterministic delivery mode selection, causal gripper feedback, ground dwell, perception depth gating, and ArUco precision landing.
-  - `tests/test_vehicle_and_perception.py` (`25` tests): Momentum-theory hover/cruise power, leg-by-leg payload mass step-down, 6S battery parameters, and 3D CPA obstacle tracking.
-  - `tests/test_gdacs_and_provenance.py` (`15` tests): Live and fixture GDACS ingestion, episode deduplication, DigitalSky OpenAPI 3.0 request/error schemas, and `DynamicAirspaceMonitor` outage handling.
-  - `tests/test_sitl_integration.py` (`1` test): Live ArduCopter SITL takeoff, waypoint navigation, mission readback, and stale-telemetry detection.
+  - `tests/test_vehicle_and_perception.py` (`24` tests): Momentum-theory hover/cruise power, leg-by-leg payload mass step-down, 6S battery parameters, and 3D CPA obstacle tracking.
+  - `tests/test_gdacs_and_provenance.py` (`16` tests): Live and fixture GDACS ingestion, episode deduplication, DigitalSky OpenAPI 3.0 request/error schemas, and `DynamicAirspaceMonitor` outage handling.
+  - `tests/test_sitl_integration.py` (`1` test): Live ArduCopter SITL takeoff, waypoint navigation, mission readback, and stale-telemetry detection (skipped in CI when the `arducopter` SITL binary is absent).
 
 ### 2. Recorded Hexacopter SITL Flight Logs (`output/`)
 | Mission Configuration | Log Artifact | Airframe & Battery Telemetry | Verified Flight Metrics |
@@ -130,8 +130,8 @@ Running `unittest discover -s tests -p "test_*.py"` in the configured `.venv-sit
 ### 3. Controlled 8-Experiment Validation Suite (`experiments_validation.py`)
 Running `python3 experiments_validation.py` generates [`output/experimental_validation_report.json`](output/experimental_validation_report.json) (`8/8` passing). Seven experiments (`EXP-01`, `EXP-02`, `EXP-04` through `EXP-08`) run deterministic in-process subsystem checks against `MissionRunner`, `PayloadManager`, and `_StubLink`; `EXP-03` audits the recorded SITL JSONL logs on disk:
 - **`EXP-01` (Route Planning With vs. Without Restricted Areas)**: Full 2-stop round-trip route increases from `8.828 km` (`13` items) unrestricted to `9.002 km` (`14` items, `+0.174 km`, `1` detour waypoint) when a blocking zone is placed across Leg 1 (`Leg 1`: `3.181 km -> 3.355 km`), maintaining `min_measured_clearance_m = 65.97 m >= 50.0 m` (`safety_margin_enforced_m`).
-- **`EXP-02` (Mission Feasibility Gates)**: Nominal `3.5 kg` mission passes (`136.91 Wh <= 284.16 Wh`, leg payloads `[3.5, 1.5, 0.0] kg`, cruise powers `[696.3, 525.0, 416.6] W`); deterministically rejects payload overload (`9.0 kg > 8.0 kg`), MTOW overload (`15.70 kg > 15.00 kg`), low battery (`21%` SoC = `3.6 Wh` usable above 20% floor < `136.9 Wh`), missing battery telemetry (`remaining_pct = None`), cold-chain breach (`ETA 9.9 min > 2.0 min`), and deadline breach (`ETA 9.9 min > 2.0 min`).
-- **`EXP-03` (SITL Obstacle Avoidance & Log Audit)**: Audits the 3 recorded hexacopter `output/sitl_run_*.jsonl` files, verifying the 2-stop reference mission and the 1-stop controlled obstacle-avoidance pair.
+- **`EXP-02` (Mission Feasibility Gates)**: Nominal `3.5 kg` mission passes on the base `17.5 kg` MTOW vehicle profile (`136.91 Wh <= 284.16 Wh`, leg payloads `[3.5, 1.5, 0.0] kg`, cruise powers `[696.3, 525.0, 416.6] W`); deterministically rejects payload overload (`9.0 kg > 8.0 kg`), a deliberately derated `15.00 kg` MTOW test profile (`15.70 kg > 15.00 kg`; base vehicle model MTOW remains `17.5 kg`), low battery (`21%` SoC = `3.6 Wh` usable above 20% floor < `136.9 Wh`), missing battery telemetry (`remaining_pct = None`), cold-chain breach (`ETA 9.9 min > 2.0 min`), and deadline breach (`ETA 9.9 min > 2.0 min`).
+- **`EXP-03` (SITL Obstacle Avoidance & Log Audit)**: Audits the 3 recorded hexacopter `output/sitl_run_*.jsonl` files individually, requiring all three checks to pass: (1) the 2-stop reference mission (`sitl_run_20261108_034446.jsonl`: `delivered == [1, 2]`, `{"1": "hover", "2": "land"}`, `max_oa_deviation_m = 34.08 m`), (2) the 1-stop baseline (`sitl_run_20261108_035408.jsonl`: `delivered == [1]`, `max_oa_deviation_m = 0.0 m`), and (3) the 1-stop obstacle-present run (`sitl_run_20261108_035631.jsonl`: `delivered == [1]`, `max_oa_deviation_m = 38.42 m`).
 - **`EXP-04` (4D Restriction & In-Flight Replanning)**: Verifies that a high-altitude zone (`150–300 m AGL`) above the `60 m` cruise altitude does not trigger a replan, whereas an active `0–120 m AGL` TFR across Leg 2 triggers `AUTO -> LOITER -> AUTO` (`version = 2`, remaining distance `5.888 km`).
 - **`EXP-05` (Hover vs. Landing vs. Abort Site Suitability)**: Verifies `flooded -> hover` (both `auto` and explicit `land`), `clear -> land`, `slope 9.5° > 7.0° -> hover`, and `clearance 6.0 m < 10.0 m -> abort` (`unreachable_stop_ids = [4]`).
 - **`EXP-06` (Failed and Missing Actuator Feedback)**: Verifies causal `"Gripper Released"` confirmation (`duplicate_feedback_count = 1`, `recipient_handover_verified = False`), blocks completion when `STATUSTEXT` is missing (`MISSING_ACTUATOR_FEEDBACK -> FAILED`), and transitions to `FAILED` on `"Gripper fault: servo jammed"`.
@@ -156,7 +156,8 @@ Running `python3 experiments_validation.py` generates [`output/experimental_vali
 
 ### 1. Environment Setup
 ```bash
-# Install core and SITL Python dependencies in a Python 3.10+ virtual environment
+# Install test, core, and SITL Python dependencies in a Python 3.10+ virtual environment
+pip install -r requirements-test.txt
 pip install -r requirements.txt
 pip install -r requirements-sitl.txt
 
